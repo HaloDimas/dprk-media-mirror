@@ -6,7 +6,14 @@ import Hls from "hls.js";
 /**
  * Live TV player. The video element is fed ONLY our own HLS proxy
  * (/api/hls/<channel>/index.m3u8) — the browser never touches the CDN.
+ *
+ * The live CDN occasionally drops a segment or stalls, which hls.js reports
+ * as a fatal error. Instead of giving up (and forcing a page refresh), the
+ * player auto-retries with backoff and only shows the "unavailable" message
+ * after several failed attempts — with a manual Retry button.
  */
+const MAX_RETRIES = 5;
+
 export default function HlsPlayer({
   channel,
   title,
@@ -18,8 +25,11 @@ export default function HlsPlayer({
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const hlsRef = useRef<Hls | null>(null);
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [reconnecting, setReconnecting] = useState(false);
+  const [retryAttempt, setRetryAttempt] = useState(0);
   // Subtitles: the stream carries an English subtitle track (DEFAULT/AUTOSELECT
   // in the manifest). hls.js loads it; the toggle switches it on/off.
   const [subsAvailable, setSubsAvailable] = useState(false);
@@ -38,13 +48,133 @@ export default function HlsPlayer({
     if (!video) return;
     setError(null);
     setLoading(true);
+    setReconnecting(false);
+    setRetryAttempt(0);
     setSubsAvailable(false);
     setSubsOn(true);
     const src = `/api/hls/${channel}/index.m3u8`;
+    let stopped = false;
+    let attempts = 0;
 
-    const onError = () => {
+    const clearRetryTimer = () => {
+      if (retryTimerRef.current) {
+        clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
+    };
+
+    const destroyHls = () => {
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+        hlsRef.current = null;
+      }
+    };
+
+    const onFatalError = () => {
       setError("Stream is currently unavailable. Please try again later.");
       setLoading(false);
+      setReconnecting(false);
+    };
+
+    /** Full re-init after a backoff delay. Returns false when out of retries. */
+    const scheduleRetry = (init: () => void) => {
+      if (stopped) return false;
+      if (attempts >= MAX_RETRIES) {
+        onFatalError();
+        return false;
+      }
+      attempts += 1;
+      setRetryAttempt(attempts);
+      setReconnecting(true);
+      setLoading(false);
+      const delay = Math.min(30000, 2000 * 2 ** (attempts - 1));
+      clearRetryTimer();
+      retryTimerRef.current = setTimeout(() => {
+        if (stopped) return;
+        destroyHls();
+        init();
+      }, delay);
+      return true;
+    };
+
+    /** Manual retry from the error overlay (resets the backoff). */
+    const manualRetry = () => {
+      clearRetryTimer();
+      attempts = 0;
+      setRetryAttempt(0);
+      setError(null);
+      setReconnecting(true);
+      setLoading(false);
+      destroyHls();
+      initHls();
+    };
+    // Expose the manual retry to the button rendered below.
+    (video as HTMLVideoElement & { __retry?: () => void }).__retry = manualRetry;
+
+    const initHls = () => {
+      if (stopped) return;
+      // Deeper buffer + a little more live latency margin, so a slow
+      // segment does not stall playback for a second.
+      const hls = new Hls({
+        maxBufferLength: 60,
+        maxMaxBufferLength: 120,
+        liveSyncDurationCount: 4,
+      });
+      hlsRef.current = hls;
+      hls.loadSource(src);
+      hls.attachMedia(video);
+      hls.on(Hls.Events.MANIFEST_PARSED, () => {
+        if (stopped) return;
+        attempts = 0;
+        setRetryAttempt(0);
+        setReconnecting(false);
+        setLoading(false);
+        video.play().catch(() => undefined);
+      });
+      // Subtitle track from the manifest (English). Enable it by default.
+      hls.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, () => {
+        if (stopped) return;
+        if (hls.subtitleTracks.length > 0) {
+          setSubsAvailable(true);
+          hls.subtitleTrack = 0;
+          setSubsOn(true);
+        }
+      });
+      hls.on(Hls.Events.ERROR, (_e, data) => {
+        if (stopped || !data.fatal) return;
+        // Media errors (bad segment / codec hiccup) are usually fixed by
+        // the built-in recovery — try that before a full re-init.
+        if (data.type === Hls.ErrorTypes.MEDIA_ERROR) {
+          try {
+            hls.recoverMediaError();
+            return;
+          } catch {
+            // Fall through to a full re-init below.
+          }
+        }
+        scheduleRetry(initHls);
+      });
+    };
+
+    const onVideoError = () => {
+      // Safari native path: reset the source after a short delay.
+      if (stopped) return;
+      if (attempts >= MAX_RETRIES) {
+        onFatalError();
+        return;
+      }
+      attempts += 1;
+      setRetryAttempt(attempts);
+      setReconnecting(true);
+      setLoading(false);
+      clearRetryTimer();
+      retryTimerRef.current = setTimeout(() => {
+        if (stopped) return;
+        video.removeAttribute("src");
+        video.load();
+        video.src = src;
+        video.play().catch(() => undefined);
+      }, Math.min(30000, 2000 * 2 ** (attempts - 1)));
     };
 
     if (video.canPlayType("application/vnd.apple.mpegurl")) {
@@ -53,10 +183,12 @@ export default function HlsPlayer({
       video.play().catch(() => undefined);
       const onCanPlay = () => setLoading(false);
       video.addEventListener("canplay", onCanPlay);
-      video.addEventListener("error", onError);
+      video.addEventListener("error", onVideoError);
       return () => {
+        stopped = true;
+        clearRetryTimer();
         video.removeEventListener("canplay", onCanPlay);
-        video.removeEventListener("error", onError);
+        video.removeEventListener("error", onVideoError);
         // Stop playback for real when leaving the page: merely removing
         // the element does not reliably stop the audio in all browsers.
         video.pause();
@@ -66,38 +198,11 @@ export default function HlsPlayer({
     }
 
     if (Hls.isSupported()) {
-      const hls = new Hls({
-        maxBufferLength: 30,
-        liveSyncDurationCount: 3,
-      });
-      hlsRef.current = hls;
-      hls.loadSource(src);
-      hls.attachMedia(video);
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        setLoading(false);
-        video.play().catch(() => undefined);
-      });
-      // Subtitle track from the manifest (English). Enable it by default.
-      hls.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, () => {
-        if (hls.subtitleTracks.length > 0) {
-          setSubsAvailable(true);
-          hls.subtitleTrack = 0;
-          setSubsOn(true);
-        }
-      });
-      hls.on(Hls.Events.ERROR, (_e, data) => {
-        if (data.fatal) {
-          if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
-            hls.startLoad();
-            return;
-          }
-          setError("Stream is currently unavailable. Please try again later.");
-          setLoading(false);
-        }
-      });
+      initHls();
       return () => {
-        hls.destroy();
-        hlsRef.current = null;
+        stopped = true;
+        clearRetryTimer();
+        destroyHls();
         // Stop playback for real when leaving the page: hls.destroy()
         // alone does not pause the media element, so the audio can keep
         // playing after navigation in some browsers.
@@ -110,6 +215,12 @@ export default function HlsPlayer({
     setError("Your browser cannot play live HLS streams.");
     setLoading(false);
   }, [channel]);
+
+  const handleRetryClick = () => {
+    const video = videoRef.current;
+    const retry = (video as (HTMLVideoElement & { __retry?: () => void }) | null)?.__retry;
+    if (retry) retry();
+  };
 
   return (
     <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black">
@@ -134,9 +245,17 @@ export default function HlsPlayer({
           CC
         </button>
       )}
-      {loading && !error && (
+      {loading && !error && !reconnecting && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/60 text-sm text-zinc-300">
           Connecting to live stream…
+        </div>
+      )}
+      {reconnecting && !error && (
+        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/60 text-sm text-zinc-300">
+          <p>Reconnecting to live stream…</p>
+          <p className="text-xs text-zinc-500">
+            Attempt {retryAttempt} of {MAX_RETRIES} — no need to refresh.
+          </p>
         </div>
       )}
       {error && (
@@ -145,6 +264,13 @@ export default function HlsPlayer({
           <p className="text-xs text-zinc-400">
             The channel may be off air right now. Check the programme guide for broadcast hours.
           </p>
+          <button
+            type="button"
+            onClick={handleRetryClick}
+            className="mt-1 rounded-lg bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
+          >
+            Retry stream
+          </button>
         </div>
       )}
     </div>

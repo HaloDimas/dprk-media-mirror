@@ -16,7 +16,12 @@ export default function AudioPlayer({ channel, label }: { channel: string; label
 
     if (audio.canPlayType("application/vnd.apple.mpegurl")) {
       audio.src = src;
-      return;
+      return () => {
+        // Stop playback for real when leaving the page.
+        audio.pause();
+        audio.removeAttribute("src");
+        audio.load();
+      };
     }
     if (Hls.isSupported()) {
       const hls = new Hls({ maxBufferLength: 30 });
@@ -25,7 +30,13 @@ export default function AudioPlayer({ channel, label }: { channel: string; label
       hls.on(Hls.Events.ERROR, (_e, data) => {
         if (data.fatal) setError("This station is currently unavailable.");
       });
-      return () => hls.destroy();
+      return () => {
+        hls.destroy();
+        // hls.destroy() alone does not pause the media element.
+        audio.pause();
+        audio.removeAttribute("src");
+        audio.load();
+      };
     }
     setError("Your browser cannot play this audio stream.");
   }, [channel]);

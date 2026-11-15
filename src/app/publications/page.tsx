@@ -1,8 +1,14 @@
+import { connection } from "next/server";
 import PublicationsBrowser from "@/components/PublicationsBrowser";
 import { getPeriodicals, getPublications, getStamps } from "@/lib/sources";
 
+// This page depends on live .kp data (the Korean Stamp homepage is fetched
+// over plain HTTP with retries), so it renders at request time, like the
+// News page — otherwise prerendering fails with uncached/runtime data.
+export const instant = false;
 
 export default async function PublicationsPage() {
+  await connection();
   const [publications, periodicals, stamps] = await Promise.all([
     getPublications(),
     getPeriodicals(),

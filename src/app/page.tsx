@@ -158,6 +158,7 @@ export default async function Home() {
             { href: "/publications", title: "Publications", desc: "The Pyongyang Times, DPR Korea and Kumsugangsan — read the PDFs here, plus the latest stamp issues." },
             { href: "/news", title: "News", desc: "KCNA, Rodong Sinmun, Pyongyang Times and more — in full where fetchable, plus KCNA Watch excerpts." },
             { href: "/sources", title: "Mirrored Sources", desc: "Every North Korean source mirrored here, what it provides, and its live status." },
+            { href: "/status", title: "System Status", desc: "Live health of every crawler and scraper, plus the last automated refresh — the mirror maintains itself." },
             { href: "/directory", title: "Directory", desc: "51 official DPRK websites, live-checked, searchable by category and status." },
             { href: "/search", title: "Search", desc: "Search everything — news, recordings, publications, schedule and directory — with filters." },
           ].map((c) => (

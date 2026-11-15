@@ -14,6 +14,7 @@ const LINKS = [
   { href: "/publications", label: "Publications" },
   { href: "/directory", label: "Directory" },
   { href: "/sources", label: "Sources" },
+  { href: "/status", label: "Status" },
 ];
 
 function NavSearch() {

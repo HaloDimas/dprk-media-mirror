@@ -43,6 +43,11 @@ export default function HlsPlayer({
       return () => {
         video.removeEventListener("canplay", onCanPlay);
         video.removeEventListener("error", onError);
+        // Stop playback for real when leaving the page: merely removing
+        // the element does not reliably stop the audio in all browsers.
+        video.pause();
+        video.removeAttribute("src");
+        video.load();
       };
     }
 
@@ -71,6 +76,12 @@ export default function HlsPlayer({
       return () => {
         hls.destroy();
         hlsRef.current = null;
+        // Stop playback for real when leaving the page: hls.destroy()
+        // alone does not pause the media element, so the audio can keep
+        // playing after navigation in some browsers.
+        video.pause();
+        video.removeAttribute("src");
+        video.load();
       };
     }
 

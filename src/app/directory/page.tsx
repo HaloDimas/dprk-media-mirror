@@ -7,34 +7,40 @@ export const metadata = {
 };
 
 function StatusBadge({ status }: { status: DirectoryStatus }) {
+  if (status === "live")
+    return (
+      <span className="rounded bg-emerald-900/70 px-2 py-0.5 text-[11px] font-semibold text-emerald-200">
+        ● Live (verified 15 Nov 2026)
+      </span>
+    );
   if (status === "active")
     return (
       <span className="rounded bg-emerald-900/70 px-2 py-0.5 text-[11px] font-semibold text-emerald-200">
         ● Active (July 2026 list)
       </span>
     );
-  if (status === "mail-only")
-    return (
-      <span className="rounded bg-zinc-800 px-2 py-0.5 text-[11px] font-semibold text-zinc-300">
-        ✉ Mail server only
-      </span>
-    );
-  if (status === "likely-offline")
-    return (
-      <span className="rounded bg-zinc-800 px-2 py-0.5 text-[11px] font-semibold text-zinc-400">
-        ○ Unconfirmed / likely offline
-      </span>
-    );
-  if (status === "unconfirmed")
+  if (status === "flaky")
     return (
       <span className="rounded bg-amber-900/70 px-2 py-0.5 text-[11px] font-semibold text-amber-200">
-        ? URL not confirmed
+        ◐ Active domain, unreachable here
+      </span>
+    );
+  if (status === "dead")
+    return (
+      <span className="rounded bg-red-900/70 px-2 py-0.5 text-[11px] font-semibold text-red-200">
+        ✕ Dead
+      </span>
+    );
+  if (status === "not-a-website")
+    return (
+      <span className="rounded bg-zinc-800 px-2 py-0.5 text-[11px] font-semibold text-zinc-300">
+        — Not a website
       </span>
     );
   return (
-    <span className="rounded bg-amber-900/70 px-2 py-0.5 text-[11px] font-semibold text-amber-200">
-        ◌ Checking…
-      </span>
+    <span className="rounded bg-zinc-800 px-2 py-0.5 text-[11px] font-semibold text-zinc-300">
+      ✉ Mail server only
+    </span>
   );
 }
 
@@ -46,9 +52,11 @@ export default function DirectoryPage() {
         <p className="mt-1 max-w-3xl text-sm text-zinc-400">
           {DIRECTORY_TOTAL} official North Korean websites, grouped by category. This is an informational
           directory — the live TV, radio, news, recordings and publications on this mirror are read and
-          watched on this site&apos;s own pages, not by opening the listed sites. &ldquo;Active&rdquo;
-          means the domain appears on the July 2026 active .kp domains list; it does not claim the site
-          is reachable from every network.
+          watched on this site&apos;s own pages, not by opening the listed sites. &ldquo;Live&rdquo;
+          means the site returned HTTP 200 when checked on 15 Nov 2026; &ldquo;Active domain,
+          unreachable here&rdquo; means the domain is on the July 2026 active .kp list but did not
+          answer from our network (the .kp origin is flaky — retry later). Note: .kp sites only work
+          over plain HTTP, not HTTPS.
         </p>
       </div>
 
@@ -80,9 +88,9 @@ export default function DirectoryPage() {
       ))}
 
       <p className="border-t border-zinc-800 pt-4 text-xs text-zinc-500">
-        Domains are taken from the July 2026 active .kp domains list. Nothing in this directory is a link
-        out to read or watch content — use Live TV, Schedule, News, Radio, Recordings and Publications
-        above for that.
+        Domains are taken from the July 2026 active .kp domains list and live-checked on 15 Nov 2026.
+        Nothing in this directory is a link out to read or watch content — use Live TV, Schedule, News,
+        Radio, Recordings and Publications above for that.
       </p>
     </div>
   );

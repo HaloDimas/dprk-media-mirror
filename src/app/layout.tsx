@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import { Suspense } from "react";
-import Nav from "@/components/Nav";
+import Nav, { NavSearch } from "@/components/Nav";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -27,7 +27,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="flex min-h-full flex-col bg-zinc-950 text-zinc-100">
         <header className="border-b border-zinc-800 bg-zinc-950/95">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-4">
-            <Link href="/" className="flex items-baseline gap-2">
+            <Link href="/" className="flex shrink-0 items-baseline gap-2">
               <span className="text-lg font-bold tracking-tight text-white">
                 DPRK <span className="text-red-500">Media Mirror</span>
               </span>
@@ -47,6 +47,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               }
             >
               <Nav />
+              <div className="flex w-full shrink-0 sm:w-auto">
+                <NavSearch />
+              </div>
             </Suspense>
           </div>
         </header>

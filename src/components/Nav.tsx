@@ -17,7 +17,7 @@ const LINKS = [
   { href: "/status", label: "Status" },
 ];
 
-function NavSearch() {
+export function NavSearch() {
   const router = useRouter();
   const sp = useSearchParams();
   const [q, setQ] = useState(sp.get("q") || "");
@@ -32,7 +32,7 @@ function NavSearch() {
         const query = q.trim();
         router.push(query ? `/search?q=${encodeURIComponent(query)}` : "/search");
       }}
-      className="flex w-full min-w-44 flex-1 items-center sm:w-auto sm:max-w-64"
+      className="flex w-full items-center sm:w-56"
     >
       <input
         type="search"
@@ -51,12 +51,12 @@ export default function Nav() {
   const active = (href: string) =>
     href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/");
   return (
-    <nav className="flex min-w-0 flex-1 flex-wrap items-center gap-1">
+    <nav className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
       {LINKS.map((l) => (
         <Link
           key={l.href}
           href={l.href}
-          className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+          className={`whitespace-nowrap rounded-md px-2.5 py-1.5 text-sm font-medium transition-colors ${
             active(l.href)
               ? "bg-red-700 text-white"
               : "text-zinc-300 hover:bg-zinc-800 hover:text-white"
@@ -65,9 +65,6 @@ export default function Nav() {
           {l.label}
         </Link>
       ))}
-      <div className="ml-auto flex w-full sm:w-auto sm:pl-2">
-        <NavSearch />
-      </div>
     </nav>
   );
 }

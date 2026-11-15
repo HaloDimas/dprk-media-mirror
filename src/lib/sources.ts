@@ -81,7 +81,7 @@ export async function getEpg(channel: ChannelId, date: string): Promise<EpgData>
     return { channel: "Mansudae Television", date, programs: [], source: "snapshot" };
   }
   try {
-    const raw = await fetchJson<RawEpg>(`${KORYO_FRONT}${EPG_ENDPOINT[channel]}?date=${date}`, 1800);
+    const raw = await fetchJson<RawEpg>(`${KORYO_FRONT}${EPG_ENDPOINT[channel]}?date=${date}`, 21600);
     const programs: Program[] = (raw.programs || []).map((p) => ({
       start: p.start,
       end: p.end,
@@ -115,7 +115,7 @@ function toEpoch(d: string): number {
 
 export async function getKnsNews(): Promise<NewsItem[]> {
   try {
-    const raw = await fetchJson<RawKnsItem[]>(`${KORYO_FRONT}/api/news`, 1800);
+    const raw = await fetchJson<RawKnsItem[]>(`${KORYO_FRONT}/api/news`, 3600);
     return raw.map((r) => ({
       id: r.id,
       title: r.title,
@@ -134,7 +134,7 @@ export async function getKnsNews(): Promise<NewsItem[]> {
 
 export async function getKcnaWatchNews(): Promise<NewsItem[]> {
   try {
-    const html = await fetchText(KCNA_WATCH + "/", 1800);
+    const html = await fetchText(KCNA_WATCH + "/", 3600);
     const $ = cheerio.load(html);
     const items: NewsItem[] = [];
     $("#latest_article_wrapper article.clearfix").each((i, el) => {
@@ -455,14 +455,14 @@ const KP_UA =
 // instance is short-lived, so fresh data is picked up when a new instance starts.
 const kpCache = new Map<string, string>();
 
-async function fetchKpText(url: string, revalidate = 1800, attempts = 3): Promise<string> {
+async function fetchKpText(url: string, revalidate = 7200, attempts = 2): Promise<string> {
   const cached = kpCache.get(url);
   if (cached) return cached;
   let lastErr: unknown = null;
   for (let i = 0; i < attempts; i++) {
     try {
       const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 20000);
+      const timer = setTimeout(() => ctrl.abort(), 8000);
       try {
         const res = await fetch(url, {
           headers: { "User-Agent": KP_UA, Accept: "text/html,application/xhtml+xml" },
@@ -1160,7 +1160,7 @@ interface RawMediaList {
 
 export async function getRecordings(): Promise<RecordingItem[]> {
   try {
-    const raw = await fetchJson<RawMediaList>(`${KORYO_FRONT}/api/kctv/media-list`, 3600);
+    const raw = await fetchJson<RawMediaList>(`${KORYO_FRONT}/api/kctv/media-list`, 21600);
     const out: RecordingItem[] = [];
     for (const r of raw.news || []) out.push({ ...r, category: "news" });
     for (const r of raw.activities || []) out.push({ ...r, category: "activities" });
@@ -1183,7 +1183,7 @@ interface RawPublication {
 
 export async function getPublications(): Promise<PublicationItem[]> {
   try {
-    const raw = await fetchJson<RawPublication[]>(`${KORYO_FRONT}/api/publications`, 3600);
+    const raw = await fetchJson<RawPublication[]>(`${KORYO_FRONT}/api/publications`, 21600);
     return raw.map((p) => ({
       id: p.id,
       title: p.title,
@@ -1212,7 +1212,7 @@ interface RawPeriodical {
 
 export async function getPeriodicals(): Promise<PeriodicalItem[]> {
   try {
-    const raw = await fetchJson<RawPeriodical[]>(`${KORYO_FRONT}/api/periodicals`, 3600);
+    const raw = await fetchJson<RawPeriodical[]>(`${KORYO_FRONT}/api/periodicals`, 21600);
     return raw.map((p) => ({
       id: p.id,
       publication: p.publication,

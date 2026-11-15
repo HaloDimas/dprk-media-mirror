@@ -115,6 +115,8 @@ export interface Article {
   excerpt: string;
   blocks: ArticleBlock[];
   note?: string;
+  /** Upstream article URL. Shown as a "read the original" link only when kind is "excerpt". */
+  originalUrl?: string;
 }
 
 export interface KcnwArticle {

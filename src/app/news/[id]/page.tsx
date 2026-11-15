@@ -44,6 +44,18 @@ async function ArticleContent({ params }: { params: Promise<{ id: string }> }) {
         </p>
       )}
 
+      {article.kind === "excerpt" && article.originalUrl && (
+        <a
+          href={article.originalUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-4 inline-flex items-center gap-2 rounded-lg border border-red-800 bg-red-950/40 px-4 py-2.5 text-sm font-medium text-red-200 transition-colors hover:bg-red-900/50"
+        >
+          Read the full article on the original site
+          <span aria-hidden="true">↗</span>
+        </a>
+      )}
+
       {article.image && (
         // eslint-disable-next-line @next/next/no-img-element
         <img src={article.image} alt="" className="mt-4 w-full rounded-xl object-cover" />

@@ -967,6 +967,7 @@ export async function getArticle(id: string): Promise<Article | null> {
         excerpt: item.excerpt,
         blocks: item.excerpt ? [{ type: "text", text: item.excerpt }] : [],
         note: excerptOnlyNote,
+        originalUrl: item.articleUrl,
       };
     }
     return {
@@ -1009,6 +1010,7 @@ export async function getArticle(id: string): Promise<Article | null> {
       blocks: meta.excerpt ? [{ type: "text", text: meta.excerpt }] : [],
       note:
         "Only an excerpt is shown here. The full text needs a live KCNA Watch session — the mirror's session is currently expired or not configured, so the complete article cannot be fetched right now.",
+      originalUrl: meta.url,
     };
   }
   // New .kp sources: look the item up in the combined feed, then fetch its
@@ -1048,6 +1050,7 @@ export async function getArticle(id: string): Promise<Article | null> {
         excerpt: item.excerpt,
         blocks: item.excerpt ? [{ type: "text", text: item.excerpt }] : [],
         note: listOnlyNotes[item.source] ?? "The full text of this article is not available.",
+        originalUrl: item.articleUrl,
       };
     }
     try {

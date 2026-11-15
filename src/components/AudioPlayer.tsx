@@ -6,11 +6,16 @@ import Hls from "hls.js";
 type Status = "idle" | "connecting" | "live" | "paused" | "error";
 
 /**
- * Radio player with real controls: play/pause, volume, mute, a LIVE badge
- * and a clear status (connecting / live / paused / unavailable).
- * HLS audio through our own proxy, same as TV. Only one station plays at a
- * time — the parent flips `active` off when another station starts, and this
- * player pauses itself.
+ * Radio player with real controls: play/pause, volume, mute, a LIVE badge,
+ * a clear status (connecting / live / paused / unavailable), and a volume
+ * BOOST for stations that broadcast very quietly (KCBS measured ~-60 dB
+ * while the other stations are ~-19 dB).
+ *
+ * Boost is done with the Web Audio API: the <audio> element is routed
+ * through a GainNode (up to 2x) and a DynamicsCompressor so a loud
+ * programme cannot clip when boost is on. Only one station plays at a
+ * time — the parent flips `active` off when another station starts, and
+ * this player pauses itself.
  */
 export default function AudioPlayer({
   channel,
@@ -25,16 +30,46 @@ export default function AudioPlayer({
 }) {
   const audioRef = useRef<HTMLAudioElement>(null);
   const hlsRef = useRef<Hls | null>(null);
+  const ctxRef = useRef<AudioContext | null>(null);
+  const gainRef = useRef<GainNode | null>(null);
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
   const [volume, setVolume] = useState(0.8);
   const [muted, setMuted] = useState(false);
+  const [boost, setBoost] = useState(false);
 
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
     setError(null);
     const src = `/api/hls/${channel}/index.m3u8`;
+
+    // Route the element through Web Audio so we can boost above 100%.
+    // Volume is controlled by the GainNode only; the element stays at 1.0.
+    try {
+      const Ctx = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (Ctx) {
+        const ctx = new Ctx();
+        const source = ctx.createMediaElementSource(audio);
+        const gain = ctx.createGain();
+        const comp = ctx.createDynamicsCompressor();
+        comp.threshold.value = -24;
+        comp.knee.value = 30;
+        comp.ratio.value = 12;
+        comp.attack.value = 0.003;
+        comp.release.value = 0.25;
+        source.connect(gain);
+        gain.connect(comp);
+        comp.connect(ctx.destination);
+        ctxRef.current = ctx;
+        gainRef.current = gain;
+        audio.volume = 1;
+      }
+    } catch {
+      // Web Audio unavailable — fall back to the plain element volume.
+      ctxRef.current = null;
+      gainRef.current = null;
+    }
 
     if (audio.canPlayType("application/vnd.apple.mpegurl")) {
       audio.src = src;
@@ -76,6 +111,11 @@ export default function AudioPlayer({
       audio.pause();
       audio.removeAttribute("src");
       audio.load();
+      if (ctxRef.current) {
+        ctxRef.current.close().catch(() => undefined);
+        ctxRef.current = null;
+        gainRef.current = null;
+      }
     };
   }, [channel]);
 
@@ -84,13 +124,19 @@ export default function AudioPlayer({
     if (!active) audioRef.current?.pause();
   }, [active]);
 
-  // Apply volume / mute.
+  // Apply volume / mute / boost through the GainNode (or the element if
+  // Web Audio is unavailable).
   useEffect(() => {
     const audio = audioRef.current;
     if (!audio) return;
-    audio.volume = volume;
-    audio.muted = muted;
-  }, [volume, muted]);
+    const level = muted ? 0 : volume;
+    if (gainRef.current) {
+      gainRef.current.gain.value = level * (boost ? 2 : 1);
+    } else {
+      audio.volume = Math.min(1, level);
+      audio.muted = muted;
+    }
+  }, [volume, muted, boost]);
 
   const handlePlayPause = () => {
     const audio = audioRef.current;
@@ -102,6 +148,11 @@ export default function AudioPlayer({
       setStatus("connecting");
       setError(null);
       onToggle(channel);
+      // Resume the AudioContext in the click handler (user gesture), so
+      // the Web Audio graph is allowed to output sound.
+      if (ctxRef.current && ctxRef.current.state === "suspended") {
+        ctxRef.current.resume().catch(() => undefined);
+      }
       // Direct call in the click handler so the browser counts it as a
       // user gesture (autoplay policy).
       audio.play().catch(() => {
@@ -149,7 +200,7 @@ export default function AudioPlayer({
             <span className="truncate text-xs text-zinc-400">
               {status === "idle" && "Press play to listen live"}
               {status === "connecting" && "Connecting…"}
-              {status === "live" && "Now playing"}
+              {status === "live" && (boost ? "Now playing (boosted ×2)" : "Now playing")}
               {status === "paused" && "Paused"}
               {status === "error" && "Unavailable"}
             </span>
@@ -179,6 +230,19 @@ export default function AudioPlayer({
             <span className="w-8 text-right text-xs text-zinc-500">
               {muted ? 0 : Math.round(volume * 100)}%
             </span>
+            <button
+              type="button"
+              onClick={() => setBoost((b) => !b)}
+              aria-pressed={boost}
+              title={boost ? "Turn off volume boost" : "Boost volume ×2 for quiet stations"}
+              className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide transition-colors ${
+                boost
+                  ? "bg-red-600 text-white"
+                  : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-100"
+              }`}
+            >
+              Boost ×2
+            </button>
           </div>
         </div>
       </div>

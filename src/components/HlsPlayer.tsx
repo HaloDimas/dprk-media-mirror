@@ -5,7 +5,8 @@ import Hls from "hls.js";
 
 /**
  * Live TV player. The video element is fed ONLY our own HLS proxy
- * (/api/hls/<channel>/index.m3u8) — the browser never touches the CDN.
+ * (the Cloudflare Worker when NEXT_PUBLIC_HLS_PROXY is set, else
+ * /api/hls/<channel>/index.m3u8) — the browser never touches the CDN.
  *
  * The live CDN occasionally drops a segment or stalls, which hls.js reports
  * as a fatal error. Instead of giving up (and forcing a page refresh), the
@@ -19,10 +20,19 @@ import Hls from "hls.js";
  * The player detects a slow connection (fragment downloads slower than
  * real-time, or the browser reporting a slow effective connection type)
  * and offers to switch to audio-only.
+ *
+ * Extra features (below the video): a live-edge badge with how far behind
+ * live you are + a "Jump to live" button, playback speed (handy to catch
+ * up to live), picture-in-picture, a screenshot button (the proxy sends
+ * CORS headers, so the frame can be captured), and a "Stats for nerds"
+ * panel (resolution, bitrate, buffer, latency, dropped frames).
  */
 const MAX_RETRIES = 5;
 // A fragment is "slow" when it takes longer to download than it plays.
 const SLOW_FRAG_COUNT = 2;
+// Close enough to the live edge to count as "LIVE".
+const LIVE_EDGE_SECONDS = 10;
+const SPEEDS = [0.5, 0.75, 1, 1.25, 1.5, 2];
 
 export default function HlsPlayer({
   channel,
@@ -48,6 +58,18 @@ export default function HlsPlayer({
   // in the manifest). hls.js loads it; the toggle switches it on/off.
   const [subsAvailable, setSubsAvailable] = useState(false);
   const [subsOn, setSubsOn] = useState(true);
+  // Live-edge + stats (video mode only).
+  const [latencySec, setLatencySec] = useState<number | null>(null);
+  const [speed, setSpeed] = useState(1);
+  const [showStats, setShowStats] = useState(false);
+  const [stats, setStats] = useState<{
+    resolution: string;
+    bitrate: string;
+    bufferSec: string;
+    dropped: string;
+  }>({ resolution: "—", bitrate: "—", bufferSec: "—", dropped: "—" });
+  const [pipActive, setPipActive] = useState(false);
+  const [shotMsg, setShotMsg] = useState<string | null>(null);
 
   const toggleSubs = () => {
     const hls = hlsRef.current;
@@ -56,6 +78,141 @@ export default function HlsPlayer({
     hls.subtitleTrack = next ? 0 : -1;
     setSubsOn(next);
   };
+
+  /** Seconds behind the live edge, or null when unknown. */
+  const getLatency = (): number | null => {
+    const media = mediaRef.current;
+    if (!media) return null;
+    const hls = hlsRef.current;
+    if (hls) {
+      const edge = hls.liveSyncPosition;
+      if (typeof edge === "number" && isFinite(edge)) {
+        return Math.max(0, edge - media.currentTime);
+      }
+      return null;
+    }
+    // Safari native HLS: use the end of the seekable range as the edge.
+    if (media.seekable.length > 0) {
+      const edge = media.seekable.end(media.seekable.length - 1);
+      return Math.max(0, edge - media.currentTime);
+    }
+    return null;
+  };
+
+  const jumpToLive = () => {
+    const media = mediaRef.current;
+    if (!media) return;
+    const hls = hlsRef.current;
+    if (hls && typeof hls.liveSyncPosition === "number" && isFinite(hls.liveSyncPosition)) {
+      media.currentTime = hls.liveSyncPosition;
+    } else if (media.seekable.length > 0) {
+      media.currentTime = media.seekable.end(media.seekable.length - 1);
+    }
+    media.play().catch(() => undefined);
+  };
+
+  const changeSpeed = (rate: number) => {
+    const media = mediaRef.current;
+    if (!media) return;
+    media.playbackRate = rate;
+    setSpeed(rate);
+  };
+
+  const togglePip = async () => {
+    const media = mediaRef.current as HTMLVideoElement | null;
+    if (!media) return;
+    try {
+      if (document.pictureInPictureElement) {
+        await document.exitPictureInPicture();
+      } else if (media.requestPictureInPicture) {
+        await media.requestPictureInPicture();
+      }
+    } catch {
+      // PiP unsupported or rejected — nothing to do.
+    }
+  };
+
+  const takeScreenshot = () => {
+    const media = mediaRef.current as HTMLVideoElement | null;
+    if (!media || !media.videoWidth) {
+      setShotMsg("No video frame to capture yet.");
+      return;
+    }
+    try {
+      const canvas = document.createElement("canvas");
+      canvas.width = media.videoWidth;
+      canvas.height = media.videoHeight;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("no canvas");
+      ctx.drawImage(media, 0, 0, canvas.width, canvas.height);
+      canvas.toBlob((blob) => {
+        if (!blob) {
+          setShotMsg("Screenshot failed.");
+          return;
+        }
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        const stamp = new Date().toISOString().replace(/[:.]/g, "-");
+        a.href = url;
+        a.download = `${channel}-${stamp}.png`;
+        a.click();
+        URL.revokeObjectURL(url);
+        setShotMsg("Screenshot saved.");
+        setTimeout(() => setShotMsg(null), 3000);
+      }, "image/png");
+    } catch {
+      setShotMsg("Screenshot blocked by the browser (CORS).");
+      setTimeout(() => setShotMsg(null), 3000);
+    }
+  };
+
+  // Live-edge latency + stats, refreshed once a second (video mode only).
+  useEffect(() => {
+    if (audioOnly) return;
+    const id = setInterval(() => {
+      const media = mediaRef.current;
+      if (!media) return;
+      setLatencySec(getLatency());
+      if (!showStats) return;
+      const hls = hlsRef.current;
+      let bitrate = "—";
+      if (hls && hls.levels.length > 0) {
+        const lvl = hls.levels[hls.currentLevel] ?? hls.levels[0];
+        if (lvl?.bitrate) bitrate = `${(lvl.bitrate / 1_000_000).toFixed(1)} Mbps`;
+      }
+      let bufferSec = "—";
+      if (media.buffered.length > 0) {
+        const end = media.buffered.end(media.buffered.length - 1);
+        bufferSec = `${Math.max(0, end - media.currentTime).toFixed(1)}s`;
+      }
+      const q = (media as HTMLVideoElement).getVideoPlaybackQuality?.();
+      const video = media as HTMLVideoElement;
+      setStats({
+        resolution:
+          video.videoWidth && video.videoHeight
+            ? `${video.videoWidth}×${video.videoHeight}`
+            : "—",
+        bitrate,
+        bufferSec,
+        dropped: q ? String(q.droppedVideoFrames) : "—",
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [audioOnly, showStats]);
+
+  // Track picture-in-picture state.
+  useEffect(() => {
+    const media = mediaRef.current as HTMLVideoElement | null;
+    if (!media) return;
+    const onEnter = () => setPipActive(true);
+    const onLeave = () => setPipActive(false);
+    media.addEventListener("enterpictureinpicture", onEnter);
+    media.addEventListener("leavepictureinpicture", onLeave);
+    return () => {
+      media.removeEventListener("enterpictureinpicture", onEnter);
+      media.removeEventListener("leavepictureinpicture", onLeave);
+    };
+  }, [audioOnly]);
 
   useEffect(() => {
     const media = mediaRef.current;
@@ -68,6 +225,8 @@ export default function HlsPlayer({
     slowFragsRef.current = 0;
     setSubsAvailable(false);
     setSubsOn(true);
+    setLatencySec(null);
+    setSpeed(1);
     // Data saver: the KCBS radio stream (~0.1 Mbps) instead of the TV video.
     // HLS base: a Cloudflare Worker proxy when NEXT_PUBLIC_HLS_PROXY is set
     // (free, unmetered bandwidth — Vercel Hobby caps origin transfer at
@@ -322,87 +481,184 @@ export default function HlsPlayer({
     );
   }
 
+  const isLive = latencySec !== null && latencySec <= LIVE_EDGE_SECONDS;
+  const behind = latencySec !== null && latencySec > LIVE_EDGE_SECONDS;
+
   return (
-    <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black">
-      <video
-        ref={(el) => {
-          mediaRef.current = el;
-        }}
-        className="h-full w-full"
-        controls
-        playsInline
-        poster={poster}
-        aria-label={title}
-      />
-      {subsAvailable && (
+    <div className="w-full">
+      <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black">
+        <video
+          ref={(el) => {
+            mediaRef.current = el;
+          }}
+          className="h-full w-full"
+          controls
+          playsInline
+          crossOrigin="anonymous"
+          poster={poster}
+          aria-label={title}
+        />
+        {subsAvailable && (
+          <button
+            type="button"
+            onClick={toggleSubs}
+            aria-pressed={subsOn}
+            title={subsOn ? "Turn subtitles off" : "Turn subtitles on (English)"}
+            className={`absolute right-3 top-3 z-10 rounded-md px-2.5 py-1 text-xs font-bold tracking-wide shadow ${
+              subsOn ? "bg-red-700 text-white" : "bg-black/70 text-zinc-300 hover:bg-black/90"
+            }`}
+          >
+            CC
+          </button>
+        )}
         <button
           type="button"
-          onClick={toggleSubs}
-          aria-pressed={subsOn}
-          title={subsOn ? "Turn subtitles off" : "Turn subtitles on (English)"}
-          className={`absolute right-3 top-3 z-10 rounded-md px-2.5 py-1 text-xs font-bold tracking-wide shadow ${
-            subsOn ? "bg-red-700 text-white" : "bg-black/70 text-zinc-300 hover:bg-black/90"
-          }`}
+          onClick={() => setAudioOnly(true)}
+          title="Data saver: switch to audio only (uses ~100x less data)"
+          className="absolute left-3 top-3 z-10 rounded-md bg-black/70 px-2.5 py-1 text-xs font-bold tracking-wide text-zinc-300 shadow hover:bg-black/90"
         >
-          CC
+          Data saver
         </button>
-      )}
-      <button
-        type="button"
-        onClick={() => setAudioOnly(true)}
-        title="Data saver: switch to audio only (uses ~100x less data)"
-        className="absolute left-3 top-3 z-10 rounded-md bg-black/70 px-2.5 py-1 text-xs font-bold tracking-wide text-zinc-300 shadow hover:bg-black/90"
-      >
-        Data saver
-      </button>
-      {slowDetected && !error && (
-        <div className="absolute inset-x-0 top-0 z-10 flex flex-wrap items-center justify-center gap-2 bg-amber-950/90 px-4 py-2 text-center text-xs text-amber-200">
-          <span>Slow connection detected — this stream may buffer.</span>
+        {slowDetected && !error && (
+          <div className="absolute inset-x-0 top-0 z-10 flex flex-wrap items-center justify-center gap-2 bg-amber-950/90 px-4 py-2 text-center text-xs text-amber-200">
+            <span>Slow connection detected — this stream may buffer.</span>
+            <button
+              type="button"
+              onClick={() => setAudioOnly(true)}
+              className="rounded bg-amber-700 px-2 py-0.5 font-bold text-white hover:bg-amber-600"
+            >
+              Switch to audio only
+            </button>
+            <button
+              type="button"
+              onClick={() => setSlowDetected(false)}
+              aria-label="Dismiss slow connection warning"
+              className="rounded px-1.5 py-0.5 text-amber-300 hover:bg-amber-900"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+        {loading && !error && !reconnecting && (
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/60 text-sm text-zinc-300">
+            Connecting to live stream…
+          </div>
+        )}
+        {reconnecting && !error && (
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/60 text-sm text-zinc-300">
+            <p>Reconnecting to live stream…</p>
+            <p className="text-xs text-zinc-500">
+              Attempt {retryAttempt} of {MAX_RETRIES} — no need to refresh.
+            </p>
+          </div>
+        )}
+        {error && (
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/80 px-6 text-center">
+            <p className="text-sm text-red-300">{error}</p>
+            <p className="text-xs text-zinc-400">
+              The channel may be off air right now. Check the programme guide for broadcast hours.
+            </p>
+            <button
+              type="button"
+              onClick={handleRetryClick}
+              className="mt-1 rounded-lg bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
+            >
+              Retry stream
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Player extras: live edge, speed, PiP, screenshot, stats. */}
+      <div className="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-2">
+        <span
+          className={`inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-xs font-bold ${
+            isLive ? "bg-red-700 text-white" : "bg-zinc-800 text-zinc-300"
+          }`}
+          title={isLive ? "You are at the live edge" : "You are behind the live edge"}
+        >
+          <span className={`h-1.5 w-1.5 rounded-full ${isLive ? "animate-pulse bg-white" : "bg-zinc-400"}`} />
+          {isLive ? "LIVE" : latencySec !== null ? `${Math.round(latencySec)}s behind live` : "LIVE"}
+        </span>
+        {behind && (
           <button
             type="button"
-            onClick={() => setAudioOnly(true)}
-            className="rounded bg-amber-700 px-2 py-0.5 font-bold text-white hover:bg-amber-600"
+            onClick={jumpToLive}
+            className="rounded bg-red-700 px-2.5 py-1 text-xs font-bold text-white hover:bg-red-600"
           >
-            Switch to audio only
+            Jump to live
+          </button>
+        )}
+        <label className="ml-1 flex items-center gap-1.5 text-xs text-zinc-400">
+          Speed
+          <select
+            value={speed}
+            onChange={(e) => changeSpeed(Number(e.target.value))}
+            className="rounded border border-zinc-700 bg-zinc-800 px-1.5 py-1 text-xs text-white"
+            aria-label="Playback speed"
+          >
+            {SPEEDS.map((s) => (
+              <option key={s} value={s}>
+                {s === 1 ? "1×" : `${s}×`}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            type="button"
+            onClick={takeScreenshot}
+            title="Save the current frame as a PNG"
+            className="rounded border border-zinc-700 bg-zinc-800 px-2.5 py-1 text-xs font-medium text-zinc-200 hover:bg-zinc-700"
+          >
+            📷 Screenshot
           </button>
           <button
             type="button"
-            onClick={() => setSlowDetected(false)}
-            aria-label="Dismiss slow connection warning"
-            className="rounded px-1.5 py-0.5 text-amber-300 hover:bg-amber-900"
+            onClick={togglePip}
+            aria-pressed={pipActive}
+            title={pipActive ? "Exit picture-in-picture" : "Picture-in-picture"}
+            className={`rounded border px-2.5 py-1 text-xs font-medium ${
+              pipActive
+                ? "border-red-700 bg-red-700 text-white"
+                : "border-zinc-700 bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
+            }`}
           >
-            ✕
+            PiP
           </button>
-        </div>
-      )}
-      {loading && !error && !reconnecting && (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/60 text-sm text-zinc-300">
-          Connecting to live stream…
-        </div>
-      )}
-      {reconnecting && !error && (
-        <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/60 text-sm text-zinc-300">
-          <p>Reconnecting to live stream…</p>
-          <p className="text-xs text-zinc-500">
-            Attempt {retryAttempt} of {MAX_RETRIES} — no need to refresh.
-          </p>
-        </div>
-      )}
-      {error && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/80 px-6 text-center">
-          <p className="text-sm text-red-300">{error}</p>
-          <p className="text-xs text-zinc-400">
-            The channel may be off air right now. Check the programme guide for broadcast hours.
-          </p>
           <button
             type="button"
-            onClick={handleRetryClick}
-            className="mt-1 rounded-lg bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
+            onClick={() => setShowStats((v) => !v)}
+            aria-pressed={showStats}
+            title="Show stream stats (resolution, bitrate, buffer, latency)"
+            className={`rounded border px-2.5 py-1 text-xs font-medium ${
+              showStats
+                ? "border-red-700 bg-red-700 text-white"
+                : "border-zinc-700 bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
+            }`}
           >
-            Retry stream
+            Stats
           </button>
         </div>
+      </div>
+      {shotMsg && (
+        <p className="mt-1.5 text-xs text-zinc-400">{shotMsg}</p>
       )}
+      {showStats && (
+        <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-xs sm:grid-cols-4">
+          <p><span className="text-zinc-500">Resolution: </span><span className="text-zinc-200">{stats.resolution}</span></p>
+          <p><span className="text-zinc-500">Bitrate: </span><span className="text-zinc-200">{stats.bitrate}</span></p>
+          <p><span className="text-zinc-500">Buffer: </span><span className="text-zinc-200">{stats.bufferSec}</span></p>
+          <p><span className="text-zinc-500">Behind live: </span><span className="text-zinc-200">{latencySec !== null ? `${Math.round(latencySec)}s` : "—"}</span></p>
+          <p><span className="text-zinc-500">Dropped frames: </span><span className="text-zinc-200">{stats.dropped}</span></p>
+          <p><span className="text-zinc-500">Speed: </span><span className="text-zinc-200">{speed}×</span></p>
+          <p><span className="text-zinc-500">Channel: </span><span className="text-zinc-200">{channel}</span></p>
+          <p><span className="text-zinc-500">Source: </span><span className="text-zinc-200">{(process.env.NEXT_PUBLIC_HLS_PROXY || "").replace(/\/$/, "") ? "Cloudflare Worker" : "Vercel /api/hls"}</span></p>
+        </div>
+      )}
+      <p className="mt-1.5 text-[11px] text-zinc-500">
+        Shortcuts (when the video is focused): Space play/pause · F fullscreen · M mute · ←/→ seek · ↑/↓ volume.
+      </p>
     </div>
   );
 }

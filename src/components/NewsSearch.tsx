@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { NewsItem } from "@/lib/types";
 
 type DateRange = "all" | "today" | "week";
@@ -11,27 +11,59 @@ export default function NewsSearch({ items }: { items: NewsItem[] }) {
   const [source, setSource] = useState<string>("all");
   const [range, setRange] = useState<DateRange>("all");
   const [sort, setSort] = useState<"latest" | "oldest">("latest");
+  // Rodong Sinmun loads in the background: the fast sources (KCNA etc.)
+  // render first, then Rodong's articles are merged in when its slow server
+  // finally responds. Rodong is never skipped.
+  const [rodongItems, setRodongItems] = useState<NewsItem[]>([]);
+  const [rodongLoading, setRodongLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/news-rodong")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d: { items?: NewsItem[] } | null) => {
+        if (!cancelled && d?.items) setRodongItems(d.items);
+      })
+      .catch(() => undefined)
+      .finally(() => {
+        if (!cancelled) setRodongLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const allItems = useMemo(() => {
+    const seen = new Set<string>();
+    const merged: NewsItem[] = [];
+    for (const it of [...items, ...rodongItems]) {
+      if (seen.has(it.id)) continue;
+      seen.add(it.id);
+      merged.push(it);
+    }
+    return merged;
+  }, [items, rodongItems]);
 
   const sourceCounts = useMemo(() => {
     const map = new Map<string, number>();
-    for (const it of items) map.set(it.source, (map.get(it.source) ?? 0) + 1);
+    for (const it of allItems) map.set(it.source, (map.get(it.source) ?? 0) + 1);
     return [...map.entries()].sort((a, b) => b[1] - a[1]);
-  }, [items]);
+  }, [allItems]);
 
   const counts = useMemo(() => {
     const now = Date.now();
     const day = 86400000;
     return {
-      today: items.filter((i) => i.dateValue > now - day).length,
-      week: items.filter((i) => i.dateValue > now - 7 * day).length,
+      today: allItems.filter((i) => i.dateValue > now - day).length,
+      week: allItems.filter((i) => i.dateValue > now - 7 * day).length,
     };
-  }, [items]);
+  }, [allItems]);
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
     const now = Date.now();
     const day = 86400000;
-    const list = items.filter((it) => {
+    const list = allItems.filter((it) => {
       if (source !== "all" && it.source !== source) return false;
       if (range === "today" && it.dateValue < now - day) return false;
       if (range === "week" && it.dateValue < now - 7 * day) return false;
@@ -41,7 +73,7 @@ export default function NewsSearch({ items }: { items: NewsItem[] }) {
     });
     list.sort((a, b) => (sort === "latest" ? b.dateValue - a.dateValue : a.dateValue - b.dateValue));
     return list;
-  }, [items, q, source, range, sort]);
+  }, [allItems, q, source, range, sort]);
 
   return (
     <div>
@@ -60,7 +92,7 @@ export default function NewsSearch({ items }: { items: NewsItem[] }) {
             onChange={(e) => setSource(e.target.value)}
             className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-2 text-sm text-zinc-100"
           >
-            <option value="all">All sources ({items.length})</option>
+            <option value="all">All sources ({allItems.length})</option>
             {sourceCounts.map(([s, n]) => (
               <option key={s} value={s}>
                 {s} ({n})
@@ -104,11 +136,14 @@ export default function NewsSearch({ items }: { items: NewsItem[] }) {
       </div>
 
       <p className="mt-3 text-xs text-zinc-500">
-        {filtered.length} of {items.length} articles. KNS, KCNA, Rodong Sinmun, Pyongyang Times, Voice
+        {filtered.length} of {allItems.length} articles. KNS, KCNA, Rodong Sinmun, Pyongyang Times, Voice
         of Korea and Korean Architecture articles open in full on this site. KCNA Watch articles open
         in full while the mirror&apos;s KCNA Watch session is live — if the session has expired, the
         excerpt is shown instead. Minju Joson, Naenara, Youth Sinmun and Ryugyong items show the
         headline and date — their article pages cannot be fetched (see each article page for why).
+        {rodongLoading && (
+          <span className="ml-2 text-zinc-400">Loading Rodong Sinmun in the background…</span>
+        )}
       </p>
 
       <ul className="mt-4 space-y-3">

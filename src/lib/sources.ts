@@ -422,11 +422,13 @@ export async function getKcnwLatest(
 }
 
 export async function getAllNews(): Promise<NewsItem[]> {
+  // Rodong is NOT in this list on purpose: its server is the slowest and
+  // would hold up every other source. Rodong loads separately in the
+  // background (see /api/news-rodong) and is merged in on the news page.
   const [kns, kcna, ...rest] = await Promise.all([
     getKnsNews(),
     getKcnaWatchNews(),
     getKcnaNews(),
-    getRodongNews(),
     getMinjuNews(),
     getPyongyangTimesNews(),
     getNaenaraNews(),
@@ -455,14 +457,19 @@ const KP_UA =
 // instance is short-lived, so fresh data is picked up when a new instance starts.
 const kpCache = new Map<string, string>();
 
-async function fetchKpText(url: string, revalidate = 7200, attempts = 2): Promise<string> {
+async function fetchKpText(
+  url: string,
+  revalidate = 7200,
+  attempts = 1,
+  timeoutMs = 5000,
+): Promise<string> {
   const cached = kpCache.get(url);
   if (cached) return cached;
   let lastErr: unknown = null;
   for (let i = 0; i < attempts; i++) {
     try {
       const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 8000);
+      const timer = setTimeout(() => ctrl.abort(), timeoutMs);
       try {
         const res = await fetch(url, {
           headers: { "User-Agent": KP_UA, Accept: "text/html,application/xhtml+xml" },
@@ -551,7 +558,10 @@ export async function getKcnaNews(): Promise<NewsItem[]> {
 // --- Rodong Sinmun (Korean) ---
 export async function getRodongNews(): Promise<NewsItem[]> {
   try {
-    const html = await fetchKpText("http://www.rodong.rep.kp/ko/");
+    // Rodong is slow/flaky and its homepage is ~4MB — give it a long
+    // timeout and a retry. It runs in the background (see /api/news-rodong),
+    // so the wait never blocks the page; it is never skipped.
+    const html = await fetchKpText("http://www.rodong.rep.kp/ko/", 7200, 2, 20000);
     const $ = cheerio.load(html);
     const items: NewsItem[] = [];
     const seen = new Set<string>();

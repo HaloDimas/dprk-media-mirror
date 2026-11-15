@@ -1,15 +1,30 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { connection } from "next/server";
 import NewsSearch from "@/components/NewsSearch";
+import { SkeletonRow } from "@/components/LoadingScreen";
 import { getAllNews } from "@/lib/sources";
 
 // This page depends on live .kp data (Rodong's homepage is ~4MB, over Next.js's
 // 2MB data-cache limit), so it renders at request time, like the home page.
 export const instant = false;
 
+/** Article list, streamed in separately so the page header renders
+ *  instantly instead of waiting up to seconds for the slow .kp sources. */
+async function NewsList() {
+  const items = await getAllNews();
+  if (items.length === 0) {
+    return (
+      <p className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-6 text-sm text-zinc-400">
+        News is temporarily unavailable. Please try again later.
+      </p>
+    );
+  }
+  return <NewsSearch items={items} />;
+}
+
 export default async function NewsPage() {
   await connection();
-  const items = await getAllNews();
   return (
     <div className="space-y-5">
       <div>
@@ -29,13 +44,20 @@ export default async function NewsPage() {
           </Link>
         </p>
       </div>
-      {items.length === 0 ? (
-        <p className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-6 text-sm text-zinc-400">
-          News is temporarily unavailable. Please try again later.
-        </p>
-      ) : (
-        <NewsSearch items={items} />
-      )}
+      <Suspense
+        fallback={
+          <div className="space-y-3">
+            <SkeletonRow />
+            <SkeletonRow />
+            <SkeletonRow />
+            <SkeletonRow />
+            <SkeletonRow />
+            <SkeletonRow />
+          </div>
+        }
+      >
+        <NewsList />
+      </Suspense>
     </div>
   );
 }

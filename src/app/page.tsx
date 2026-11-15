@@ -1,25 +1,47 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { connection } from "next/server";
 import HlsPlayer from "@/components/HlsPlayer";
+import LatestNewsClient from "@/components/LatestNewsClient";
+import { SkeletonRow } from "@/components/LoadingScreen";
 import { getAllNews, getEpg } from "@/lib/sources";
 import { findNowNext, nowPyt, todayPyt } from "@/lib/types";
 
 // This page depends on the current time, so it renders at request time.
 export const instant = false;
 
+/** Latest-news section, streamed in separately so the page does not wait
+ *  for the slow .kp news sources (Rodong can take seconds). The hero and
+ *  Explore sections render immediately; this fills in when ready. Rodong
+ *  Sinmun is merged in on the client from /api/news-rodong, so it is
+ *  never skipped. */
+async function LatestNews() {
+  const news = await getAllNews();
+  return (
+    <section>
+      <div className="mb-3 flex items-baseline justify-between">
+        <h2 className="text-lg font-bold text-white">Latest News</h2>
+        <Link href="/news" className="text-sm text-red-400 hover:underline">
+          All news →
+        </Link>
+      </div>
+      <LatestNewsClient items={news} />
+    </section>
+  );
+}
+
 export default async function Home() {
   // "Today" depends on the current time, so this page renders per request.
+  // Only the fast EPG is awaited here — the news streams in via Suspense.
   await connection();
   const date = todayPyt();
-  const [kctv, sports, ryong, news] = await Promise.all([
+  const [kctv, sports, ryong] = await Promise.all([
     getEpg("kctv", date),
     getEpg("sports", date),
     getEpg("ryongnamsan", date),
-    getAllNews(),
   ]);
   const nowTime = nowPyt();
   const { now, next } = findNowNext(kctv.programs, nowTime);
-  const latest = news.slice(0, 6);
 
   const channelNow = (
     [
@@ -104,7 +126,7 @@ export default async function Home() {
               ))}
             </ul>
             <p className="mt-3 border-t border-zinc-800 pt-3 text-xs text-zinc-500">
-              {news.length} articles mirrored from {new Set(news.map((n) => n.source)).size} news sources —{" "}
+              News mirrored from 11 sources —{" "}
               <Link href="/sources" className="text-red-400 hover:underline">
                 see all sources →
               </Link>
@@ -113,39 +135,23 @@ export default async function Home() {
         </div>
       </section>
 
-      <section>
-        <div className="mb-3 flex items-baseline justify-between">
-          <h2 className="text-lg font-bold text-white">Latest News</h2>
-          <Link href="/news" className="text-sm text-red-400 hover:underline">
-            All news →
-          </Link>
-        </div>
-        {latest.length === 0 ? (
-          <p className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-6 text-sm text-zinc-400">
-            News is temporarily unavailable. Please try again later.
-          </p>
-        ) : (
-          <ul className="grid gap-3 md:grid-cols-2">
-            {latest.map((it) => (
-              <li key={it.id} className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/60">
-                <Link href={`/news/${it.id}`} className="flex gap-3 p-4 hover:bg-zinc-800/50">
-                  {it.image && (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={it.image} alt="" className="hidden h-16 w-24 shrink-0 rounded-md object-cover sm:block" />
-                  )}
-                  <div className="min-w-0">
-                    <div className="flex gap-2 text-xs">
-                      <span className="rounded bg-zinc-800 px-2 py-0.5 text-zinc-300">{it.source}</span>
-                      <span className="text-zinc-500">{it.date}</span>
-                    </div>
-                    <h3 className="mt-1 text-sm font-medium leading-snug text-zinc-100">{it.title}</h3>
-                  </div>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        )}
-      </section>
+      <Suspense
+        fallback={
+          <section>
+            <div className="mb-3 flex items-baseline justify-between">
+              <h2 className="text-lg font-bold text-white">Latest News</h2>
+              <Link href="/news" className="text-sm text-red-400 hover:underline">
+                All news →
+              </Link>
+            </div>
+            <SkeletonRow />
+            <SkeletonRow />
+            <SkeletonRow />
+          </section>
+        }
+      >
+        <LatestNews />
+      </Suspense>
 
       <section>
         <h2 className="mb-3 text-lg font-bold text-white">Explore</h2>

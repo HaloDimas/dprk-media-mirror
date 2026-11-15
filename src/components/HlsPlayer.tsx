@@ -310,6 +310,20 @@ export default function HlsPlayer({
     };
     media.addEventListener("playing", onPlaying);
 
+    // Resuming after a pause can leave the player far behind the live edge:
+    // the segments at that position have already expired from the live
+    // playlist, so playing them stalls into a reconnect loop that only a
+    // page refresh fixes. Jump to the live edge instead.
+    const onPlay = () => {
+      if (media.currentTime > 0) {
+        const lat = getLatency();
+        if (lat !== null && lat > 30) {
+          jumpToLive();
+        }
+      }
+    };
+    media.addEventListener("play", onPlay);
+
     const initHls = () => {
       if (stopped) return;
       // Small buffer now that streams are stable through the Cloudflare
@@ -330,6 +344,19 @@ export default function HlsPlayer({
         setRetryAttempt(0);
         setReconnecting(false);
         setLoading(false);
+        // If the media is stuck at a stale position (e.g. after a long
+        // pause the live playlist moved on and those segments expired),
+        // seek to the live edge instead of replaying expired segments —
+        // otherwise the player loops through fatal errors and only a
+        // page refresh recovers it.
+        if (
+          media.currentTime > 0 &&
+          typeof hls.liveSyncPosition === "number" &&
+          isFinite(hls.liveSyncPosition) &&
+          media.currentTime < hls.liveSyncPosition - 30
+        ) {
+          media.currentTime = hls.liveSyncPosition;
+        }
         media.play().catch(() => undefined);
       });
       // Slow-connection detection: if a fragment takes longer to download
@@ -411,6 +438,7 @@ export default function HlsPlayer({
         media.removeEventListener("canplay", onCanPlay);
         media.removeEventListener("error", onMediaError);
         media.removeEventListener("playing", onPlaying);
+        media.removeEventListener("play", onPlay);
         // Stop playback for real when leaving the page: merely removing
         // the element does not reliably stop the audio in all browsers.
         media.pause();
@@ -426,6 +454,7 @@ export default function HlsPlayer({
         clearRetryTimer();
         destroyHls();
         media.removeEventListener("playing", onPlaying);
+        media.removeEventListener("play", onPlay);
         // Stop playback for real when leaving the page: hls.destroy()
         // alone does not pause the media element, so the audio can keep
         // playing after navigation in some browsers.

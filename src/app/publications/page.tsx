@@ -1,9 +1,13 @@
 import PublicationsBrowser from "@/components/PublicationsBrowser";
-import { getPeriodicals, getPublications } from "@/lib/sources";
+import { getPeriodicals, getPublications, getStamps } from "@/lib/sources";
 
 
 export default async function PublicationsPage() {
-  const [publications, periodicals] = await Promise.all([getPublications(), getPeriodicals()]);
+  const [publications, periodicals, stamps] = await Promise.all([
+    getPublications(),
+    getPeriodicals(),
+    getStamps(),
+  ]);
   return (
     <div className="space-y-5">
       <div>
@@ -19,7 +23,7 @@ export default async function PublicationsPage() {
           Publications are temporarily unavailable. Please try again later.
         </p>
       ) : (
-        <PublicationsBrowser publications={publications} periodicals={periodicals} />
+        <PublicationsBrowser publications={publications} periodicals={periodicals} stamps={stamps} />
       )}
     </div>
   );

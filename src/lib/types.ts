@@ -71,6 +71,19 @@ export const RADIO_STATIONS = [
   { id: "pyfm", name: "Pyongyang FM", korean: "평양방송", hls: "pyfm" },
 ] as const;
 
+export type NewsSource =
+  | "KNS"
+  | "KCNA Watch"
+  | "KCNA"
+  | "Rodong Sinmun"
+  | "Minju Joson"
+  | "Pyongyang Times"
+  | "Naenara"
+  | "Youth Sinmun"
+  | "Ryugyong"
+  | "Voice of Korea"
+  | "Korean Architecture";
+
 export interface NewsItem {
   id: string;
   title: string;
@@ -78,8 +91,12 @@ export interface NewsItem {
   date: string; // display string
   dateValue: number; // ms epoch for sorting
   image: string | null; // proxied image URL on our own site
-  source: "KNS" | "KCNA Watch";
+  source: NewsSource;
   kind: "full" | "excerpt";
+  /** Upstream article URL (server-side only — never rendered as a link out). */
+  articleUrl?: string;
+  /** "en" | "ko" — the article's language. */
+  lang?: "en" | "ko";
   // KNS only:
   knsLink?: string;
 }
@@ -93,11 +110,32 @@ export interface Article {
   title: string;
   date: string;
   image: string | null;
-  source: "KNS" | "KCNA Watch";
+  source: NewsSource;
   kind: "full" | "excerpt";
   excerpt: string;
   blocks: ArticleBlock[];
   note?: string;
+}
+
+export interface KcnwArticle {
+  /** Stable id for our own article page: "kcnw-" + base64url(JSON {u,t,d,e,i}). */
+  id: string;
+  title: string;
+  url: string; // upstream kcnawatch.org article URL (server-side only)
+  excerpt: string;
+  date: string;
+  dateValue: number;
+  image: string | null; // proxied image URL on our own site
+}
+
+export interface StampIssue {
+  stockNo: string;
+  title: string;
+  date: string;
+  dateValue: number;
+  pdf: string | null; // proxied PDF URL on our own site
+  detail: string | null; // proxied detail-page URL (served through /api/img proxy is not used; detail opens on our site)
+  detailUrl?: string; // upstream detail URL (server-side only)
 }
 
 export interface RecordingItem {

@@ -10,19 +10,38 @@ const CATS = [
   { id: "society", label: "Society & Culture" },
 ] as const;
 
+const CAT_LABEL: Record<string, string> = {
+  news: "8pm News",
+  activities: "Revolutionary Activities",
+  society: "Society & Culture",
+};
+
 export default function RecordingsBrowser({ items }: { items: RecordingItem[] }) {
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<(typeof CATS)[number]["id"]>("all");
+  const [from, setFrom] = useState("");
+  const [to, setTo] = useState("");
+  const [sort, setSort] = useState<"newest" | "oldest">("newest");
   const [playing, setPlaying] = useState<RecordingItem | null>(null);
+
+  const counts = useMemo(() => {
+    const c: Record<string, number> = { all: items.length, news: 0, activities: 0, society: 0 };
+    for (const it of items) c[it.category] = (c[it.category] ?? 0) + 1;
+    return c;
+  }, [items]);
 
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    return items.filter(
-      (it) =>
-        (cat === "all" || it.category === cat) &&
-        (!needle || it.title.toLowerCase().includes(needle) || it.date.includes(needle))
-    );
-  }, [items, q, cat]);
+    const list = items.filter((it) => {
+      if (cat !== "all" && it.category !== cat) return false;
+      if (from && it.date < from) return false;
+      if (to && it.date > to) return false;
+      if (needle && !it.title.toLowerCase().includes(needle) && !it.date.includes(needle)) return false;
+      return true;
+    });
+    list.sort((a, b) => (sort === "newest" ? (a.date < b.date ? 1 : -1) : a.date < b.date ? -1 : 1));
+    return list;
+  }, [items, q, cat, from, to, sort]);
 
   return (
     <div>
@@ -54,7 +73,7 @@ export default function RecordingsBrowser({ items }: { items: RecordingItem[] })
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search recordings…"
-          className="min-w-56 flex-1 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500"
+          className="min-w-56 flex-1 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
         />
         {CATS.map((c) => (
           <button
@@ -65,19 +84,67 @@ export default function RecordingsBrowser({ items }: { items: RecordingItem[] })
             }`}
           >
             {c.label}
+            <span className="ml-1.5 text-xs opacity-70">{counts[c.id] ?? 0}</span>
           </button>
         ))}
       </div>
 
+      <div className="mt-2 flex flex-wrap items-center gap-3">
+        <label className="flex items-center gap-2 text-xs text-zinc-400">
+          From
+          <input
+            type="date"
+            value={from}
+            onChange={(e) => setFrom(e.target.value)}
+            className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100 [color-scheme:dark]"
+          />
+        </label>
+        <label className="flex items-center gap-2 text-xs text-zinc-400">
+          To
+          <input
+            type="date"
+            value={to}
+            onChange={(e) => setTo(e.target.value)}
+            className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100 [color-scheme:dark]"
+          />
+        </label>
+        <label className="ml-auto flex items-center gap-2 text-xs text-zinc-400">
+          Sort
+          <select
+            value={sort}
+            onChange={(e) => setSort(e.target.value as "newest" | "oldest")}
+            className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100"
+          >
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+          </select>
+        </label>
+        {(from || to) && (
+          <button
+            onClick={() => {
+              setFrom("");
+              setTo("");
+            }}
+            className="rounded-md bg-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:bg-zinc-700"
+          >
+            Clear dates
+          </button>
+        )}
+      </div>
+
       <p className="mt-3 text-xs text-zinc-500">
-        {filtered.length} of {items.length} recordings.
+        {filtered.length} of {items.length} recordings · 8pm News {counts.news} · Revolutionary Activities{" "}
+        {counts.activities} · Society &amp; Culture {counts.society}
       </p>
 
       <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.map((it) => (
-          <li key={it.slug} className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
+          <li
+            key={it.slug}
+            className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 transition-colors hover:border-red-800"
+          >
             <span className="rounded bg-zinc-800 px-2 py-0.5 text-[11px] text-zinc-300">
-              {it.category === "news" ? "8pm News" : it.category === "activities" ? "Revolutionary Activities" : "Society & Culture"}
+              {CAT_LABEL[it.category]}
             </span>
             <h2 className="mt-2 text-sm font-medium leading-snug text-zinc-100">{it.title}</h2>
             <p className="mt-1 text-xs text-zinc-500">{it.date}</p>
@@ -91,7 +158,7 @@ export default function RecordingsBrowser({ items }: { items: RecordingItem[] })
         ))}
         {filtered.length === 0 && (
           <li className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-6 text-center text-sm text-zinc-400 sm:col-span-2 lg:col-span-3">
-            No recordings match your search.
+            No recordings match your filters.
           </li>
         )}
       </ul>

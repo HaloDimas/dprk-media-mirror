@@ -11,6 +11,19 @@ const TABS: { id: ChannelId; label: string; ko: string }[] = [
   { id: "mansudae", label: "Mansudae TV", ko: "만수대텔레비죤" },
 ];
 
+const CHANNEL_NAME: Record<ChannelId, string> = {
+  kctv: "KCTV",
+  sports: "Athletic TV",
+  ryongnamsan: "Ryongnamsan TV",
+  mansudae: "Mansudae TV",
+};
+
+function shiftDate(date: string, days: number): string {
+  const d = new Date(`${date}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
 function ProgramRow({ p, isNow, isNext }: { p: Program; isNow: boolean; isNext: boolean }) {
   return (
     <li
@@ -61,6 +74,8 @@ export default function ScheduleGuide({
   });
   const [loading, setLoading] = useState(false);
   const [live, setLive] = useState(true);
+  const [category, setCategory] = useState("all");
+  const [q, setQ] = useState("");
   // Time is read on the client after mount — never during prerender.
   const [now, setNow] = useState("--:--");
   const [today, setToday] = useState(initialDate);
@@ -73,26 +88,38 @@ export default function ScheduleGuide({
   }, []);
 
   const load = useCallback(async (ch: ChannelId, d: string) => {
-    if (ch === "mansudae") return;
-    setLoading(true);
+    if (ch === "mansudae") return null;
     try {
       const res = await fetch(`/api/epg?channel=${ch}&date=${d}`);
       if (!res.ok) throw new Error("epg failed");
       const json: EpgData = await res.json();
       setData((prev) => ({ ...prev, [ch]: json }));
-      setLive(json.source === "live");
+      return json;
     } catch {
-      setLive(false);
-    } finally {
-      setLoading(false);
+      return null;
     }
   }, []);
 
-  // Refetch when the date changes.
+  const loadAll = useCallback(
+    async (d: string) => {
+      setLoading(true);
+      const results = await Promise.all([
+        load("kctv", d),
+        load("sports", d),
+        load("ryongnamsan", d),
+      ]);
+      setLive(results.some((r) => r?.source === "live"));
+      setLoading(false);
+    },
+    [load]
+  );
+
+  // Refetch all channels when the date changes.
   useEffect(() => {
     if (date !== initialDate) {
       setData((prev) => ({ ...prev, kctv: null, sports: null, ryongnamsan: null }));
-      load(channel, date);
+      setCategory("all");
+      loadAll(date);
     } else {
       setLive(true);
     }
@@ -106,8 +133,84 @@ export default function ScheduleGuide({
     [current, isToday, now]
   );
 
+  // Categories present in the current channel's guide (derived from real data).
+  const categories = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const p of current?.programs ?? []) counts.set(p.category, (counts.get(p.category) ?? 0) + 1);
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]);
+  }, [current]);
+
+  const filteredPrograms = useMemo(() => {
+    const needle = q.trim().toLowerCase();
+    return (current?.programs ?? []).filter(
+      (p) =>
+        (category === "all" || p.category === category) &&
+        (!needle || p.en.toLowerCase().includes(needle) || p.ko.toLowerCase().includes(needle))
+    );
+  }, [current, category, q]);
+
+  // Now on all channels (today only).
+  const nowAll = useMemo(() => {
+    if (!isToday) return null;
+    return (["kctv", "sports", "ryongnamsan"] as ChannelId[]).map((ch) => {
+      const d = data[ch];
+      const nn = d ? findNowNext(d.programs, now) : { now: null, next: null };
+      return { ch, now: nn.now, next: nn.next, loaded: !!d };
+    });
+  }, [data, isToday, now]);
+
   return (
     <div>
+      {/* Now on all channels */}
+      {nowAll && (
+        <section className="mb-5 rounded-xl border border-red-900/60 bg-red-950/20 p-4">
+          <h2 className="flex items-baseline gap-2 text-sm font-bold text-white">
+            <span className="inline-block h-4 w-1 rounded bg-red-600" />
+            Now on all channels
+            <span className="text-xs font-normal text-zinc-400">Pyongyang Time {now}</span>
+          </h2>
+          <div className="mt-3 grid gap-3 md:grid-cols-3">
+            {nowAll.map(({ ch, now: n, next: nx, loaded }) => (
+              <button
+                key={ch}
+                onClick={() => setChannel(ch)}
+                className={`rounded-lg border p-3 text-left transition-colors ${
+                  channel === ch
+                    ? "border-red-600 bg-red-950/40"
+                    : "border-zinc-800 bg-zinc-900/60 hover:border-red-800"
+                }`}
+              >
+                <p className="text-xs font-semibold uppercase tracking-wide text-zinc-400">
+                  {CHANNEL_NAME[ch]}
+                </p>
+                {!loaded ? (
+                  <p className="mt-1 text-sm text-zinc-500">Loading…</p>
+                ) : n ? (
+                  <>
+                    <p className="mt-1 text-sm font-medium leading-snug text-zinc-100">
+                      <span className="mr-1 rounded bg-red-600 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">
+                        Now
+                      </span>
+                      {n.en}
+                    </p>
+                    <p className="mt-0.5 font-mono text-xs text-zinc-500">
+                      {n.start} – {n.end}
+                    </p>
+                    {nx && (
+                      <p className="mt-1 truncate text-xs text-zinc-400">
+                        Next: {nx.en} ({nx.start})
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <p className="mt-1 text-sm text-zinc-500">Off air at this hour.</p>
+                )}
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex flex-wrap gap-1" role="tablist" aria-label="Channels">
           {TABS.map((t) => (
@@ -127,15 +230,54 @@ export default function ScheduleGuide({
             </button>
           ))}
         </div>
-        <label className="ml-auto flex items-center gap-2 text-sm text-zinc-300">
-          Date (Pyongyang)
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => e.target.value && setDate(e.target.value)}
-            className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100 [color-scheme:dark]"
-          />
-        </label>
+        <div className="ml-auto flex items-center gap-1.5">
+          <button
+            onClick={() => setDate(shiftDate(date, -1))}
+            className="rounded-md bg-zinc-800 px-2.5 py-1.5 text-sm text-zinc-300 hover:bg-zinc-700"
+            aria-label="Previous day"
+          >
+            ← Prev day
+          </button>
+          <label className="flex items-center gap-2 text-sm text-zinc-300">
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => e.target.value && setDate(e.target.value)}
+              className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100 [color-scheme:dark]"
+            />
+          </label>
+          <button
+            onClick={() => setDate(shiftDate(date, 1))}
+            className="rounded-md bg-zinc-800 px-2.5 py-1.5 text-sm text-zinc-300 hover:bg-zinc-700"
+            aria-label="Next day"
+          >
+            Next day →
+          </button>
+        </div>
+      </div>
+
+      {/* Search + category filter */}
+      <div className="mt-3 flex flex-wrap gap-2">
+        <input
+          type="search"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search programme titles (English or Korean)…"
+          className="min-w-56 flex-1 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
+        />
+        <select
+          value={category}
+          onChange={(e) => setCategory(e.target.value)}
+          className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-2 text-sm text-zinc-100"
+          aria-label="Filter by category"
+        >
+          <option value="all">All categories ({(current?.programs ?? []).length})</option>
+          {categories.map(([c, n]) => (
+            <option key={c} value={c}>
+              {c} ({n})
+            </option>
+          ))}
+        </select>
       </div>
 
       <p className="mt-3 text-xs text-zinc-500">
@@ -169,16 +311,26 @@ export default function ScheduleGuide({
       )}
 
       {channel !== "mansudae" && current && current.programs.length > 0 && (
-        <ul className="mt-4 space-y-2">
-          {current.programs.map((p) => (
-            <ProgramRow
-              key={`${p.start}-${p.en}`}
-              p={p}
-              isNow={isToday && nowProg === p}
-              isNext={isToday && nextProg === p}
-            />
-          ))}
-        </ul>
+        <>
+          <p className="mt-4 text-xs text-zinc-500">
+            Showing {filteredPrograms.length} of {current.programs.length} programmes · {date} — {CHANNEL_NAME[channel]}
+          </p>
+          <ul className="mt-2 space-y-2">
+            {filteredPrograms.map((p) => (
+              <ProgramRow
+                key={`${p.start}-${p.en}`}
+                p={p}
+                isNow={isToday && nowProg === p}
+                isNext={isToday && nextProg === p}
+              />
+            ))}
+          </ul>
+          {filteredPrograms.length === 0 && (
+            <p className="mt-4 rounded-xl border border-zinc-800 bg-zinc-900/60 p-6 text-center text-sm text-zinc-400">
+              No programmes match your search or category filter.
+            </p>
+          )}
+        </>
       )}
 
       {channel !== "mansudae" && current && current.programs.length === 0 && channel !== "ryongnamsan" && !loading && (

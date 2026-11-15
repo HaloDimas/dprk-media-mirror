@@ -9,6 +9,7 @@ const TV = CHANNELS.filter((c) => c.kind === "tv");
 export default function LivePage() {
   const [channel, setChannel] = useState<ChannelId>("kctv");
   const [epg, setEpg] = useState<EpgData | null>(null);
+  const [allEpg, setAllEpg] = useState<Record<string, EpgData | null>>({});
   // Time is read on the client after mount — never during prerender.
   const [now, setNow] = useState("--:--");
 
@@ -18,6 +19,28 @@ export default function LivePage() {
     setNow(nowPyt());
     const t = setInterval(() => setNow(nowPyt()), 30000);
     return () => clearInterval(t);
+  }, []);
+
+  // "Now on all channels" — fetch today's EPG for every live channel once.
+  useEffect(() => {
+    const date = todayPyt();
+    let cancelled = false;
+    Promise.all(
+      TV.filter((c) => c.status === "live" && c.hls).map((c) =>
+        fetch(`/api/epg?channel=${c.id}&date=${date}`)
+          .then((r) => (r.ok ? (r.json() as Promise<EpgData>) : null))
+          .catch(() => null)
+          .then((d) => ({ id: c.id, data: d }))
+      )
+    ).then((results) => {
+      if (cancelled) return;
+      const map: Record<string, EpgData | null> = {};
+      for (const r of results) map[r.id] = r.data;
+      setAllEpg(map);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -42,6 +65,49 @@ export default function LivePage() {
   return (
     <div className="space-y-5">
       <h1 className="text-xl font-bold text-white">Live TV</h1>
+
+      <section aria-label="Now on all channels">
+        <h2 className="border-l-4 border-red-700 pl-3 text-sm font-semibold text-zinc-100">
+          Now on all channels <span className="font-normal text-zinc-500">· Pyongyang time {now}</span>
+        </h2>
+        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+          {TV.filter((c) => c.status === "live" && c.hls).map((c) => {
+            const d = allEpg[c.id];
+            const { now: n, next: nx } = d ? findNowNext(d.programs, now) : { now: null, next: null };
+            const selected = channel === c.id;
+            return (
+              <button
+                key={c.id}
+                onClick={() => setChannel(c.id)}
+                className={`rounded-xl border p-4 text-left transition-colors ${
+                  selected
+                    ? "border-red-700 bg-red-950/40"
+                    : "border-zinc-800 bg-zinc-900/60 hover:border-red-800"
+                }`}
+              >
+                <p className="text-sm font-semibold text-zinc-100">
+                  {c.name} <span className="font-normal text-zinc-500">· {c.korean}</span>
+                  {selected && <span className="ml-2 rounded bg-red-700 px-1.5 py-0.5 text-[10px] text-white">WATCHING</span>}
+                </p>
+                {n ? (
+                  <p className="mt-1.5 text-sm text-zinc-200">
+                    <span className="font-semibold text-red-400">Now:</span> {n.en}
+                    <span className="text-zinc-500"> ({n.start}–{n.end})</span>
+                  </p>
+                ) : (
+                  <p className="mt-1.5 text-sm text-zinc-400">Off air at this hour.</p>
+                )}
+                {nx && (
+                  <p className="mt-1 text-xs text-zinc-400">
+                    <span className="font-semibold text-zinc-300">Next:</span> {nx.en}
+                    <span className="text-zinc-500"> ({nx.start}–{nx.end})</span>
+                  </p>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </section>
 
       <div className="flex flex-wrap gap-1" role="tablist" aria-label="TV channels">
         {TV.map((c) => (

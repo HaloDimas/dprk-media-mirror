@@ -16,8 +16,16 @@ export async function generateStaticParams() {
 
 async function ArticleContent({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
-  const article = await getArticle(id);
+  const [article, allNews] = await Promise.all([getArticle(id), getAllNews()]);
   if (!article) notFound();
+
+  // Prev / Next in the full news list (newest first), plus related articles.
+  const idx = allNews.findIndex((n) => n.id === id);
+  const newer = idx > 0 ? allNews[idx - 1] : null;
+  const older = idx >= 0 && idx < allNews.length - 1 ? allNews[idx + 1] : null;
+  const related = allNews
+    .filter((n) => n.id !== id && n.source === article.source)
+    .slice(0, 4);
 
   return (
     <>
@@ -61,9 +69,62 @@ async function ArticleContent({ params }: { params: Promise<{ id: string }> }) {
 
       <p className="mt-8 border-t border-zinc-800 pt-4 text-xs text-zinc-500">
         {article.kind === "full"
-          ? "Full article mirrored on this site from the Korea News Service."
-          : "Excerpt mirrored on this site from KCNA Watch. The full text requires a free KCNA Watch member account."}
+          ? `Full article mirrored on this site from ${article.source}.`
+          : article.source === "KCNA Watch"
+            ? "Excerpt mirrored on this site from KCNA Watch. The full text needs a live KCNA Watch session — the mirror's session is currently expired or not configured."
+            : `Excerpt mirrored on this site from ${article.source}. The full text cannot be fetched from this source.`}
       </p>
+
+      {/* Prev / Next */}
+      <nav className="mt-6 grid gap-3 sm:grid-cols-2" aria-label="More articles">
+        {older ? (
+          <Link
+            href={`/news/${older.id}`}
+            className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 transition-colors hover:border-red-800"
+          >
+            <span className="text-xs uppercase tracking-wide text-zinc-500">← Older</span>
+            <span className="mt-1 block text-sm font-medium leading-snug text-zinc-100">{older.title}</span>
+          </Link>
+        ) : (
+          <span />
+        )}
+        {newer ? (
+          <Link
+            href={`/news/${newer.id}`}
+            className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 text-right transition-colors hover:border-red-800"
+          >
+            <span className="text-xs uppercase tracking-wide text-zinc-500">Newer →</span>
+            <span className="mt-1 block text-sm font-medium leading-snug text-zinc-100">{newer.title}</span>
+          </Link>
+        ) : (
+          <span />
+        )}
+      </nav>
+
+      {/* Related */}
+      {related.length > 0 && (
+        <section className="mt-8">
+          <h2 className="mb-3 flex items-baseline gap-2 text-base font-bold text-white">
+            <span className="inline-block h-4 w-1 rounded bg-red-600" />
+            Related from {article.source}
+          </h2>
+          <ul className="space-y-2">
+            {related.map((r) => (
+              <li
+                key={r.id}
+                className="rounded-xl border border-zinc-800 bg-zinc-900/60 transition-colors hover:border-red-800"
+              >
+                <Link href={`/news/${r.id}`} className="flex items-center gap-3 p-3">
+                  <div className="min-w-0">
+                    <span className="text-xs text-zinc-500">{r.date}</span>
+                    <span className="block truncate text-sm font-medium text-zinc-100">{r.title}</span>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </>
   );
 }

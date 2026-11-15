@@ -2,9 +2,25 @@
 
 import { useEffect, useState } from "react";
 import HlsPlayer from "@/components/HlsPlayer";
-import { CHANNELS, findNowNext, nowPyt, todayPyt, type ChannelId, type EpgData } from "@/lib/types";
+import { CHANNELS, findNowNext, nowPyt, todayPyt, type ChannelId, type EpgData, type Program } from "@/lib/types";
 
 const TV = CHANNELS.filter((c) => c.kind === "tv");
+
+/** "HH:MM" -> minutes since midnight (NaN-safe). */
+function toMin(t: string): number {
+  const [h, m] = t.split(":").map(Number);
+  if (!Number.isFinite(h) || !Number.isFinite(m)) return NaN;
+  return h * 60 + m;
+}
+
+/** How far into a programme we are, 0-100 (0 when the time is unknown). */
+function progressPct(p: Program, now: string): number {
+  const n = toMin(now);
+  const s = toMin(p.start);
+  const e = toMin(p.end);
+  if (!Number.isFinite(n) || !Number.isFinite(s) || !Number.isFinite(e) || e <= s) return 0;
+  return Math.min(100, Math.max(0, ((n - s) / (e - s)) * 100));
+}
 
 export default function LivePage() {
   const [channel, setChannel] = useState<ChannelId>("kctv");
@@ -135,33 +151,115 @@ export default function LivePage() {
       ) : (
         <>
           <HlsPlayer channel={info.hls!} title={`${info.name} Live`} />
-          <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 px-4 py-3 text-sm">
-            <p className="font-semibold text-zinc-100">
-              {info.name} <span className="font-normal text-zinc-500">· {info.korean}</span>
-            </p>
-            {nowProg ? (
-              <p className="mt-1">
-                <span className="font-semibold text-red-400">Now:</span>{" "}
-                <span className="text-zinc-100">
-                  {nowProg.en} <span className="text-zinc-500">({nowProg.start} – {nowProg.end})</span>
-                </span>
-              </p>
-            ) : (
-              <p className="mt-1 text-zinc-400">Off air at this hour.</p>
+
+          {/* NOW ON AIR — Koryo Front style: current programme + live progress. */}
+          <section
+            aria-label="Now on air"
+            className="rounded-xl border border-zinc-800 bg-zinc-900/60"
+          >
+            <div className="flex items-center gap-2 border-b border-zinc-800 px-4 py-3">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
+                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
+              </span>
+              <span className="text-xs font-bold uppercase tracking-widest text-zinc-300">Now on air</span>
+              <span className="ml-auto text-xs text-zinc-500">Pyongyang time {now}</span>
+            </div>
+            <div className="px-4 py-4">
+              {nowProg ? (
+                <>
+                  <span className="inline-block rounded bg-blue-900/70 px-2 py-0.5 text-xs font-medium text-blue-200">
+                    {nowProg.category}
+                  </span>
+                  <h2 className="mt-2 text-lg font-bold leading-snug text-white">{nowProg.en}</h2>
+                  {nowProg.ko && <p className="mt-0.5 text-sm text-zinc-400">{nowProg.ko}</p>}
+                  <p className="mt-2 text-sm text-zinc-400">
+                    {nowProg.start} – {nowProg.end}
+                  </p>
+                  {/* Live progress through the current programme. */}
+                  <div
+                    className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-zinc-800"
+                    role="progressbar"
+                    aria-valuenow={Math.round(progressPct(nowProg, now))}
+                    aria-valuemin={0}
+                    aria-valuemax={100}
+                    aria-label="Progress through the current programme"
+                  >
+                    <div
+                      className="h-full rounded-full bg-red-600 transition-[width] duration-1000"
+                      style={{ width: `${progressPct(nowProg, now)}%` }}
+                    />
+                  </div>
+                  {nextProg && (
+                    <p className="mt-3 text-sm text-zinc-400">
+                      <span className="font-semibold text-zinc-300">Next:</span> {nextProg.en}{" "}
+                      <span className="text-zinc-500">({nextProg.start} – {nextProg.end})</span>
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-zinc-400">
+                  Off air at this hour. Check the programme guide below for broadcast hours.
+                </p>
+              )}
+            </div>
+          </section>
+
+          {/* Programme guide for this channel, today. */}
+          <section aria-label="Programme guide">
+            <div className="flex items-baseline justify-between gap-3">
+              <div>
+                <h2 className="text-lg font-bold text-white">Programme Guide</h2>
+                <p className="text-sm text-zinc-500">
+                  {info.name} · {info.korean} · Today
+                </p>
+              </div>
+              <a href="/schedule" className="shrink-0 text-sm text-red-400 hover:underline">
+                Full schedule →
+              </a>
+            </div>
+            <div className="mt-3 overflow-hidden rounded-xl border border-zinc-800">
+              {epg && epg.programs.length > 0 ? (
+                epg.programs.map((p) => {
+                  const isNow = nowProg === p;
+                  return (
+                    <div
+                      key={`${p.start}-${p.en}`}
+                      className={`flex gap-4 border-b border-zinc-800 px-4 py-3 last:border-b-0 ${
+                        isNow ? "bg-red-950/30" : "bg-zinc-900/60"
+                      }`}
+                    >
+                      <div className="w-20 shrink-0 text-sm">
+                        <p className="font-mono font-semibold text-zinc-100">{p.start}</p>
+                        <p className="font-mono text-xs text-zinc-500">– {p.end}</p>
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium leading-snug text-zinc-100">
+                          {p.en}
+                          {isNow && (
+                            <span className="ml-2 rounded bg-red-700 px-1.5 py-0.5 align-middle text-[10px] font-bold uppercase text-white">
+                              Now
+                            </span>
+                          )}
+                        </p>
+                        {p.ko && <p className="mt-0.5 text-xs text-zinc-500">{p.ko}</p>}
+                        <span className="mt-1.5 inline-block rounded bg-zinc-800 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-zinc-400">
+                          {p.category}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="bg-zinc-900/60 px-4 py-6 text-sm text-zinc-400">
+                  Programme guide unavailable for this channel right now.
+                </p>
+              )}
+            </div>
+            {info.id === "ryongnamsan" && (
+              <p className="mt-2 text-xs text-zinc-500">Ryongnamsan TV broadcasts on weekdays only.</p>
             )}
-            {nextProg && (
-              <p className="mt-1">
-                <span className="font-semibold text-zinc-300">Next:</span>{" "}
-                <span className="text-zinc-100">
-                  {nextProg.en} <span className="text-zinc-500">({nextProg.start} – {nextProg.end})</span>
-                </span>
-              </p>
-            )}
-            <p className="mt-1 text-xs text-zinc-500">
-              Current time in Pyongyang: <span className="font-mono text-zinc-300">{now}</span>
-              {info.id === "ryongnamsan" && " · Ryongnamsan TV broadcasts on weekdays only."}
-            </p>
-          </div>
+          </section>
         </>
       )}
     </div>

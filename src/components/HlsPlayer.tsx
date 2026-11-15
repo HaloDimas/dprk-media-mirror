@@ -20,12 +20,26 @@ export default function HlsPlayer({
   const hlsRef = useRef<Hls | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  // Subtitles: the stream carries an English subtitle track (DEFAULT/AUTOSELECT
+  // in the manifest). hls.js loads it; the toggle switches it on/off.
+  const [subsAvailable, setSubsAvailable] = useState(false);
+  const [subsOn, setSubsOn] = useState(true);
+
+  const toggleSubs = () => {
+    const hls = hlsRef.current;
+    if (!hls || !subsAvailable) return;
+    const next = !subsOn;
+    hls.subtitleTrack = next ? 0 : -1;
+    setSubsOn(next);
+  };
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
     setError(null);
     setLoading(true);
+    setSubsAvailable(false);
+    setSubsOn(true);
     const src = `/api/hls/${channel}/index.m3u8`;
 
     const onError = () => {
@@ -63,6 +77,14 @@ export default function HlsPlayer({
         setLoading(false);
         video.play().catch(() => undefined);
       });
+      // Subtitle track from the manifest (English). Enable it by default.
+      hls.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, () => {
+        if (hls.subtitleTracks.length > 0) {
+          setSubsAvailable(true);
+          hls.subtitleTrack = 0;
+          setSubsOn(true);
+        }
+      });
       hls.on(Hls.Events.ERROR, (_e, data) => {
         if (data.fatal) {
           if (data.type === Hls.ErrorTypes.NETWORK_ERROR) {
@@ -99,6 +121,19 @@ export default function HlsPlayer({
         poster={poster}
         aria-label={title}
       />
+      {subsAvailable && (
+        <button
+          type="button"
+          onClick={toggleSubs}
+          aria-pressed={subsOn}
+          title={subsOn ? "Turn subtitles off" : "Turn subtitles on (English)"}
+          className={`absolute right-3 top-3 z-10 rounded-md px-2.5 py-1 text-xs font-bold tracking-wide shadow ${
+            subsOn ? "bg-red-700 text-white" : "bg-black/70 text-zinc-300 hover:bg-black/90"
+          }`}
+        >
+          CC
+        </button>
+      )}
       {loading && !error && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/60 text-sm text-zinc-300">
           Connecting to live stream…

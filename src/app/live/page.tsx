@@ -22,8 +22,18 @@ function progressPct(p: Program, now: string): number {
   return Math.min(100, Math.max(0, ((n - s) / (e - s)) * 100));
 }
 
+/** Koryo TV watch page for a channel (their own player, opens on koryo.tv). */
+function koryoTvUrl(channel: ChannelId): string {
+  const slug = channel === "sports" ? "sportstv" : channel;
+  return `https://koryo.tv/channel/${slug}`;
+}
+
 export default function LivePage() {
   const [channel, setChannel] = useState<ChannelId>("kctv");
+  // Video server: Koryo Front CDN (embedded player) or Koryo TV (their own
+  // player — Koryo TV binds its sessions to the viewer's IP, so it cannot
+  // be proxied through our server and must be watched on koryo.tv itself).
+  const [server, setServer] = useState<"koryofront" | "koryotv">("koryofront");
   const [epg, setEpg] = useState<EpgData | null>(null);
   const [allEpg, setAllEpg] = useState<Record<string, EpgData | null>>({});
   // Time is read on the client after mount — never during prerender.
@@ -150,7 +160,54 @@ export default function LivePage() {
         </div>
       ) : (
         <>
-          <HlsPlayer channel={info.hls!} title={`${info.name} Live`} />
+          {/* Video server switcher. */}
+          <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Video server">
+            <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Server:</span>
+            <button
+              type="button"
+              onClick={() => setServer("koryofront")}
+              aria-pressed={server === "koryofront"}
+              className={`rounded-md px-3 py-1.5 text-sm font-medium ${
+                server === "koryofront" ? "bg-red-700 text-white" : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+              }`}
+            >
+              Koryo Front
+            </button>
+            <button
+              type="button"
+              onClick={() => setServer("koryotv")}
+              aria-pressed={server === "koryotv"}
+              className={`rounded-md px-3 py-1.5 text-sm font-medium ${
+                server === "koryotv" ? "bg-red-700 text-white" : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+              }`}
+            >
+              Koryo TV
+            </button>
+            {server === "koryotv" && (
+              <span className="text-xs text-zinc-500">Opens on koryo.tv (its own player).</span>
+            )}
+          </div>
+
+          {server === "koryofront" ? (
+            <HlsPlayer channel={info.hls!} title={`${info.name} Live`} />
+          ) : (
+            <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-8 text-center">
+              <h2 className="text-lg font-semibold text-zinc-100">Watch {info.name} on Koryo TV</h2>
+              <p className="mx-auto mt-2 max-w-md text-sm text-zinc-400">
+                Koryo TV binds its streams to each viewer&apos;s own connection, so it can&apos;t play
+                inside this mirror. If the Koryo Front server isn&apos;t working, watch the same
+                channel on Koryo TV&apos;s own player instead.
+              </p>
+              <a
+                href={koryoTvUrl(channel)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-4 inline-flex items-center gap-2 rounded-lg bg-red-700 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-600"
+              >
+                Watch {info.name} on Koryo TV ↗
+              </a>
+            </div>
+          )}
 
           {/* NOW ON AIR — Koryo Front style: current programme + live progress. */}
           <section

@@ -83,7 +83,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               requires a free KCNA Watch account). Programme times are Pyongyang Time (UTC+9).
             </p>
             <p className="mt-2">
-              KCNA Watch content is hosted here for educational access purposes only | All materials
+              DPRK Media Mirror content is hosted here for educational access purposes only | All materials
               copyright of the Korea D.P.R. government.
             </p>
           </div>

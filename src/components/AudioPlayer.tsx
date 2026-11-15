@@ -42,7 +42,11 @@ export default function AudioPlayer({
     const audio = audioRef.current;
     if (!audio) return;
     setError(null);
-    const src = `/api/hls/${channel}/index.m3u8`;
+    // HLS base: a Cloudflare Worker proxy when NEXT_PUBLIC_HLS_PROXY is set
+    // (free, unmetered bandwidth — Vercel Hobby caps origin transfer at
+    // 10 GB/month and one hour of KCTV is ~4.3 GB), else our /api/hls.
+    const HLS_BASE = (process.env.NEXT_PUBLIC_HLS_PROXY || "").replace(/\/$/, "") || "/api/hls";
+    const src = `${HLS_BASE}/${channel}/index.m3u8`;
 
     // Route the element through Web Audio so we can boost above 100%.
     // Volume is controlled by the GainNode only; the element stays at 1.0.

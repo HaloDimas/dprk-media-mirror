@@ -1,0 +1,7 @@
+name = "dprk-hls"
+main = "hls-proxy.js"
+compatibility_date = "2025-01-01"
+
+# Free plan: 100,000 requests/day, unmetered bandwidth (no egress charges).
+# That is the whole point — Vercel Hobby caps Fast Origin Transfer at
+# 10 GB/month and one hour of KCTV is ~4.3 GB.

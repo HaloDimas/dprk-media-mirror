@@ -11,8 +11,18 @@ import Hls from "hls.js";
  * as a fatal error. Instead of giving up (and forcing a page refresh), the
  * player auto-retries with backoff and only shows the "unavailable" message
  * after several failed attempts — with a manual Retry button.
+ *
+ * Bandwidth: KCTV only exists as one 1080p50 rendition (~9.5 Mbps), so
+ * there is no lower-quality video to switch to — transcoding would need a
+ * 24/7 server. The low-bandwidth option is therefore audio-only (Data
+ * saver): the KCBS radio stream at ~0.1 Mbps, roughly 100x less data.
+ * The player detects a slow connection (fragment downloads slower than
+ * real-time, or the browser reporting a slow effective connection type)
+ * and offers to switch to audio-only.
  */
 const MAX_RETRIES = 5;
+// A fragment is "slow" when it takes longer to download than it plays.
+const SLOW_FRAG_COUNT = 2;
 
 export default function HlsPlayer({
   channel,
@@ -23,13 +33,17 @@ export default function HlsPlayer({
   title: string;
   poster?: string;
 }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
+  const mediaRef = useRef<HTMLMediaElement>(null);
   const hlsRef = useRef<Hls | null>(null);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const fragStartRef = useRef(0);
+  const slowFragsRef = useRef(0);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [reconnecting, setReconnecting] = useState(false);
   const [retryAttempt, setRetryAttempt] = useState(0);
+  const [audioOnly, setAudioOnly] = useState(false);
+  const [slowDetected, setSlowDetected] = useState(false);
   // Subtitles: the stream carries an English subtitle track (DEFAULT/AUTOSELECT
   // in the manifest). hls.js loads it; the toggle switches it on/off.
   const [subsAvailable, setSubsAvailable] = useState(false);
@@ -44,30 +58,30 @@ export default function HlsPlayer({
   };
 
   useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
+    const media = mediaRef.current;
+    if (!media) return;
     setError(null);
     setLoading(true);
     setReconnecting(false);
     setRetryAttempt(0);
+    setSlowDetected(false);
+    slowFragsRef.current = 0;
     setSubsAvailable(false);
     setSubsOn(true);
-    const src = `/api/hls/${channel}/index.m3u8`;
+    // Data saver: the KCBS radio stream (~0.1 Mbps) instead of the TV video.
+    // HLS base: a Cloudflare Worker proxy when NEXT_PUBLIC_HLS_PROXY is set
+    // (free, unmetered bandwidth — Vercel Hobby caps origin transfer at
+    // 10 GB/month and one hour of KCTV is ~4.3 GB), else our /api/hls.
+    const HLS_BASE = (process.env.NEXT_PUBLIC_HLS_PROXY || "").replace(/\/$/, "") || "/api/hls";
+    const src = audioOnly ? `${HLS_BASE}/kcbs/index.m3u8` : `${HLS_BASE}/${channel}/index.m3u8`;
     let stopped = false;
     let attempts = 0;
 
-    // Ground truth that playback resumed: the video element fires `playing`
-    // whenever it actually starts (or restarts) playing. Clear the
-    // reconnecting overlay here too — MANIFEST_PARSED alone is not reliable
-    // after a retry re-init (the video can resume from the old buffer
-    // before the new manifest parses, leaving the text stuck on screen).
-    const onPlaying = () => {
-      attempts = 0;
-      setRetryAttempt(0);
-      setReconnecting(false);
-      setLoading(false);
-    };
-    video.addEventListener("playing", onPlaying);
+    // Browser-level slow-connection hint (Chromium/Edge/Android only).
+    const conn = (navigator as Navigator & { connection?: { effectiveType?: string } }).connection;
+    if (conn && ["slow-2g", "2g", "3g"].includes(conn.effectiveType ?? "")) {
+      setSlowDetected(true);
+    }
 
     const clearRetryTimer = () => {
       if (retryTimerRef.current) {
@@ -122,7 +136,20 @@ export default function HlsPlayer({
       initHls();
     };
     // Expose the manual retry to the button rendered below.
-    (video as HTMLVideoElement & { __retry?: () => void }).__retry = manualRetry;
+    (media as HTMLMediaElement & { __retry?: () => void }).__retry = manualRetry;
+
+    // Ground truth that playback resumed: the media element fires `playing`
+    // whenever it actually starts (or restarts) playing. Clear the
+    // reconnecting overlay here too — MANIFEST_PARSED alone is not reliable
+    // after a retry re-init (the video can resume from the old buffer
+    // before the new manifest parses, leaving the text stuck on screen).
+    const onPlaying = () => {
+      attempts = 0;
+      setRetryAttempt(0);
+      setReconnecting(false);
+      setLoading(false);
+    };
+    media.addEventListener("playing", onPlaying);
 
     const initHls = () => {
       if (stopped) return;
@@ -138,24 +165,44 @@ export default function HlsPlayer({
       });
       hlsRef.current = hls;
       hls.loadSource(src);
-      hls.attachMedia(video);
+      hls.attachMedia(media);
       hls.on(Hls.Events.MANIFEST_PARSED, () => {
         if (stopped) return;
         attempts = 0;
         setRetryAttempt(0);
         setReconnecting(false);
         setLoading(false);
-        video.play().catch(() => undefined);
+        media.play().catch(() => undefined);
       });
-      // Subtitle track from the manifest (English). Enable it by default.
-      hls.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, () => {
+      // Slow-connection detection: if a fragment takes longer to download
+      // than it plays, we are falling behind real-time. Two in a row means
+      // the link cannot keep up with this stream.
+      hls.on(Hls.Events.FRAG_LOADING, () => {
+        fragStartRef.current = performance.now();
+      });
+      hls.on(Hls.Events.FRAG_LOADED, (_e, data) => {
         if (stopped) return;
-        if (hls.subtitleTracks.length > 0) {
-          setSubsAvailable(true);
-          hls.subtitleTrack = 0;
-          setSubsOn(true);
+        const loadMs = performance.now() - fragStartRef.current;
+        const durMs = (data.frag.duration || 0) * 1000;
+        if (durMs > 0 && loadMs > durMs) {
+          slowFragsRef.current += 1;
+          if (slowFragsRef.current >= SLOW_FRAG_COUNT) setSlowDetected(true);
+        } else {
+          slowFragsRef.current = 0;
         }
       });
+      // Subtitle track from the manifest (English). Enable it by default.
+      // Video only — the audio-only radio stream has no subtitles.
+      if (!audioOnly) {
+        hls.on(Hls.Events.SUBTITLE_TRACKS_UPDATED, () => {
+          if (stopped) return;
+          if (hls.subtitleTracks.length > 0) {
+            setSubsAvailable(true);
+            hls.subtitleTrack = 0;
+            setSubsOn(true);
+          }
+        });
+      }
       hls.on(Hls.Events.ERROR, (_e, data) => {
         if (stopped || !data.fatal) return;
         // Media errors (bad segment / codec hiccup) are usually fixed by
@@ -172,7 +219,7 @@ export default function HlsPlayer({
       });
     };
 
-    const onVideoError = () => {
+    const onMediaError = () => {
       // Safari native path: reset the source after a short delay.
       if (stopped) return;
       if (attempts >= MAX_RETRIES) {
@@ -186,31 +233,31 @@ export default function HlsPlayer({
       clearRetryTimer();
       retryTimerRef.current = setTimeout(() => {
         if (stopped) return;
-        video.removeAttribute("src");
-        video.load();
-        video.src = src;
-        video.play().catch(() => undefined);
+        media.removeAttribute("src");
+        media.load();
+        media.src = src;
+        media.play().catch(() => undefined);
       }, Math.min(30000, 2000 * 2 ** (attempts - 1)));
     };
 
-    if (video.canPlayType("application/vnd.apple.mpegurl")) {
+    if (media.canPlayType("application/vnd.apple.mpegurl")) {
       // Safari: native HLS
-      video.src = src;
-      video.play().catch(() => undefined);
+      media.src = src;
+      media.play().catch(() => undefined);
       const onCanPlay = () => setLoading(false);
-      video.addEventListener("canplay", onCanPlay);
-      video.addEventListener("error", onVideoError);
+      media.addEventListener("canplay", onCanPlay);
+      media.addEventListener("error", onMediaError);
       return () => {
         stopped = true;
         clearRetryTimer();
-        video.removeEventListener("canplay", onCanPlay);
-        video.removeEventListener("error", onVideoError);
-        video.removeEventListener("playing", onPlaying);
+        media.removeEventListener("canplay", onCanPlay);
+        media.removeEventListener("error", onMediaError);
+        media.removeEventListener("playing", onPlaying);
         // Stop playback for real when leaving the page: merely removing
         // the element does not reliably stop the audio in all browsers.
-        video.pause();
-        video.removeAttribute("src");
-        video.load();
+        media.pause();
+        media.removeAttribute("src");
+        media.load();
       };
     }
 
@@ -220,30 +267,68 @@ export default function HlsPlayer({
         stopped = true;
         clearRetryTimer();
         destroyHls();
-        video.removeEventListener("playing", onPlaying);
+        media.removeEventListener("playing", onPlaying);
         // Stop playback for real when leaving the page: hls.destroy()
         // alone does not pause the media element, so the audio can keep
         // playing after navigation in some browsers.
-        video.pause();
-        video.removeAttribute("src");
-        video.load();
+        media.pause();
+        media.removeAttribute("src");
+        media.load();
       };
     }
 
     setError("Your browser cannot play live HLS streams.");
     setLoading(false);
-  }, [channel]);
+  }, [channel, audioOnly]);
 
   const handleRetryClick = () => {
-    const video = videoRef.current;
-    const retry = (video as (HTMLVideoElement & { __retry?: () => void }) | null)?.__retry;
+    const media = mediaRef.current;
+    const retry = (media as (HTMLMediaElement & { __retry?: () => void }) | null)?.__retry;
     if (retry) retry();
   };
+
+  if (audioOnly) {
+    return (
+      <div className="relative w-full overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/60 p-5">
+        <p className="text-xs font-bold uppercase tracking-widest text-amber-400">Audio only · Data saver</p>
+        <h3 className="mt-2 text-base font-semibold text-white">
+          {title} — audio
+        </h3>
+        <p className="mt-1 text-sm text-zinc-400">
+          Playing the KCBS radio audio (~0.1 Mbps) instead of the TV video (~9.5 Mbps for KCTV).
+          Uses roughly 100x less data.
+        </p>
+        <audio
+          ref={(el) => {
+            mediaRef.current = el;
+          }}
+          className="mt-4 w-full"
+          controls
+          playsInline
+          aria-label={`${title} audio only`}
+        />
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button
+            type="button"
+            onClick={() => setAudioOnly(false)}
+            className="rounded-lg bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
+          >
+            Back to video
+          </button>
+        </div>
+        {error && (
+          <p className="mt-3 text-sm text-red-300">{error}</p>
+        )}
+      </div>
+    );
+  }
 
   return (
     <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black">
       <video
-        ref={videoRef}
+        ref={(el) => {
+          mediaRef.current = el;
+        }}
         className="h-full w-full"
         controls
         playsInline
@@ -262,6 +347,34 @@ export default function HlsPlayer({
         >
           CC
         </button>
+      )}
+      <button
+        type="button"
+        onClick={() => setAudioOnly(true)}
+        title="Data saver: switch to audio only (uses ~100x less data)"
+        className="absolute left-3 top-3 z-10 rounded-md bg-black/70 px-2.5 py-1 text-xs font-bold tracking-wide text-zinc-300 shadow hover:bg-black/90"
+      >
+        Data saver
+      </button>
+      {slowDetected && !error && (
+        <div className="absolute inset-x-0 top-0 z-10 flex flex-wrap items-center justify-center gap-2 bg-amber-950/90 px-4 py-2 text-center text-xs text-amber-200">
+          <span>Slow connection detected — this stream may buffer.</span>
+          <button
+            type="button"
+            onClick={() => setAudioOnly(true)}
+            className="rounded bg-amber-700 px-2 py-0.5 font-bold text-white hover:bg-amber-600"
+          >
+            Switch to audio only
+          </button>
+          <button
+            type="button"
+            onClick={() => setSlowDetected(false)}
+            aria-label="Dismiss slow connection warning"
+            className="rounded px-1.5 py-0.5 text-amber-300 hover:bg-amber-900"
+          >
+            ✕
+          </button>
+        </div>
       )}
       {loading && !error && !reconnecting && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/60 text-sm text-zinc-300">

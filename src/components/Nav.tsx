@@ -32,7 +32,7 @@ export function NavSearch() {
         const query = q.trim();
         router.push(query ? `/search?q=${encodeURIComponent(query)}` : "/search");
       }}
-      className="flex w-full items-center sm:w-56"
+      className="flex w-full items-center sm:w-48"
     >
       <input
         type="search"
@@ -51,12 +51,12 @@ export default function Nav() {
   const active = (href: string) =>
     href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/");
   return (
-    <nav className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
+    <nav className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {LINKS.map((l) => (
         <Link
           key={l.href}
           href={l.href}
-          className={`whitespace-nowrap rounded-md px-2.5 py-1.5 text-sm font-medium transition-colors ${
+          className={`whitespace-nowrap rounded-md px-2 py-1.5 text-[13px] font-medium transition-colors ${
             active(l.href)
               ? "bg-red-700 text-white"
               : "text-zinc-300 hover:bg-zinc-800 hover:text-white"

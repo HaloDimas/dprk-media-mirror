@@ -56,6 +56,19 @@ export default function HlsPlayer({
     let stopped = false;
     let attempts = 0;
 
+    // Ground truth that playback resumed: the video element fires `playing`
+    // whenever it actually starts (or restarts) playing. Clear the
+    // reconnecting overlay here too — MANIFEST_PARSED alone is not reliable
+    // after a retry re-init (the video can resume from the old buffer
+    // before the new manifest parses, leaving the text stuck on screen).
+    const onPlaying = () => {
+      attempts = 0;
+      setRetryAttempt(0);
+      setReconnecting(false);
+      setLoading(false);
+    };
+    video.addEventListener("playing", onPlaying);
+
     const clearRetryTimer = () => {
       if (retryTimerRef.current) {
         clearTimeout(retryTimerRef.current);
@@ -189,6 +202,7 @@ export default function HlsPlayer({
         clearRetryTimer();
         video.removeEventListener("canplay", onCanPlay);
         video.removeEventListener("error", onVideoError);
+        video.removeEventListener("playing", onPlaying);
         // Stop playback for real when leaving the page: merely removing
         // the element does not reliably stop the audio in all browsers.
         video.pause();
@@ -203,6 +217,7 @@ export default function HlsPlayer({
         stopped = true;
         clearRetryTimer();
         destroyHls();
+        video.removeEventListener("playing", onPlaying);
         // Stop playback for real when leaving the page: hls.destroy()
         // alone does not pause the media element, so the audio can keep
         // playing after navigation in some browsers.

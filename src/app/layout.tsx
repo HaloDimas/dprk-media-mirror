@@ -26,7 +26,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col bg-zinc-950 text-zinc-100">
         <header className="border-b border-zinc-800 bg-zinc-950/95">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-4">
+          <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-3 px-4 py-4">
             <Link href="/" className="flex shrink-0 items-baseline gap-2">
               <span className="text-lg font-bold tracking-tight text-white">
                 DPRK <span className="text-red-500">Media Mirror</span>
@@ -81,6 +81,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               Sources mirrored: Koryo Front (live TV, radio, programme guide, recordings, publications,
               Korea News Service articles) and KCNA Watch (latest headlines, excerpt only — full text
               requires a free KCNA Watch account). Programme times are Pyongyang Time (UTC+9).
+            </p>
+            <p className="mt-2">
+              KCNA Watch content is hosted here for educational access purposes only | All materials
+              copyright of the Korea D.P.R. government.
             </p>
           </div>
         </footer>

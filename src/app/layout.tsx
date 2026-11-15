@@ -58,6 +58,20 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
 
         <footer className="border-t border-zinc-800">
           <div className="mx-auto max-w-6xl px-4 py-6 text-xs leading-relaxed text-zinc-500">
+            <nav className="mb-4 flex flex-wrap gap-x-5 gap-y-2" aria-label="Footer">
+              <Link href="/contact" className="text-zinc-400 hover:text-white">
+                Contact
+              </Link>
+              <Link href="/faq" className="text-zinc-400 hover:text-white">
+                FAQ
+              </Link>
+              <Link href="/privacy" className="text-zinc-400 hover:text-white">
+                Privacy Policy
+              </Link>
+              <Link href="/terms" className="text-zinc-400 hover:text-white">
+                Terms &amp; Conditions
+              </Link>
+            </nav>
             <p>
               DPRK Media Mirror — live TV, radio, programme guides, news, recordings and publications
               mirrored onto this site from Koryo Front and KCNA Watch. All reading and watching happens

@@ -126,12 +126,15 @@ export default function HlsPlayer({
 
     const initHls = () => {
       if (stopped) return;
-      // Deeper buffer + a little more live latency margin, so a slow
-      // segment does not stall playback for a second.
+      // Deeper buffer + more live latency margin, so a slow segment does
+      // not stall playback. KCTV runs at ~9.5 Mbps (full 1080p50 drama),
+      // roughly 10x the data rate of Sports (~1 Mbps) and 40x Ryongnamsan
+      // (~0.25 Mbps) right now, so it needs the most cushion: a 6s KCTV
+      // segment is ~7 MB, and a slow link takes seconds to fetch it.
       const hls = new Hls({
-        maxBufferLength: 60,
-        maxMaxBufferLength: 120,
-        liveSyncDurationCount: 4,
+        maxBufferLength: 90,
+        maxMaxBufferLength: 180,
+        liveSyncDurationCount: 6,
       });
       hlsRef.current = hls;
       hls.loadSource(src);

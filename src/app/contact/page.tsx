@@ -33,8 +33,16 @@ export default function ContactPage() {
 
       <h2 className="mt-8 text-lg font-semibold text-white">How to reach us</h2>
       <p className="mt-2 text-sm leading-relaxed text-zinc-300">
-        The fastest way is to open an issue on the project&apos;s public repository, where the
-        mirror&apos;s code lives:
+        You can reach the operator by email, or open an issue on the project&apos;s public
+        repository, where the mirror&apos;s code lives:
+      </p>
+      <p className="mt-2">
+        <a
+          href="mailto:atsushi@tutanota.com"
+          className="text-sm font-medium text-red-400 underline hover:text-red-300"
+        >
+          atsushi@tutanota.com
+        </a>
       </p>
       <p className="mt-2">
         <a

@@ -3,7 +3,7 @@ import { REFRESH_DEFS, recordOutcome, recordRefresh } from "@/lib/health";
 
 // Automated refresh — warms the data caches for every page so the site serves
 // fresh data without anyone doing anything manually. Called by Vercel Cron
-// every 30 minutes (see vercel.json) and manually when needed.
+// once a day (see vercel.json) and manually when needed.
 //
 // Protection: requires the CRON_SECRET env var (set it in the Vercel
 // dashboard). Vercel's cron invocations send it automatically as

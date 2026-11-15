@@ -89,14 +89,14 @@ export default async function StatusPage() {
               in {(snapshot.lastRefresh.durationMs / 1000).toFixed(1)}s.
             </p>
             <p className="mt-1 text-zinc-400">
-              The refresh runs automatically every 30 minutes (Vercel Cron → /api/cron/refresh) and
+              The refresh runs automatically once a day (Vercel Cron → /api/cron/refresh) and
               warms the caches for every page, so data stays fresh with no manual work.
             </p>
           </div>
         ) : (
           <p className="mt-2 text-sm text-zinc-400">
             No automated refresh has been recorded on this server instance yet. The first scheduled
-            refresh runs within 30 minutes of deployment — it needs the{" "}
+            refresh runs within a day of deployment — it needs the{" "}
             <code className="rounded bg-zinc-800 px-1 text-zinc-200">CRON_SECRET</code> environment
             variable set in the Vercel dashboard, otherwise the refresh endpoint refuses to run.
           </p>
@@ -162,7 +162,7 @@ export default async function StatusPage() {
           </li>
           <li>
             The automated refresh (<code className="rounded bg-zinc-800 px-1 text-zinc-200">/api/cron/refresh</code>)
-            runs every 30 minutes and re-fetches every source in turn, so pages serve fresh data.
+            runs once a day and re-fetches every source in turn, so pages serve fresh data.
             It is protected by a secret and never hammers a source (sequential requests, short
             delays, 55s overall cap).
           </li>

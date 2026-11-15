@@ -142,6 +142,28 @@ async function probeHls(channel: string): Promise<number> {
   return 1;
 }
 
+/** Probe the Cloudflare HLS proxy (dprk-hls): the KCTV playlist through it. */
+async function probeCfHls(): Promise<number> {
+  const res = await fetchWithTimeout("https://dprk-hls.hypothernia-apparel.workers.dev/kctv/index.m3u8", 8000, {
+    "User-Agent": UA,
+  });
+  if (!res.ok) throw new Error(`HLS proxy -> HTTP ${res.status}`);
+  const text = await res.text();
+  if (!text.includes("#EXTM3U")) throw new Error("HLS proxy did not return a playlist");
+  return 1;
+}
+
+/** Probe the Cloudflare cron Worker (sweet-bird-3c29): its status endpoint. */
+async function probeCfRefresh(): Promise<number> {
+  const res = await fetchWithTimeout("https://sweet-bird-3c29.hypothernia-apparel.workers.dev/", 8000, {
+    "User-Agent": UA,
+  });
+  if (!res.ok) throw new Error(`Refresh worker -> HTTP ${res.status}`);
+  const text = await res.text();
+  if (!text.includes("CRON_SECRET is set")) throw new Error("Refresh worker secret not set");
+  return 1;
+}
+
 export const SOURCE_DEFS: SourceDef[] = [
   // Koryo Front
   { id: "epg-kctv", name: "Koryo Front — KCTV EPG", provides: "KCTV programme guide", group: "Koryo Front", refresh: true, run: () => probeEpg("kctv") },
@@ -207,6 +229,15 @@ export const SOURCE_DEFS: SourceDef[] = [
   { id: "kp-vok", name: "Voice of Korea", provides: "International radio, Korean, programme text", group: "DPRK sites (.kp)", refresh: true, run: async () => (await getVokNews()).length },
   { id: "kp-korarch", name: "Korean Architecture", provides: "Architecture journal, English, full text", group: "DPRK sites (.kp)", refresh: true, run: async () => (await getKorarchNews()).length },
   { id: "kp-stamps", name: "Korean Stamp", provides: "New stamp issues, stock numbers + PDFs", group: "DPRK sites (.kp)", refresh: true, run: async () => (await getStamps()).length },
+  // Cloudflare Workers (our own infrastructure)
+  {
+    id: "cf-hls", name: "Cloudflare Worker — HLS proxy (dprk-hls)", provides: "Live TV/radio streams via Cloudflare (unmetered)", group: "Cloudflare Workers", refresh: false,
+    run: probeCfHls,
+  },
+  {
+    id: "cf-refresh", name: "Cloudflare Worker — Cron refresh (sweet-bird-3c29)", provides: "Triggers the 30-min cache refresh", group: "Cloudflare Workers", refresh: false,
+    run: probeCfRefresh,
+  },
 ];
 
 // ---------------------------------------------------------------- Probing

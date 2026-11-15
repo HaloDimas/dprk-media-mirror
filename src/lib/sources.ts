@@ -21,21 +21,35 @@ export const KCNA_WATCH = "https://kcnawatch.org";
 const UA = "DPRK-Media-Mirror/1.0 (+https://koryofront.org)";
 
 async function fetchJson<T>(url: string, revalidate = 3600): Promise<T> {
-  const res = await fetch(url, {
-    headers: { "User-Agent": UA, Accept: "application/json" },
-    next: { revalidate },
-  });
-  if (!res.ok) throw new Error(`GET ${url} -> ${res.status}`);
-  return (await res.json()) as T;
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 8000);
+  try {
+    const res = await fetch(url, {
+      headers: { "User-Agent": UA, Accept: "application/json" },
+      next: { revalidate },
+      signal: ctrl.signal,
+    });
+    if (!res.ok) throw new Error(`GET ${url} -> ${res.status}`);
+    return (await res.json()) as T;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 async function fetchText(url: string, revalidate = 3600): Promise<string> {
-  const res = await fetch(url, {
-    headers: { "User-Agent": UA, Accept: "text/html,application/xhtml+xml" },
-    next: { revalidate },
-  });
-  if (!res.ok) throw new Error(`GET ${url} -> ${res.status}`);
-  return await res.text();
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 8000);
+  try {
+    const res = await fetch(url, {
+      headers: { "User-Agent": UA, Accept: "text/html,application/xhtml+xml" },
+      next: { revalidate },
+      signal: ctrl.signal,
+    });
+    if (!res.ok) throw new Error(`GET ${url} -> ${res.status}`);
+    return await res.text();
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 // ---------------------------------------------------------------- EPG
@@ -163,7 +177,16 @@ const KCNW_UA =
 
 export type KcnwBodyResult =
   | { ok: true; blocks: ArticleBlock[]; title: string; date: string }
-  | { ok: false; error: "not_configured" | "session_expired" | "unavailable" | "not_found" };
+  | {
+      ok: false;
+      error: "not_configured" | "session_expired" | "unavailable" | "not_found";
+      debug?: {
+        status?: number;
+        finalUrl?: string;
+        htmlLen?: number;
+        markers?: Record<string, boolean>;
+      };
+    };
 
 /**
  * Fetch a KCNA Watch article page with the session cookie and extract the
@@ -179,9 +202,12 @@ export async function getKcnaWatchArticleBody(url: string): Promise<KcnwBodyResu
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 25000);
     try {
+      // cache: "no-store" — a fresh fetch every time. (Previously next.revalidate
+      // cached the response for 24h, so one blocked/challenged fetch could poison
+      // every later request for the same article.)
       res = await fetch(url, {
         headers: { Cookie: cookie, "User-Agent": KCNW_UA, Accept: "text/html,application/xhtml+xml" },
-        next: { revalidate: 86400 },
+        cache: "no-store",
         signal: ctrl.signal,
       });
     } finally {
@@ -192,14 +218,24 @@ export async function getKcnaWatchArticleBody(url: string): Promise<KcnwBodyResu
   }
   // Expired session: the site 302s to ?popup=free-member-form.
   if (res.url.includes("free-member-form")) return { ok: false, error: "session_expired" };
-  if (!res.ok) return { ok: false, error: res.status === 404 ? "not_found" : "unavailable" };
+  if (!res.ok)
+    return {
+      ok: false,
+      error: res.status === 404 ? "not_found" : "unavailable",
+      debug: { status: res.status, finalUrl: res.url },
+    };
   const html = await res.text();
+  const markers: Record<string, boolean> = {};
+  for (const m of ["article-view", "free-member-form", "cloudflare", "challenge", "turnstile", "Attention", "Just a moment", "cf-challenge"]) {
+    markers[m] = html.toLowerCase().includes(m.toLowerCase());
+  }
+  const debug = { status: res.status, finalUrl: res.url, htmlLen: html.length, markers };
   if (html.includes("free-member-form") && !html.includes("article-view")) {
-    return { ok: false, error: "session_expired" };
+    return { ok: false, error: "session_expired", debug };
   }
   const $ = cheerio.load(html);
   const $content = $(".article-view .article-content").first();
-  if (!$content.length) return { ok: false, error: "not_found" };
+  if (!$content.length) return { ok: false, error: "not_found", debug };
   const blocks: ArticleBlock[] = [];
   $content.find("p").each((_, p) => {
     const $p = $(p);
@@ -234,7 +270,7 @@ export async function getKcnaWatchArticleBody(url: string): Promise<KcnwBodyResu
     $(".article-view .article-date").first().text().replace(/\s+/g, " ").trim() ||
     $(".article-view time").first().attr("datetime") ||
     "";
-  if (!blocks.length) return { ok: false, error: "not_found" };
+  if (!blocks.length) return { ok: false, error: "not_found", debug };
   return { ok: true, blocks, title, date };
 }
 

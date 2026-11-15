@@ -33,8 +33,9 @@ export async function GET(request: NextRequest) {
           : body.error === "not_found"
             ? 404
             : 502;
+    const debug = request.nextUrl.searchParams.get("debug") === "1" ? body.debug : undefined;
     return NextResponse.json(
-      { error: `kcnawatch_${body.error}` },
+      { error: `kcnawatch_${body.error}`, ...(debug ? { debug } : {}) },
       { status, headers: { "Cache-Control": "no-store" } }
     );
   }

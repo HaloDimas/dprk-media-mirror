@@ -172,7 +172,13 @@ export default function AudioPlayer({
 
   return (
     <div>
-      <audio ref={audioRef} preload="none" className="hidden" aria-label={label} />
+      {/* crossOrigin is required: the element is routed through Web Audio
+          (createMediaElementSource) for the Boost gain, and cross-origin
+          media without CORS is silenced by the Web Audio API — that is
+          why the radio went mute on every station once the streams moved
+          to the cross-origin Cloudflare Worker proxy. The Worker sends
+          Access-Control-Allow-Origin: *, so anonymous CORS works. */}
+      <audio ref={audioRef} preload="none" crossOrigin="anonymous" className="hidden" aria-label={label} />
       <div className="flex items-center gap-3">
         <button
           type="button"

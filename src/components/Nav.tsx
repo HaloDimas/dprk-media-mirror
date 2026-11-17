@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { Bookmark, Check, Ellipsis, Menu, Moon, Settings, Sun, X } from "lucide-react";
+import { Bookmark, Check, Menu, Moon, Settings, Sun, X } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { LANGUAGES } from "@/i18n/types";
 import {
@@ -58,8 +58,8 @@ export function NavSearch() {
   );
 }
 
-/** Single "more" menu (desktop only): one 38px Ellipsis button that
- *  replaces the four separate header controls — Settings gear, Saved
+/** Single "more" menu (desktop only): one 38px hamburger (three-line)
+ *  button that replaces the four separate header controls — Settings gear, Saved
  *  bookmark, theme toggle and language selector (commits 19a78ff /
  *  2986874) — which had stretched the controls row too long. The search
  *  box stays visible next to it. The panel closes on Escape, on outside
@@ -146,7 +146,7 @@ export function HeaderMenu() {
         aria-haspopup="menu"
         className="relative z-50 inline-flex shrink-0 items-center justify-center rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-800 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800"
       >
-        <Ellipsis className="h-4 w-4" aria-hidden="true" />
+        <Menu className="h-4 w-4" aria-hidden="true" />
       </button>
       {open && (
         <>

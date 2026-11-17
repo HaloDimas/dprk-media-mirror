@@ -366,6 +366,11 @@ export const en = {
     news8pm: "8pm News",
     activities: "Revolutionary Activities",
     society: "Society & Culture",
+    newsDesc: "8pm News broadcasts available on demand, recorded from Korean Central Television.",
+    activitiesDesc:
+      "All Revolutionary Activities broadcasts available on demand, recorded from Korean Central Television.",
+    societyDesc:
+      "Society & Culture broadcasts available on demand, recorded from Korean Central Television.",
     from: "From",
     to: "To",
     sort: "Sort",
@@ -373,6 +378,7 @@ export const en = {
     oldestFirst: "Oldest first",
     clearDates: "Clear dates",
     countsLine: "{shown} of {total} recordings · 8pm News {news} · Revolutionary Activities {activities} · Society & Culture {society}",
+    videosCount: "{count} videos",
     watchHere: "Watch here",
     noMatch: "No recordings match your filters.",
   },

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Play } from "lucide-react";
 import type { RecordingItem } from "@/lib/types";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -18,6 +18,74 @@ const CAT_KEY: Record<string, string> = {
   activities: "recordings.activities",
   society: "recordings.society",
 };
+
+const CAT_DESC_KEY: Record<string, string> = {
+  news: "recordings.newsDesc",
+  activities: "recordings.activitiesDesc",
+  society: "recordings.societyDesc",
+};
+
+/** One Juche-style VOD card: 16:9 thumbnail on top, then title (max 2
+ *  lines), date and a Watch button. Clicking the thumbnail plays the
+ *  video too. A thumbnail that fails to load is replaced by a dark tile
+ *  with a Play icon — never a broken-image icon. */
+function RecordingCard({ it, onPlay }: { it: RecordingItem; onPlay: (it: RecordingItem) => void }) {
+  const [thumbError, setThumbError] = useState(false);
+  // An image that fails before hydration never fires onError (no listener
+  // is attached yet). The ref callback runs at commit time and catches
+  // images that already finished loading with an error.
+  const imgRef = useCallback((el: HTMLImageElement | null) => {
+    if (el && el.complete && el.naturalWidth === 0) setThumbError(true);
+  }, []);
+  const showThumb = !thumbError && Boolean(it.thumb);
+  return (
+    <li className="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 transition-colors hover:border-red-800">
+      <button
+        type="button"
+        onClick={() => onPlay(it)}
+        aria-label={it.title}
+        className="group relative block aspect-video w-full cursor-pointer overflow-hidden bg-zinc-900"
+      >
+        {showThumb ? (
+          <img
+            ref={imgRef}
+            src={it.thumb}
+            alt={it.title}
+            loading="lazy"
+            onError={() => setThumbError(true)}
+            className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+          />
+        ) : (
+          <span className="flex h-full w-full items-center justify-center bg-zinc-900">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-red-700 text-white">
+              <Play className="h-5 w-5" fill="currentColor" aria-hidden="true" />
+            </span>
+          </span>
+        )}
+        {showThumb && (
+          <span className="absolute inset-0 flex items-center justify-center bg-black/0 opacity-0 transition-opacity duration-200 group-hover:bg-black/30 group-hover:opacity-100">
+            <span className="flex h-12 w-12 items-center justify-center rounded-full bg-red-700/90 text-white shadow-lg">
+              <Play className="h-5 w-5" fill="currentColor" aria-hidden="true" />
+            </span>
+          </span>
+        )}
+      </button>
+      <div className="p-4">
+        <span className="rounded bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-[11px] text-zinc-700 dark:text-zinc-300">
+          <T k={CAT_KEY[it.category]} />
+        </span>
+        <h2 className="mt-2 line-clamp-2 text-sm font-medium leading-snug text-zinc-900 dark:text-zinc-100">{it.title}</h2>
+        <p className="mt-1 text-xs text-zinc-500">{it.date}</p>
+        <button
+          onClick={() => onPlay(it)}
+          className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-red-700 px-3 py-2 text-sm font-medium text-white hover:bg-red-600"
+        >
+          <Play className="h-4 w-4" fill="currentColor" aria-hidden="true" /> <T k="recordings.watchHere" />
+        </button>
+      </div>
+    </li>
+  );
+}
 
 export default function RecordingsBrowser({ items }: { items: RecordingItem[] }) {
   const { t } = useLanguage();
@@ -146,27 +214,26 @@ export default function RecordingsBrowser({ items }: { items: RecordingItem[] })
         />
       </p>
 
-      <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {cat !== "all" && (
+        <div className="mt-6">
+          <h2 className="text-3xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-4xl">
+            <T k={CAT_KEY[cat]} />
+          </h2>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-zinc-600 dark:text-zinc-400 sm:text-base">
+            <T k={CAT_DESC_KEY[cat]} />
+          </p>
+          <p className="mt-3 text-sm text-zinc-500">
+            <T k="recordings.videosCount" values={{ count: filtered.length }} />
+          </p>
+        </div>
+      )}
+
+      <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {filtered.map((it) => (
-          <li
-            key={it.slug}
-            className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-4 transition-colors hover:border-red-800"
-          >
-            <span className="rounded bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-[11px] text-zinc-700 dark:text-zinc-300">
-              <T k={CAT_KEY[it.category]} />
-            </span>
-            <h2 className="mt-2 text-sm font-medium leading-snug text-zinc-900 dark:text-zinc-100">{it.title}</h2>
-            <p className="mt-1 text-xs text-zinc-500">{it.date}</p>
-            <button
-              onClick={() => setPlaying(it)}
-              className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-red-700 px-3 py-2 text-sm font-medium text-white hover:bg-red-600"
-            >
-              <Play className="h-4 w-4" fill="currentColor" aria-hidden="true" /> <T k="recordings.watchHere" />
-            </button>
-          </li>
+          <RecordingCard key={it.slug} it={it} onPlay={setPlaying} />
         ))}
         {filtered.length === 0 && (
-          <li className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-6 text-center text-sm text-zinc-600 dark:text-zinc-400 sm:col-span-2 lg:col-span-3">
+          <li className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-6 text-center text-sm text-zinc-600 dark:text-zinc-400 sm:col-span-2 lg:col-span-3 xl:col-span-4">
             <T k="recordings.noMatch" />
           </li>
         )}

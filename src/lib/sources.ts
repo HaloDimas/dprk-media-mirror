@@ -1175,9 +1175,11 @@ export async function getRecordings(): Promise<RecordingItem[]> {
   try {
     const raw = await fetchJson<RawMediaList>(`${KORYO_FRONT}/api/kctv/media-list`, 21600);
     const out: RecordingItem[] = [];
-    for (const r of raw.news || []) out.push({ ...r, category: "news" });
-    for (const r of raw.activities || []) out.push({ ...r, category: "activities" });
-    for (const r of raw.societyAndCulture || []) out.push({ ...r, category: "society" });
+    const thumb = (url: string) =>
+      `${KORYO_FRONT}/api/kctv/thumb?path=${encodeURIComponent(url)}&t=5`;
+    for (const r of raw.news || []) out.push({ ...r, category: "news", thumb: thumb(r.url) });
+    for (const r of raw.activities || []) out.push({ ...r, category: "activities", thumb: thumb(r.url) });
+    for (const r of raw.societyAndCulture || []) out.push({ ...r, category: "society", thumb: thumb(r.url) });
     return out.sort((a, b) => (a.date < b.date ? 1 : -1));
   } catch {
     return [];

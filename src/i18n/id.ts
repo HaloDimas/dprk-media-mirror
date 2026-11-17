@@ -365,6 +365,11 @@ export const id: Dictionary = {
     news8pm: "Berita jam 8",
     activities: "Kegiatan Revolusioner",
     society: "Masyarakat & Budaya",
+    newsDesc: "Siaran Berita jam 8 tersedia on demand, direkam dari Korean Central Television.",
+    activitiesDesc:
+      "Semua siaran Kegiatan Revolusioner tersedia on demand, direkam dari Korean Central Television.",
+    societyDesc:
+      "Siaran Masyarakat & Budaya tersedia on demand, direkam dari Korean Central Television.",
     from: "Dari",
     to: "Sampai",
     sort: "Urutkan",
@@ -372,6 +377,7 @@ export const id: Dictionary = {
     oldestFirst: "Terlama dulu",
     clearDates: "Hapus tanggal",
     countsLine: "{shown} dari {total} rekaman · Berita jam 8 {news} · Kegiatan Revolusioner {activities} · Masyarakat & Budaya {society}",
+    videosCount: "{count} video",
     watchHere: "Tonton di sini",
     noMatch: "Tidak ada rekaman yang cocok dengan filter Anda.",
   },

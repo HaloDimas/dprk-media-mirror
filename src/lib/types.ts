@@ -152,6 +152,7 @@ export interface RecordingItem {
   date: string;
   slug: string;
   category: "news" | "activities" | "society";
+  thumb: string; // KoryoFront frame at t=5s (api/kctv/thumb) — served from the source, not stored here
 }
 
 export interface PublicationItem {

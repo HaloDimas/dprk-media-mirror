@@ -12,7 +12,7 @@ export default function Loading() {
           <div key={i} className="h-9 w-28 animate-pulse rounded-full bg-zinc-800" />
         ))}
       </div>
-      <Spinner label="Memuat jadwal..." />
+      <Spinner label="Loading schedule..." />
       <div className="mt-8 space-y-2">
         {Array.from({ length: 8 }).map((_, i) => (
           <div

@@ -1,7 +1,7 @@
 /** Shared loading UI: shown instantly on navigation while a route loads,
     so users never stare at a frozen-looking page. */
 
-export function Spinner({ label = "Memuat..." }: { label?: string }) {
+export function Spinner({ label = "Loading..." }: { label?: string }) {
   return (
     <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
       <div

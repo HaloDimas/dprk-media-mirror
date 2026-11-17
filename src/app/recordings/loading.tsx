@@ -7,7 +7,7 @@ export default function Loading() {
         <div className="h-8 w-48 animate-pulse rounded bg-zinc-800" />
         <div className="mt-2 h-4 w-96 max-w-full animate-pulse rounded bg-zinc-800" />
       </div>
-      <Spinner label="Memuat rekaman..." />
+      <Spinner label="Loading recordings..." />
       <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {Array.from({ length: 6 }).map((_, i) => (
           <SkeletonCard key={i} />

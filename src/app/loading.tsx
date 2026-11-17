@@ -1,5 +1,5 @@
 import { Spinner } from "@/components/LoadingScreen";
 
 export default function Loading() {
-  return <Spinner label="Memuat halaman..." />;
+  return <Spinner label="Loading page..." />;
 }

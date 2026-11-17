@@ -10,22 +10,33 @@ export default function PrivacyPage() {
   return (
     <div className="mx-auto max-w-3xl">
       <h1 className="text-2xl font-bold text-white">Privacy Policy</h1>
-      <p className="mt-2 text-sm text-zinc-400">Last updated: 15 November 2026.</p>
+      <p className="mt-2 text-sm text-zinc-400">Last updated: 17 November 2026.</p>
 
       <h2 className="mt-8 text-lg font-semibold text-white">Short version</h2>
       <p className="mt-2 text-sm leading-relaxed text-zinc-300">
         This site has no accounts, no sign-in, and no tracking of who you are. It does not set
-        cookies for you, does not run third-party analytics or advertising, and does not sell or
-        share personal data — because it does not collect any.
+        cookies for you, does not run advertising, and does not sell or share personal data —
+        because it does not collect any. The only measurement is Vercel Analytics and Speed
+        Insights (see below), which count page visits and loading speed without cookies and
+        without identifying you.
       </p>
 
       <h2 className="mt-8 text-lg font-semibold text-white">What we do not collect</h2>
       <ul className="mt-2 list-disc space-y-1 pl-5 text-sm leading-relaxed text-zinc-300">
         <li>No accounts, usernames, email addresses, or passwords.</li>
-        <li>No analytics, advertising, or third-party tracking scripts.</li>
+        <li>No advertising or third-party tracking scripts.</li>
         <li>No cookies set by this site in your browser.</li>
         <li>No payment information — nothing on this site is sold.</li>
       </ul>
+
+      <h2 className="mt-8 text-lg font-semibold text-white">Analytics (Vercel)</h2>
+      <p className="mt-2 text-sm leading-relaxed text-zinc-300">
+        The site uses Vercel Analytics and Speed Insights, the hosting provider&apos;s own
+        measurement tools, to see which pages are visited and how fast they load. They do not
+        use cookies, do not collect personal identifiers, and do not track you across other
+        sites. This mirror does not read, combine, or use that data to identify individual
+        visitors.
+      </p>
 
       <h2 className="mt-8 text-lg font-semibold text-white">What the hosting provider sees</h2>
       <p className="mt-2 text-sm leading-relaxed text-zinc-300">

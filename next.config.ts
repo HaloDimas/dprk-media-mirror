@@ -9,13 +9,15 @@ import type { NextConfig } from "next";
 //   (dprk-hls) with a same-origin /api/hls fallback; hls.js fetches them
 //   via XHR (connect-src) while Safari native HLS loads them through the
 //   media element (media-src), so both directives list the proxy + CDN.
+// - Recording thumbnails come from KoryoFront (img-src must list it,
+//   otherwise browsers block every thumbnail and cards show the fallback).
 // - Vercel Analytics / Speed Insights scripts + beacons.
 // - The PDF viewer iframe loads same-origin /api/pubfile URLs (frame-src).
 const CSP = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline' https://va.vercel-scripts.com",
   "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob:",
+  "img-src 'self' data: blob: https://koryofront.org",
   "media-src 'self' blob: https://dprk-hls.hypothernia-apparel.workers.dev https://live.koryocdn.org",
   "connect-src 'self' https://dprk-hls.hypothernia-apparel.workers.dev https://live.koryocdn.org https://va.vercel-scripts.com https://vitals.vercel-insights.com",
   "font-src 'self'",

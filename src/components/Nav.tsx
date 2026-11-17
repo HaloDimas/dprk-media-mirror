@@ -3,8 +3,9 @@
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Menu, Settings, X } from "lucide-react";
+import { Bookmark, Menu, Settings, X } from "lucide-react";
 import { useLanguage } from "@/i18n/LanguageContext";
+import { useSaved } from "@/lib/saved";
 
 const LINKS = [
   { href: "/", key: "nav.home" },
@@ -35,7 +36,7 @@ export function NavSearch() {
         const query = q.trim();
         router.push(query ? `/search?q=${encodeURIComponent(query)}` : "/search");
       }}
-      className="flex w-full items-center sm:w-36"
+      className="flex w-full items-center sm:w-28"
     >
       <input
         type="search"
@@ -68,6 +69,36 @@ export function SettingsGear() {
       }`}
     >
       <Settings className="h-4 w-4" aria-hidden="true" />
+    </Link>
+  );
+}
+
+/** Saved bookmark button (desktop only): icon-only, ~38px, same button
+ *  styling as the Settings gear, rendered in layout.tsx's controls row
+ *  between the gear and the theme toggle. The icon fills when saved
+ *  items exist (live via useSaved, which syncs on dprk-saved-changed)
+ *  — it starts empty and fills after mount, so there is no hydration
+ *  mismatch. Mobile gets a text entry in the hamburger menu below. */
+export function SavedBookmark() {
+  const pathname = usePathname();
+  const { t } = useLanguage();
+  const { items } = useSaved();
+  const active = pathname === "/saved";
+  const hasSaved = items.length > 0;
+  return (
+    <Link
+      href="/saved"
+      aria-label={t("nav.saved")}
+      title={t("nav.saved")}
+      className={`hidden shrink-0 items-center justify-center rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-800 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 xl:inline-flex ${
+        active ? "bg-zinc-100 dark:bg-zinc-800" : ""
+      }`}
+    >
+      <Bookmark
+        className="h-4 w-4"
+        aria-hidden="true"
+        fill={hasSaved ? "currentColor" : "none"}
+      />
     </Link>
   );
 }
@@ -135,6 +166,17 @@ export default function Nav() {
             }`}
           >
             {t("nav.settings")}
+          </Link>
+          <Link
+            href="/saved"
+            onClick={() => setOpen(false)}
+            className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+              active("/saved")
+                ? "bg-red-700 text-white"
+                : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white"
+            }`}
+          >
+            {t("nav.saved")}
           </Link>
         </nav>
       )}

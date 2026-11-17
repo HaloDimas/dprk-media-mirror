@@ -18,6 +18,7 @@ export const id: Dictionary = {
     menu: "Menu",
     toggleMenuAria: "Buka/tutup menu",
     settings: "Pengaturan",
+    saved: "Tersimpan",
   },
   lang: {
     buttonAria: "Ganti bahasa",

@@ -19,6 +19,7 @@ export const en = {
     menu: "Menu",
     toggleMenuAria: "Toggle menu",
     settings: "Settings",
+    saved: "Saved",
   },
   lang: {
     buttonAria: "Change language",

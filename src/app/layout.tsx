@@ -4,10 +4,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import { Suspense } from "react";
-import Nav, { NavSearch, SavedBookmark, SettingsGear } from "@/components/Nav";
+import Nav, { HeaderMenu, NavSearch } from "@/components/Nav";
 import SettingsApplier from "@/components/SettingsApplier";
-import ThemeToggle from "@/components/ThemeToggle";
-import LanguageSelector from "@/components/LanguageSelector";
 import { LanguageProvider } from "@/i18n/LanguageContext";
 import { T } from "@/i18n/T";
 import "./globals.css";
@@ -100,10 +98,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <Nav />
               <div className="flex w-full shrink-0 items-center gap-1.5 sm:w-auto">
                 <NavSearch />
-                <SettingsGear />
-                <SavedBookmark />
-                <ThemeToggle />
-                <LanguageSelector />
+                <HeaderMenu />
               </div>
             </Suspense>
           </div>

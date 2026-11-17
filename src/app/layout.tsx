@@ -28,19 +28,19 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col bg-zinc-950 text-zinc-100">
         <header className="border-b border-zinc-800 bg-zinc-950/95">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-4 gap-y-3 px-4 py-4">
+          <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-3 px-4 py-4">
             <Link href="/" className="flex shrink-0 items-baseline gap-2">
               <span className="text-lg font-bold tracking-tight text-white">
                 DPRK <span className="text-red-500">Media Mirror</span>
               </span>
-              <span className="hidden text-xs text-zinc-500 sm:inline">조선 매체</span>
+              <span className="hidden text-xs text-zinc-500 xl:inline">조선 매체</span>
             </Link>
             <Suspense
               fallback={
-                <nav className="flex flex-wrap gap-1" aria-hidden="true">
-                  {["Home", "Live TV", "Schedule", "News", "Radio", "Recordings", "Publications", "Directory"].map(
+                <nav className="hidden flex-wrap gap-1 xl:flex" aria-hidden="true">
+                  {["Home", "Live TV", "Schedule", "News", "Radio", "Recordings", "Publications", "Directory", "Sources", "Status"].map(
                     (label) => (
-                      <span key={label} className="rounded-md px-3 py-1.5 text-sm font-medium text-zinc-300">
+                      <span key={label} className="rounded-md px-2 py-1.5 text-[13px] font-medium text-zinc-300">
                         {label}
                       </span>
                     )

@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import HlsPlayer from "@/components/HlsPlayer";
+import { programTitle, useLanguage } from "@/i18n/LanguageContext";
+import { T } from "@/i18n/T";
 import { CHANNELS, findNowNext, nowPyt, todayPyt, type ChannelId, type EpgData, type Program } from "@/lib/types";
 
 const TV = CHANNELS.filter((c) => c.kind === "tv");
@@ -30,6 +32,7 @@ function koryoTvUrl(channel: ChannelId): string {
 }
 
 export default function LivePage() {
+  const { lang, t } = useLanguage();
   const [channel, setChannel] = useState<ChannelId>("kctv");
   // Video server: Koryo Front CDN (embedded player) or Koryo TV (their own
   // player — Koryo TV binds its sessions to the viewer's IP, so it cannot
@@ -88,20 +91,29 @@ export default function LivePage() {
   }, [channel, info.status, info.hls]);
 
   const { now: nowProg, next: nextProg } = epg ? findNowNext(epg.programs, now) : { now: null, next: null };
+  const nowTitle = nowProg ? programTitle(nowProg, lang) : null;
+  const nextTitle = nextProg ? programTitle(nextProg, lang) : null;
 
   return (
     <div className="space-y-5">
-      <h1 className="text-xl font-bold text-zinc-900 dark:text-white">Live TV</h1>
+      <h1 className="text-xl font-bold text-zinc-900 dark:text-white">
+        <T k="live.title" />
+      </h1>
 
-      <section aria-label="Now on all channels">
+      <section aria-label={t("live.nowOnAll")}>
         <h2 className="border-l-4 border-red-700 pl-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-          Now on all channels <span className="font-normal text-zinc-500">· Pyongyang time {now}</span>
+          <T k="live.nowOnAll" />{" "}
+          <span className="font-normal text-zinc-500">
+            · <T k="live.pyongyangTime" values={{ time: now }} />
+          </span>
         </h2>
         <div className="mt-3 grid gap-3 sm:grid-cols-3">
           {TV.filter((c) => c.status === "live" && c.hls).map((c) => {
             const d = allEpg[c.id];
             const { now: n, next: nx } = d ? findNowNext(d.programs, now) : { now: null, next: null };
             const selected = channel === c.id;
+            const nTitle = n ? programTitle(n, lang) : null;
+            const nxTitle = nx ? programTitle(nx, lang) : null;
             return (
               <button
                 key={c.id}
@@ -114,19 +126,31 @@ export default function LivePage() {
               >
                 <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                   {c.name} <span className="font-normal text-zinc-500">· {c.korean}</span>
-                  {selected && <span className="ml-2 rounded bg-red-700 px-1.5 py-0.5 text-[10px] text-white">WATCHING</span>}
+                  {selected && (
+                    <span className="ml-2 rounded bg-red-700 px-1.5 py-0.5 text-[10px] text-white">
+                      <T k="live.watching" />
+                    </span>
+                  )}
                 </p>
-                {n ? (
+                {n && nTitle ? (
                   <p className="mt-1.5 text-sm text-zinc-800 dark:text-zinc-200">
-                    <span className="font-semibold text-red-600 dark:text-red-400">Now:</span> {n.en}
+                    <span className="font-semibold text-red-600 dark:text-red-400">
+                      <T k="common.now" />:
+                    </span>{" "}
+                    {nTitle.primary}
                     <span className="text-zinc-500"> ({n.start}–{n.end})</span>
                   </p>
                 ) : (
-                  <p className="mt-1.5 text-sm text-zinc-600 dark:text-zinc-400">Off air at this hour.</p>
+                  <p className="mt-1.5 text-sm text-zinc-600 dark:text-zinc-400">
+                    <T k="live.offAir" />
+                  </p>
                 )}
-                {nx && (
+                {nx && nxTitle && (
                   <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
-                    <span className="font-semibold text-zinc-700 dark:text-zinc-300">Next:</span> {nx.en}
+                    <span className="font-semibold text-zinc-700 dark:text-zinc-300">
+                      <T k="common.next" />:
+                    </span>{" "}
+                    {nxTitle.primary}
                     <span className="text-zinc-500"> ({nx.start}–{nx.end})</span>
                   </p>
                 )}
@@ -136,7 +160,7 @@ export default function LivePage() {
         </div>
       </section>
 
-      <div className="flex flex-wrap gap-1" role="tablist" aria-label="TV channels">
+      <div className="flex flex-wrap gap-1" role="tablist" aria-label={t("live.channelsAria")}>
         {TV.map((c) => (
           <button
             key={c.id}
@@ -154,16 +178,20 @@ export default function LivePage() {
 
       {info.status === "coming-soon" ? (
         <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-8 text-center">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{info.name} — Coming Soon</h2>
+          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+            {info.name} <T k="live.comingSoon" />
+          </h2>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-            {info.korean} — {info.note}. There is no live stream or programme guide for this channel yet.
+            {info.korean} — {info.note}. <T k="live.comingSoonDesc" />
           </p>
         </div>
       ) : (
         <>
           {/* Video server switcher. */}
-          <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Video server">
-            <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Server:</span>
+          <div className="flex flex-wrap items-center gap-2" role="group" aria-label={t("live.videoServerAria")}>
+            <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+              <T k="live.server" />
+            </span>
             <button
               type="button"
               onClick={() => setServer("koryofront")}
@@ -172,7 +200,7 @@ export default function LivePage() {
                 server === "koryofront" ? "bg-red-700 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
               }`}
             >
-              Koryo Front
+              <T k="live.koryoFront" />
             </button>
             <button
               type="button"
@@ -182,10 +210,12 @@ export default function LivePage() {
                 server === "koryotv" ? "bg-red-700 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
               }`}
             >
-              Koryo TV
+              <T k="live.koryoTv" />
             </button>
             {server === "koryotv" && (
-              <span className="text-xs text-zinc-500">Opens on koryo.tv (its own player).</span>
+              <span className="text-xs text-zinc-500">
+                <T k="live.opensOnKoryoTv" />
+              </span>
             )}
           </div>
 
@@ -193,11 +223,11 @@ export default function LivePage() {
             <HlsPlayer channel={info.hls!} title={`${info.name} Live`} />
           ) : (
             <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-8 text-center">
-              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Watch {info.name} on Koryo TV</h2>
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+                <T k="live.watchOnKoryoTv" values={{ name: info.name }} />
+              </h2>
               <p className="mx-auto mt-2 max-w-md text-sm text-zinc-600 dark:text-zinc-400">
-                Koryo TV binds its streams to each viewer&apos;s own connection, so it can&apos;t play
-                inside this mirror. If the Koryo Front server isn&apos;t working, watch the same
-                channel on Koryo TV&apos;s own player instead.
+                <T k="live.watchOnKoryoTvDesc" />
               </p>
               <a
                 href={koryoTvUrl(channel)}
@@ -205,7 +235,7 @@ export default function LivePage() {
                 rel="noopener noreferrer"
                 className="mt-4 inline-flex items-center gap-2 rounded-lg bg-red-700 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-600"
               >
-                Watch {info.name} on Koryo TV
+                <T k="live.watchOnKoryoTv" values={{ name: info.name }} />
                 <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
               </a>
             </div>
@@ -213,7 +243,7 @@ export default function LivePage() {
 
           {/* NOW ON AIR — Koryo Front style: current programme + live progress. */}
           <section
-            aria-label="Now on air"
+            aria-label={t("live.nowOnAirAria")}
             className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60"
           >
             <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 px-4 py-3">
@@ -221,17 +251,21 @@ export default function LivePage() {
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
                 <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
               </span>
-              <span className="text-xs font-bold uppercase tracking-widest text-zinc-700 dark:text-zinc-300">Now on air</span>
-              <span className="ml-auto text-xs text-zinc-500">Pyongyang time {now}</span>
+              <span className="text-xs font-bold uppercase tracking-widest text-zinc-700 dark:text-zinc-300">
+                <T k="live.nowOnAir" />
+              </span>
+              <span className="ml-auto text-xs text-zinc-500">
+                <T k="live.pyongyangTime" values={{ time: now }} />
+              </span>
             </div>
             <div className="px-4 py-4">
-              {nowProg ? (
+              {nowProg && nowTitle ? (
                 <>
                   <span className="inline-block rounded bg-blue-100 dark:bg-blue-900/70 px-2 py-0.5 text-xs font-medium text-blue-800 dark:text-blue-200">
                     {nowProg.category}
                   </span>
-                  <h2 className="mt-2 text-lg font-bold leading-snug text-zinc-900 dark:text-white">{nowProg.en}</h2>
-                  {nowProg.ko && <p className="mt-0.5 text-sm text-zinc-600 dark:text-zinc-400">{nowProg.ko}</p>}
+                  <h2 className="mt-2 text-lg font-bold leading-snug text-zinc-900 dark:text-white">{nowTitle.primary}</h2>
+                  {nowTitle.secondary && <p className="mt-0.5 text-sm text-zinc-600 dark:text-zinc-400">{nowTitle.secondary}</p>}
                   <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
                     {nowProg.start} – {nowProg.end}
                   </p>
@@ -242,45 +276,51 @@ export default function LivePage() {
                     aria-valuenow={Math.round(progressPct(nowProg, now))}
                     aria-valuemin={0}
                     aria-valuemax={100}
-                    aria-label="Progress through the current programme"
+                    aria-label={t("live.progressAria")}
                   >
                     <div
                       className="h-full rounded-full bg-red-600 transition-[width] duration-1000"
                       style={{ width: `${progressPct(nowProg, now)}%` }}
                     />
                   </div>
-                  {nextProg && (
+                  {nextProg && nextTitle && (
                     <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
-                      <span className="font-semibold text-zinc-700 dark:text-zinc-300">Next:</span> {nextProg.en}{" "}
+                      <span className="font-semibold text-zinc-700 dark:text-zinc-300">
+                        <T k="common.next" />:
+                      </span>{" "}
+                      {nextTitle.primary}{" "}
                       <span className="text-zinc-500">({nextProg.start} – {nextProg.end})</span>
                     </p>
                   )}
                 </>
               ) : (
                 <p className="text-sm text-zinc-600 dark:text-zinc-400">
-                  Off air at this hour. Check the programme guide below for broadcast hours.
+                  <T k="live.offAirNow" />
                 </p>
               )}
             </div>
           </section>
 
           {/* Programme guide for this channel, today. */}
-          <section aria-label="Programme guide">
+          <section aria-label={t("live.guideAria")}>
             <div className="flex items-baseline justify-between gap-3">
               <div>
-                <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Programme Guide</h2>
+                <h2 className="text-lg font-bold text-zinc-900 dark:text-white">
+                  <T k="live.guide" />
+                </h2>
                 <p className="text-sm text-zinc-500">
-                  {info.name} · {info.korean} · Today
+                  {info.name} · {info.korean} · <T k="live.today" />
                 </p>
               </div>
               <a href="/schedule" className="inline-flex shrink-0 items-center gap-1 text-sm text-red-600 dark:text-red-400 hover:underline">
-                Full schedule <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                <T k="live.fullSchedule" /> <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
               </a>
             </div>
             <div className="mt-3 overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
               {epg && epg.programs.length > 0 ? (
                 epg.programs.map((p) => {
                   const isNow = nowProg === p;
+                  const title = programTitle(p, lang);
                   return (
                     <div
                       key={`${p.start}-${p.en}`}
@@ -294,14 +334,14 @@ export default function LivePage() {
                       </div>
                       <div className="min-w-0">
                         <p className="text-sm font-medium leading-snug text-zinc-900 dark:text-zinc-100">
-                          {p.en}
+                          {title.primary}
                           {isNow && (
                             <span className="ml-2 rounded bg-red-700 px-1.5 py-0.5 align-middle text-[10px] font-bold uppercase text-white">
-                              Now
+                              <T k="common.now" />
                             </span>
                           )}
                         </p>
-                        {p.ko && <p className="mt-0.5 text-xs text-zinc-500">{p.ko}</p>}
+                        {title.secondary && <p className="mt-0.5 text-xs text-zinc-500">{title.secondary}</p>}
                         <span className="mt-1.5 inline-block rounded bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-zinc-600 dark:text-zinc-400">
                           {p.category}
                         </span>
@@ -311,12 +351,14 @@ export default function LivePage() {
                 })
               ) : (
                 <p className="bg-white/60 dark:bg-zinc-900/60 px-4 py-6 text-sm text-zinc-600 dark:text-zinc-400">
-                  Programme guide unavailable for this channel right now.
+                  <T k="live.guideUnavailable" />
                 </p>
               )}
             </div>
             {info.id === "ryongnamsan" && (
-              <p className="mt-2 text-xs text-zinc-500">Ryongnamsan TV broadcasts on weekdays only.</p>
+              <p className="mt-2 text-xs text-zinc-500">
+                <T k="live.ryongnamsanWeekdays" />
+              </p>
             )}
           </section>
         </>

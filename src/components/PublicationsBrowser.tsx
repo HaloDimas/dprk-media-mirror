@@ -2,6 +2,8 @@
 
 import { useMemo, useState } from "react";
 import type { PeriodicalItem, PublicationItem, StampIssue } from "@/lib/types";
+import { useLanguage } from "@/i18n/LanguageContext";
+import { T } from "@/i18n/T";
 
 function formatSize(bytes: number): string {
   if (!bytes) return "";
@@ -19,6 +21,7 @@ export default function PublicationsBrowser({
   periodicals: PeriodicalItem[];
   stamps: StampIssue[];
 }) {
+  const { t } = useLanguage();
   const [q, setQ] = useState("");
   const [type, setType] = useState<"all" | "newspaper" | "magazine" | "book" | "periodical">("all");
   const [pub, setPub] = useState<string>("all");
@@ -109,7 +112,7 @@ export default function PublicationsBrowser({
               onClick={() => setViewing(null)}
               className="rounded-md bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 text-xs text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
             >
-              Close viewer
+              <T k="publications.closeViewer" />
             </button>
           </div>
           <iframe
@@ -118,7 +121,7 @@ export default function PublicationsBrowser({
             className="h-[70vh] w-full rounded-lg bg-white"
           />
           <p className="mt-2 text-xs text-zinc-500">
-            The PDF is displayed in this site&apos;s own viewer, served through this site&apos;s file proxy.
+            <T k="publications.viewerNote" />
           </p>
         </div>
       )}
@@ -128,23 +131,35 @@ export default function PublicationsBrowser({
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search titles…" aria-label="Search titles"
+          placeholder={t("publications.searchPlaceholder")} aria-label={t("publications.searchAria")}
           className="min-w-56 flex-1 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
         />
         <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
-          Type
+          <T k="publications.type" />
           <select value={type} onChange={(e) => setType(e.target.value as typeof type)} className={selectCls}>
-            <option value="all">All ({publications.length + periodicals.length})</option>
-            <option value="newspaper">Newspaper ({typeCounts.newspaper ?? 0})</option>
-            <option value="magazine">Magazine ({typeCounts.magazine ?? 0})</option>
-            <option value="book">Book ({typeCounts.book ?? 0})</option>
-            <option value="periodical">Periodical ({periodicals.length})</option>
+            <option value="all">
+              <T k="publications.all" values={{ n: publications.length + periodicals.length }} />
+            </option>
+            <option value="newspaper">
+              <T k="publications.newspaper" values={{ n: typeCounts.newspaper ?? 0 }} />
+            </option>
+            <option value="magazine">
+              <T k="publications.magazine" values={{ n: typeCounts.magazine ?? 0 }} />
+            </option>
+            <option value="book">
+              <T k="publications.book" values={{ n: typeCounts.book ?? 0 }} />
+            </option>
+            <option value="periodical">
+              <T k="publications.periodical" values={{ n: periodicals.length }} />
+            </option>
           </select>
         </label>
         <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
-          Publication
+          <T k="publications.publication" />
           <select value={pub} onChange={(e) => setPub(e.target.value)} className={`${selectCls} w-44 sm:w-56`}>
-            <option value="all">All publications</option>
+            <option value="all">
+              <T k="publications.allPublications" />
+            </option>
             {pubNames.map((n) => (
               <option key={n} value={n}>
                 {n}
@@ -153,9 +168,11 @@ export default function PublicationsBrowser({
           </select>
         </label>
         <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
-          Year
+          <T k="publications.year" />
           <select value={year} onChange={(e) => setYear(e.target.value)} className={selectCls}>
-            <option value="all">All years</option>
+            <option value="all">
+              <T k="publications.allYears" />
+            </option>
             {years.map((y) => (
               <option key={y} value={y}>
                 {y}
@@ -164,23 +181,29 @@ export default function PublicationsBrowser({
           </select>
         </label>
         <label className="ml-auto flex min-w-0 items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
-          Sort
+          <T k="publications.sort" />
           <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} className={selectCls}>
-            <option value="newest">Newest first</option>
-            <option value="oldest">Oldest first</option>
-            <option value="title">Title A–Z</option>
+            <option value="newest">
+              <T k="publications.newestFirst" />
+            </option>
+            <option value="oldest">
+              <T k="publications.oldestFirst" />
+            </option>
+            <option value="title">
+              <T k="publications.titleAZ" />
+            </option>
           </select>
         </label>
       </div>
 
       <p className="mt-3 text-xs text-zinc-500">
-        {pubs.length + pers.length} of {publications.length + periodicals.length} items.
+        <T k="publications.countOf" values={{ shown: pubs.length + pers.length, total: publications.length + periodicals.length }} />
       </p>
 
       {stamps.length > 0 && (
         <>
           <h2 className="mt-8 border-l-4 border-red-700 pl-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-            New stamp issues — Korean Stamp ({stamps.length})
+            <T k="publications.stampHeading" values={{ n: stamps.length }} />
           </h2>
           <ul className="mt-3 space-y-2">
             {stamps.map((s) => (
@@ -189,7 +212,7 @@ export default function PublicationsBrowser({
                 className="flex flex-wrap items-center gap-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 px-4 py-3"
               >
                 <span className="rounded bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-xs text-zinc-700 dark:text-zinc-300">
-                  Stock No. {s.stockNo}
+                  <T k="publications.stockNo" values={{ n: s.stockNo }} />
                 </span>
                 <span className="text-sm font-medium text-zinc-900 dark:text-zinc-100">{s.title}</span>
                 <span className="text-xs text-zinc-500">{s.date}</span>
@@ -198,7 +221,7 @@ export default function PublicationsBrowser({
                     href={s.pdf}
                     className="ml-auto rounded-md bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 text-xs font-medium text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700"
                   >
-                    Download PDF
+                    <T k="publications.downloadPdf" />
                   </a>
                 )}
               </li>
@@ -208,7 +231,7 @@ export default function PublicationsBrowser({
       )}
 
       <h2 className="mt-8 border-l-4 border-red-700 pl-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-        Newspapers, magazines &amp; books ({pubs.length})
+        <T k="publications.papersHeading" values={{ n: pubs.length }} />
       </h2>
       <ul className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {pubs.map((p) => (
@@ -232,13 +255,13 @@ export default function PublicationsBrowser({
                   onClick={() => setViewing({ title: `${p.title} — ${p.publishedYear}`, url: p.view })}
                   className="flex-1 rounded-md bg-red-700 px-2 py-1.5 text-xs font-medium text-white hover:bg-red-600"
                 >
-                  Read here
+                  <T k="publications.readHere" />
                 </button>
                 <a
                   href={p.download}
                   className="flex-1 rounded-md bg-zinc-100 dark:bg-zinc-800 px-2 py-1.5 text-center text-xs font-medium text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700"
                 >
-                  Download
+                  <T k="publications.download" />
                 </a>
               </div>
             </div>
@@ -246,13 +269,13 @@ export default function PublicationsBrowser({
         ))}
         {pubs.length === 0 && (
           <li className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-6 text-center text-sm text-zinc-600 dark:text-zinc-400 sm:col-span-2 lg:col-span-4">
-            No publications match your filters.
+            <T k="publications.noPublications" />
           </li>
         )}
       </ul>
 
       <h2 className="mt-10 border-l-4 border-red-700 pl-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-        Periodicals — Kumsugangsan ({pers.length})
+        <T k="publications.periodicalsHeading" values={{ n: pers.length }} />
       </h2>
       <ul className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {pers.map((p) => (
@@ -269,14 +292,14 @@ export default function PublicationsBrowser({
                 onClick={() => setViewing({ title: `${p.publication} — ${p.issueDate}`, url: p.view })}
                 className="mt-3 w-full rounded-md bg-red-700 px-2 py-1.5 text-xs font-medium text-white hover:bg-red-600"
               >
-                Read here
+                <T k="publications.readHere" />
               </button>
             </div>
           </li>
         ))}
         {pers.length === 0 && (
           <li className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-6 text-center text-sm text-zinc-600 dark:text-zinc-400 sm:col-span-2 lg:col-span-4">
-            No periodicals match your filters.
+            <T k="publications.noPeriodicals" />
           </li>
         )}
       </ul>

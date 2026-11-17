@@ -101,12 +101,12 @@ export default function AudioPlayer({
       hls.attachMedia(audio);
       hls.on(Hls.Events.ERROR, (_e, data) => {
         if (data.fatal) {
-          setError("This station is currently unavailable.");
+          setError("radio.errUnavailable");
           setStatus("error");
         }
       });
     } else {
-      setError("Your browser cannot play this audio stream.");
+      setError("radio.errBrowser");
       setStatus("error");
     }
 
@@ -114,7 +114,7 @@ export default function AudioPlayer({
     const onWaiting = () => setStatus("connecting");
     const onPause = () => setStatus((s) => (s === "error" ? s : "paused"));
     const onError = () => {
-      setError("This station is currently unavailable.");
+      setError("radio.errUnavailable");
       setStatus("error");
     };
     audio.addEventListener("playing", onPlaying);
@@ -186,7 +186,7 @@ export default function AudioPlayer({
       // Direct call in the click handler so the browser counts it as a
       // user gesture (autoplay policy).
       audio.play().catch(() => {
-        setError("Could not start this station. Try again.");
+        setError("radio.errStart");
         setStatus("error");
         onToggle(null);
       });

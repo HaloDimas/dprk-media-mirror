@@ -4,6 +4,8 @@ import { useCallback, useRef, useState } from "react";
 import { Pause, Play, Radio, Volume1, Volume2, VolumeX } from "lucide-react";
 import AudioPlayer, { type AudioPlayerHandle, type AudioStatus } from "@/components/AudioPlayer";
 import { RADIO_STATIONS } from "@/lib/types";
+import { useLanguage } from "@/i18n/LanguageContext";
+import { T } from "@/i18n/T";
 
 /** Per-station artwork: distinct dark gradients + the big Korean letters
     shown on the artwork tile. Artwork is CSS only — the stations have no
@@ -14,29 +16,24 @@ const STATION_ART: Record<(typeof RADIO_STATIONS)[number]["id"], { gradient: str
   pyfm: { gradient: "from-amber-500 via-orange-800 to-zinc-950", short: "평양" },
 };
 
-function statusText(status: AudioStatus, boost: boolean): string {
-  switch (status) {
-    case "idle":
-      return "Press play to listen live";
-    case "connecting":
-      return "Connecting…";
-    case "live":
-      return boost ? "Now playing (boosted ×2)" : "Now playing";
-    case "paused":
-      return "Paused";
-    case "error":
-      return "Unavailable";
-  }
-}
+/** Station descriptions live in the dictionaries (radio.descKcbs …),
+    not in lib/types.ts — the English copy there is source data for
+    stations, but descriptions are UI chrome and get translated. */
+const STATION_DESC_KEY: Record<(typeof RADIO_STATIONS)[number]["id"], string> = {
+  kcbs: "radio.descKcbs",
+  kcbs2: "radio.descKcbs2",
+  pyfm: "radio.descPyfm",
+};
 
 function LiveBadge() {
+  const { t } = useLanguage();
   return (
     <span className="flex items-center gap-1.5 rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
       <span className="relative flex h-2 w-2">
         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
         <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
       </span>
-      Live
+      {t("radio.liveBadge")}
     </span>
   );
 }
@@ -78,12 +75,15 @@ function Spinner({ className }: { className?: string }) {
  * in the Now Playing bar.
  */
 export default function RadioStations() {
+  const { t } = useLanguage();
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [lastId, setLastId] = useState<string>(RADIO_STATIONS[0].id);
   const [volume, setVolume] = useState(0.8);
   const [muted, setMuted] = useState(false);
   const [boost, setBoost] = useState(false);
   const [statuses, setStatuses] = useState<Partial<Record<string, AudioStatus>>>({});
+  // Errors are stored as dictionary keys by AudioPlayer and translated
+  // at render time, so switching language updates them.
   const [errors, setErrors] = useState<Partial<Record<string, string | null>>>({});
   const playerRefs = useRef(new Map<string, AudioPlayerHandle>());
 
@@ -94,6 +94,21 @@ export default function RadioStations() {
   const barStatus: AudioStatus = statuses[barStation.id] ?? "idle";
   const barLive = playing !== null && barStatus === "live";
   const featuredStatus: AudioStatus = statuses[featured.id] ?? "idle";
+
+  const statusText = (status: AudioStatus, b: boolean): string => {
+    switch (status) {
+      case "idle":
+        return t("radio.statusIdle");
+      case "connecting":
+        return t("radio.statusConnecting");
+      case "live":
+        return b ? t("radio.statusLiveBoosted") : t("radio.statusLive");
+      case "paused":
+        return t("radio.statusPaused");
+      case "error":
+        return t("radio.statusUnavailable");
+    }
+  };
 
   const handleStatusChange = useCallback((channel: string, status: AudioStatus) => {
     setStatuses((prev) => (prev[channel] === status ? prev : { ...prev, [channel]: status }));
@@ -125,21 +140,23 @@ export default function RadioStations() {
             </p>
           </div>
           <div className="flex flex-1 flex-col justify-center gap-3 bg-zinc-950/40 p-6 backdrop-blur-sm md:p-10">
-            <p className="text-xs font-bold uppercase tracking-[0.2em] text-red-400">Featured station</p>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-red-400">
+              <T k="radio.featured" />
+            </p>
             <h2 className="text-2xl font-bold text-white md:text-3xl">{featured.name}</h2>
             <p className="text-sm text-zinc-400">
-              {featured.korean} · {featured.desc}
+              {featured.korean} · {t(STATION_DESC_KEY[featured.id])}
             </p>
             <div className="flex flex-wrap items-center gap-2">
               <LiveBadge />
               <span className="text-sm text-zinc-300">{statusText(featuredStatus, boost)}</span>
             </div>
-            {errors[featured.id] && <p className="text-sm text-red-300">{errors[featured.id]}</p>}
+            {errors[featured.id] && <p className="text-sm text-red-300">{t(errors[featured.id] ?? "")}</p>}
             <div className="mt-2 flex items-center gap-4">
               <button
                 type="button"
                 onClick={() => toggleStation(featured.id)}
-                aria-label={playingId === featured.id ? `Pause ${featured.name}` : `Play ${featured.name}`}
+                aria-label={playingId === featured.id ? t("radio.pauseAria", { name: featured.name }) : t("radio.playAria", { name: featured.name })}
                 className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-white text-red-700 shadow-lg transition-transform hover:scale-105"
               >
                 {featuredStatus === "connecting" && playingId === featured.id ? (
@@ -150,7 +167,9 @@ export default function RadioStations() {
                   <Play className="ml-0.5 h-6 w-6" fill="currentColor" aria-hidden="true" />
                 )}
               </button>
-              <span className="text-sm font-medium text-zinc-100">Listen live</span>
+              <span className="text-sm font-medium text-zinc-100">
+                <T k="radio.listenLive" />
+              </span>
             </div>
           </div>
         </div>
@@ -158,7 +177,9 @@ export default function RadioStations() {
 
       {/* All stations — large artwork cards. */}
       <section>
-        <h2 className="section-title mb-4 text-lg">All stations</h2>
+        <h2 className="section-title mb-4 text-lg">
+          <T k="radio.allStations" />
+        </h2>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {RADIO_STATIONS.map((s) => {
             const art = STATION_ART[s.id];
@@ -188,7 +209,7 @@ export default function RadioStations() {
                   <button
                     type="button"
                     onClick={() => toggleStation(s.id)}
-                    aria-label={isActive ? `Pause ${s.name}` : `Play ${s.name}`}
+                    aria-label={isActive ? t("radio.pauseAria", { name: s.name }) : t("radio.playAria", { name: s.name })}
                     className={`absolute bottom-3 right-3 flex h-12 w-12 items-center justify-center rounded-full shadow-lg transition-transform hover:scale-105 ${
                       isActive ? "bg-red-600 text-white" : "bg-white text-zinc-900"
                     }`}
@@ -211,11 +232,11 @@ export default function RadioStations() {
                 <div className="p-5">
                   <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">{s.name}</h3>
                   <p className="text-sm text-zinc-500">{s.korean}</p>
-                  <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{s.desc}</p>
+                  <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{t(STATION_DESC_KEY[s.id])}</p>
                   <p className="mt-3 text-xs text-zinc-500">
-                    {isActive ? statusText(st, boost) : "Press play to listen live"}
+                    {isActive ? statusText(st, boost) : t("radio.statusIdle")}
                   </p>
-                  {err && <p className="mt-1 text-xs text-red-700 dark:text-red-300">{err}</p>}
+                  {err && <p className="mt-1 text-xs text-red-700 dark:text-red-300">{t(err)}</p>}
                 </div>
                 <AudioPlayer
                   ref={(el) => {
@@ -255,18 +276,18 @@ export default function RadioStations() {
             </div>
             <p className="truncate text-xs text-zinc-600 dark:text-zinc-400">
               {!playing && barStatus === "idle"
-                ? "Select a station to listen live"
+                ? t("radio.selectStation")
                 : statusText(barStatus, boost)}
             </p>
             {playing && errors[playing.id] && (
-              <p className="truncate text-xs text-red-700 dark:text-red-300">{errors[playing.id]}</p>
+              <p className="truncate text-xs text-red-700 dark:text-red-300">{t(errors[playing.id] ?? "")}</p>
             )}
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <button
               type="button"
               onClick={() => setMuted((m) => !m)}
-              aria-label={muted ? "Unmute" : "Mute"}
+              aria-label={muted ? t("radio.unmute") : t("radio.mute")}
               className="inline-flex items-center justify-center text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
             >
               {muted || volume === 0 ? (
@@ -287,7 +308,7 @@ export default function RadioStations() {
                 setVolume(v);
                 setMuted(v === 0);
               }}
-              aria-label={`Volume for ${barStation.name}`}
+              aria-label={t("radio.volumeAria", { name: barStation.name })}
               className="h-1.5 w-12 cursor-pointer accent-red-600 min-[420px]:w-16 sm:w-24"
             />
             <span className="hidden w-8 text-right text-xs text-zinc-500 sm:block">
@@ -298,17 +319,17 @@ export default function RadioStations() {
             type="button"
             onClick={() => setBoost((b) => !b)}
             aria-pressed={boost}
-            title={boost ? "Turn off volume boost" : "Boost volume ×2 for quiet stations"}
+            title={boost ? t("radio.boostOn") : t("radio.boostOff")}
             className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide transition-colors ${
               boost ? "bg-red-600 text-white" : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200 hover:text-zinc-900 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-100"
             }`}
           >
-            Boost ×2
+            <T k="radio.boost" />
           </button>
           <button
             type="button"
             onClick={barPlayPause}
-            aria-label={playing ? `Pause ${playing.name}` : `Play ${barStation.name}`}
+            aria-label={playing ? t("radio.pauseAria", { name: playing.name }) : t("radio.playAria", { name: barStation.name })}
             className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-red-600 text-white shadow-lg transition-colors hover:bg-red-500"
           >
             {playing && barStatus === "connecting" ? (

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { NewsItem } from "@/lib/types";
+import { T } from "@/i18n/T";
 
 /** Home-page "Latest News" (top 6). The fast sources render first; Rodong
  *  Sinmun is merged in from /api/news-rodong when its slow server responds,
@@ -38,7 +39,7 @@ export default function LatestNewsClient({ items }: { items: NewsItem[] }) {
   if (latest.length === 0) {
     return (
       <p className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-6 text-sm text-zinc-600 dark:text-zinc-400">
-        News is temporarily unavailable. Please try again later.
+        <T k="news.unavailable" />
       </p>
     );
   }

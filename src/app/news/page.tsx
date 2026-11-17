@@ -5,6 +5,7 @@ import { connection } from "next/server";
 import NewsSearch from "@/components/NewsSearch";
 import { SkeletonRow } from "@/components/LoadingScreen";
 import { getAllNews } from "@/lib/sources";
+import { T } from "@/i18n/T";
 
 // This page depends on live .kp data (Rodong's homepage is ~4MB, over Next.js's
 // 2MB data-cache limit), so it renders at request time, like the home page.
@@ -17,7 +18,7 @@ async function NewsList() {
   if (items.length === 0) {
     return (
       <p className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-6 text-sm text-zinc-600 dark:text-zinc-400">
-        News is temporarily unavailable. Please try again later.
+        <T k="news.unavailable" />
       </p>
     );
   }
@@ -29,19 +30,18 @@ export default async function NewsPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-bold text-zinc-900 dark:text-white">News</h1>
+        <h1 className="text-xl font-bold text-zinc-900 dark:text-white">
+          <T k="news.title" />
+        </h1>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          KCNA, Rodong Sinmun, Minju Joson, The Pyongyang Times, Naenara, Youth Sinmun, Ryugyong,
-          Voice of Korea and Korean Architecture — read in full on this site where the full text can
-          be fetched — together with KNS full text and KCNA Watch articles, which now open in full
-          while the mirror&apos;s KCNA Watch session is live.
+          <T k="news.intro" />
         </p>
         <p className="mt-2">
           <Link
             href="/news/archive"
             className="inline-block rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
           >
-            Browse the full archive — search 1.37M KCNA Watch articles
+            <T k="news.archiveButton" />
             <ArrowRight className="ml-1 inline h-4 w-4 align-[-2px]" aria-hidden="true" />
           </Link>
         </p>

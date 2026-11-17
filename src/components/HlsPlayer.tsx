@@ -3,6 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Camera, PictureInPicture2, X } from "lucide-react";
 import Hls from "hls.js";
+import { useLanguage } from "@/i18n/LanguageContext";
+import { T } from "@/i18n/T";
 
 /**
  * Live TV player. The video element is fed ONLY our own HLS proxy
@@ -44,11 +46,14 @@ export default function HlsPlayer({
   title: string;
   poster?: string;
 }) {
+  const { t } = useLanguage();
   const mediaRef = useRef<HTMLMediaElement>(null);
   const hlsRef = useRef<Hls | null>(null);
   const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const fragStartRef = useRef(0);
   const slowFragsRef = useRef(0);
+  // Error / screenshot messages are stored as dictionary keys and
+  // translated at render time, so switching language updates them.
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [reconnecting, setReconnecting] = useState(false);
@@ -136,7 +141,7 @@ export default function HlsPlayer({
   const takeScreenshot = () => {
     const media = mediaRef.current as HTMLVideoElement | null;
     if (!media || !media.videoWidth) {
-      setShotMsg("No video frame to capture yet.");
+      setShotMsg("player.noFrame");
       return;
     }
     try {
@@ -148,7 +153,7 @@ export default function HlsPlayer({
       ctx.drawImage(media, 0, 0, canvas.width, canvas.height);
       canvas.toBlob((blob) => {
         if (!blob) {
-          setShotMsg("Screenshot failed.");
+          setShotMsg("player.shotFailed");
           return;
         }
         const url = URL.createObjectURL(blob);
@@ -158,11 +163,11 @@ export default function HlsPlayer({
         a.download = `${channel}-${stamp}.png`;
         a.click();
         URL.revokeObjectURL(url);
-        setShotMsg("Screenshot saved.");
+        setShotMsg("player.shotSaved");
         setTimeout(() => setShotMsg(null), 3000);
       }, "image/png");
     } catch {
-      setShotMsg("Screenshot blocked by the browser (CORS).");
+      setShotMsg("player.shotBlocked");
       setTimeout(() => setShotMsg(null), 3000);
     }
   };
@@ -258,7 +263,7 @@ export default function HlsPlayer({
     };
 
     const onFatalError = () => {
-      setError("Stream is currently unavailable. Please try again later.");
+      setError("player.unavailable");
       setLoading(false);
       setReconnecting(false);
     };
@@ -465,7 +470,7 @@ export default function HlsPlayer({
       };
     }
 
-    setError("Your browser cannot play live HLS streams.");
+    setError("player.browserNoHls");
     setLoading(false);
   }, [channel, audioOnly]);
 
@@ -478,13 +483,14 @@ export default function HlsPlayer({
   if (audioOnly) {
     return (
       <div className="relative w-full overflow-hidden rounded-xl border border-zinc-200 bg-white/60 p-5 dark:border-zinc-800 dark:bg-zinc-900/60">
-        <p className="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400">Audio only · Data saver</p>
+        <p className="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400">
+          <T k="player.audioOnly" />
+        </p>
         <h3 className="mt-2 text-base font-semibold text-zinc-900 dark:text-white">
           {title} — audio
         </h3>
         <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
-          Playing the KCBS radio audio (~0.1 Mbps) instead of the TV video (~9.5 Mbps for KCTV).
-          Uses roughly 100x less data.
+          <T k="player.audioOnlyDesc" />
         </p>
         <audio
           ref={(el) => {
@@ -493,7 +499,7 @@ export default function HlsPlayer({
           className="mt-4 w-full"
           controls
           playsInline
-          aria-label={`${title} audio only`}
+          aria-label={`${title} ${t("player.audioOnlyAriaSuffix")}`}
         />
         <div className="mt-4 flex flex-wrap gap-2">
           <button
@@ -501,11 +507,11 @@ export default function HlsPlayer({
             onClick={() => setAudioOnly(false)}
             className="rounded-lg bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
           >
-            Back to video
+            <T k="player.backToVideo" />
           </button>
         </div>
         {error && (
-          <p className="mt-3 text-sm text-red-700 dark:text-red-300">{error}</p>
+          <p className="mt-3 text-sm text-red-700 dark:text-red-300">{t(error)}</p>
         )}
       </div>
     );
@@ -533,7 +539,7 @@ export default function HlsPlayer({
             type="button"
             onClick={toggleSubs}
             aria-pressed={subsOn}
-            title={subsOn ? "Turn subtitles off" : "Turn subtitles on (English)"}
+            title={subsOn ? t("player.ccOn") : t("player.ccOff")}
             className={`absolute right-3 top-3 z-10 rounded-md px-2.5 py-1 text-xs font-bold tracking-wide shadow ${
               subsOn ? "bg-red-700 text-white" : "bg-black/70 text-zinc-300 hover:bg-black/90"
             }`}
@@ -544,25 +550,27 @@ export default function HlsPlayer({
         <button
           type="button"
           onClick={() => setAudioOnly(true)}
-          title="Data saver: switch to audio only (uses ~100x less data)"
+          title={t("player.dataSaverTitle")}
           className="absolute left-3 top-3 z-10 rounded-md bg-black/70 px-2.5 py-1 text-xs font-bold tracking-wide text-zinc-300 shadow hover:bg-black/90"
         >
-          Data saver
+          <T k="player.dataSaver" />
         </button>
         {slowDetected && !error && (
           <div className="absolute inset-x-0 top-0 z-10 flex flex-wrap items-center justify-center gap-2 bg-amber-950/90 px-4 py-2 text-center text-xs text-amber-200">
-            <span>Slow connection detected — this stream may buffer.</span>
+            <span>
+              <T k="player.slowDetected" />
+            </span>
             <button
               type="button"
               onClick={() => setAudioOnly(true)}
               className="rounded bg-amber-700 px-2 py-0.5 font-bold text-white hover:bg-amber-600"
             >
-              Switch to audio only
+              <T k="player.switchToAudio" />
             </button>
             <button
               type="button"
               onClick={() => setSlowDetected(false)}
-              aria-label="Dismiss slow connection warning"
+              aria-label={t("player.dismissSlowAria")}
               className="inline-flex items-center justify-center rounded px-1.5 py-0.5 text-amber-300 hover:bg-amber-900"
             >
               <X className="h-3.5 w-3.5" aria-hidden="true" />
@@ -571,29 +579,31 @@ export default function HlsPlayer({
         )}
         {loading && !error && !reconnecting && (
           <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/60 text-sm text-zinc-300">
-            Connecting to live stream…
+            <T k="player.connecting" />
           </div>
         )}
         {reconnecting && !error && (
           <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1 bg-black/60 text-sm text-zinc-300">
-            <p>Reconnecting to live stream…</p>
+            <p>
+              <T k="player.reconnecting" />
+            </p>
             <p className="text-xs text-zinc-500">
-              Attempt {retryAttempt} of {MAX_RETRIES} — no need to refresh.
+              <T k="player.attemptOf" values={{ n: retryAttempt, max: MAX_RETRIES }} />
             </p>
           </div>
         )}
         {error && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/80 px-6 text-center">
-            <p className="text-sm text-red-300">{error}</p>
+            <p className="text-sm text-red-300">{t(error)}</p>
             <p className="text-xs text-zinc-400">
-              The channel may be off air right now. Check the programme guide for broadcast hours.
+              <T k="player.offAirCheck" />
             </p>
             <button
               type="button"
               onClick={handleRetryClick}
               className="mt-1 rounded-lg bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
             >
-              Retry stream
+              <T k="player.retryStream" />
             </button>
           </div>
         )}
@@ -605,10 +615,16 @@ export default function HlsPlayer({
           className={`inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-xs font-bold ${
             isLive ? "bg-red-700 text-white" : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
           }`}
-          title={isLive ? "You are at the live edge" : "You are behind the live edge"}
+          title={isLive ? t("player.atLiveEdge") : t("player.behindLiveEdge")}
         >
           <span className={`h-1.5 w-1.5 rounded-full ${isLive ? "animate-pulse bg-white" : "bg-zinc-400"}`} />
-          {isLive ? "LIVE" : latencySec !== null ? `${Math.round(latencySec)}s behind live` : "LIVE"}
+          {isLive ? (
+            <T k="player.live" />
+          ) : latencySec !== null ? (
+            <T k="player.behindLive" values={{ n: Math.round(latencySec) }} />
+          ) : (
+            <T k="player.live" />
+          )}
         </span>
         {behind && (
           <button
@@ -616,16 +632,16 @@ export default function HlsPlayer({
             onClick={jumpToLive}
             className="rounded bg-red-700 px-2.5 py-1 text-xs font-bold text-white hover:bg-red-600"
           >
-            Jump to live
+            <T k="player.jumpToLive" />
           </button>
         )}
         <label className="ml-1 flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400">
-          Speed
+          <T k="player.speed" />
           <select
             value={speed}
             onChange={(e) => changeSpeed(Number(e.target.value))}
             className="rounded border border-zinc-300 bg-white px-1.5 py-1 text-xs text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
-            aria-label="Playback speed"
+            aria-label={t("player.speedAria")}
           >
             {SPEEDS.map((s) => (
               <option key={s} value={s}>
@@ -638,57 +654,57 @@ export default function HlsPlayer({
           <button
             type="button"
             onClick={takeScreenshot}
-            aria-label="Save the current frame as a PNG"
-            title="Save the current frame as a PNG"
+            aria-label={t("player.screenshotAria")}
+            title={t("player.screenshotAria")}
             className="inline-flex items-center gap-1.5 rounded border border-zinc-300 bg-white px-2.5 py-1 text-xs font-medium text-zinc-800 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
           >
-            <Camera className="h-3.5 w-3.5" aria-hidden="true" /> Screenshot
+            <Camera className="h-3.5 w-3.5" aria-hidden="true" /> <T k="player.screenshot" />
           </button>
           <button
             type="button"
             onClick={togglePip}
             aria-pressed={pipActive}
-            title={pipActive ? "Exit picture-in-picture" : "Picture-in-picture"}
+            title={pipActive ? t("player.pipOn") : t("player.pipOff")}
             className={`inline-flex items-center gap-1.5 rounded border px-2.5 py-1 text-xs font-medium ${
               pipActive
                 ? "border-red-700 bg-red-700 text-white"
                 : "border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
             }`}
           >
-            <PictureInPicture2 className="h-3.5 w-3.5" aria-hidden="true" /> PiP
+            <PictureInPicture2 className="h-3.5 w-3.5" aria-hidden="true" /> <T k="player.pip" />
           </button>
           <button
             type="button"
             onClick={() => setShowStats((v) => !v)}
             aria-pressed={showStats}
-            title="Show stream stats (resolution, bitrate, buffer, latency)"
+            title={t("player.statsAria")}
             className={`rounded border px-2.5 py-1 text-xs font-medium ${
               showStats
                 ? "border-red-700 bg-red-700 text-white"
                 : "border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
             }`}
           >
-            Stats
+            <T k="player.stats" />
           </button>
         </div>
       </div>
       {shotMsg && (
-        <p className="mt-1.5 text-xs text-zinc-600 dark:text-zinc-400">{shotMsg}</p>
+        <p className="mt-1.5 text-xs text-zinc-600 dark:text-zinc-400">{t(shotMsg)}</p>
       )}
       {showStats && (
         <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 rounded-lg border border-zinc-200 bg-white/60 px-3 py-2 text-xs dark:border-zinc-800 dark:bg-zinc-900/60 sm:grid-cols-4">
-          <p><span className="text-zinc-500">Resolution: </span><span className="text-zinc-800 dark:text-zinc-200">{stats.resolution}</span></p>
-          <p><span className="text-zinc-500">Bitrate: </span><span className="text-zinc-800 dark:text-zinc-200">{stats.bitrate}</span></p>
-          <p><span className="text-zinc-500">Buffer: </span><span className="text-zinc-800 dark:text-zinc-200">{stats.bufferSec}</span></p>
-          <p><span className="text-zinc-500">Behind live: </span><span className="text-zinc-800 dark:text-zinc-200">{latencySec !== null ? `${Math.round(latencySec)}s` : "—"}</span></p>
-          <p><span className="text-zinc-500">Dropped frames: </span><span className="text-zinc-800 dark:text-zinc-200">{stats.dropped}</span></p>
-          <p><span className="text-zinc-500">Speed: </span><span className="text-zinc-800 dark:text-zinc-200">{speed}×</span></p>
-          <p><span className="text-zinc-500">Channel: </span><span className="text-zinc-800 dark:text-zinc-200">{channel}</span></p>
-          <p><span className="text-zinc-500">Source: </span><span className="text-zinc-800 dark:text-zinc-200">{(process.env.NEXT_PUBLIC_HLS_PROXY || "").replace(/\/$/, "") ? "Cloudflare Worker" : "Vercel /api/hls"}</span></p>
+          <p><span className="text-zinc-500"><T k="player.statsResolution" />: </span><span className="text-zinc-800 dark:text-zinc-200">{stats.resolution}</span></p>
+          <p><span className="text-zinc-500"><T k="player.statsBitrate" />: </span><span className="text-zinc-800 dark:text-zinc-200">{stats.bitrate}</span></p>
+          <p><span className="text-zinc-500"><T k="player.statsBuffer" />: </span><span className="text-zinc-800 dark:text-zinc-200">{stats.bufferSec}</span></p>
+          <p><span className="text-zinc-500"><T k="player.statsBehind" />: </span><span className="text-zinc-800 dark:text-zinc-200">{latencySec !== null ? `${Math.round(latencySec)}s` : "—"}</span></p>
+          <p><span className="text-zinc-500"><T k="player.statsDropped" />: </span><span className="text-zinc-800 dark:text-zinc-200">{stats.dropped}</span></p>
+          <p><span className="text-zinc-500"><T k="player.statsSpeed" />: </span><span className="text-zinc-800 dark:text-zinc-200">{speed}×</span></p>
+          <p><span className="text-zinc-500"><T k="player.statsChannel" />: </span><span className="text-zinc-800 dark:text-zinc-200">{channel}</span></p>
+          <p><span className="text-zinc-500"><T k="player.statsSource" />: </span><span className="text-zinc-800 dark:text-zinc-200">{(process.env.NEXT_PUBLIC_HLS_PROXY || "").replace(/\/$/, "") ? "Cloudflare Worker" : "Vercel /api/hls"}</span></p>
         </div>
       )}
       <p className="mt-1.5 text-[11px] text-zinc-500">
-        Shortcuts (when the video is focused): Space play/pause · F fullscreen · M mute · Left/Right seek · Up/Down volume.
+        <T k="player.shortcuts" />
       </p>
     </div>
   );

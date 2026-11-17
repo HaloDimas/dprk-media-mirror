@@ -4,23 +4,25 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
+import { useLanguage } from "@/i18n/LanguageContext";
 
 const LINKS = [
-  { href: "/", label: "Home" },
-  { href: "/live", label: "Live TV" },
-  { href: "/schedule", label: "Schedule" },
-  { href: "/news", label: "News" },
-  { href: "/radio", label: "Radio" },
-  { href: "/recordings", label: "Recordings" },
-  { href: "/publications", label: "Publications" },
-  { href: "/directory", label: "Directory" },
-  { href: "/sources", label: "Sources" },
-  { href: "/status", label: "Status" },
+  { href: "/", key: "nav.home" },
+  { href: "/live", key: "nav.liveTv" },
+  { href: "/schedule", key: "nav.schedule" },
+  { href: "/news", key: "nav.news" },
+  { href: "/radio", key: "nav.radio" },
+  { href: "/recordings", key: "nav.recordings" },
+  { href: "/publications", key: "nav.publications" },
+  { href: "/directory", key: "nav.directory" },
+  { href: "/sources", key: "nav.sources" },
+  { href: "/status", key: "nav.status" },
 ];
 
 export function NavSearch() {
   const router = useRouter();
   const sp = useSearchParams();
+  const { t } = useLanguage();
   const [q, setQ] = useState(sp.get("q") || "");
 
   useEffect(() => setQ(sp.get("q") || ""), [sp]);
@@ -39,8 +41,8 @@ export function NavSearch() {
         type="search"
         value={q}
         onChange={(e) => setQ(e.target.value)}
-        placeholder="Search the mirror…"
-        aria-label="Search the mirror"
+        placeholder={t("nav.searchPlaceholder")}
+        aria-label={t("nav.searchAria")}
         className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
       />
     </form>
@@ -49,6 +51,7 @@ export function NavSearch() {
 
 export default function Nav() {
   const pathname = usePathname();
+  const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   const active = (href: string) =>
     href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/");
@@ -60,13 +63,13 @@ export default function Nav() {
     <>
       <button
         type="button"
-        aria-label="Toggle menu"
+        aria-label={t("nav.toggleMenuAria")}
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
         className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-zinc-300 dark:border-zinc-700 px-3 py-1.5 text-sm font-medium text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 xl:hidden"
       >
         {open ? <X className="h-4 w-4" aria-hidden="true" /> : <Menu className="h-4 w-4" aria-hidden="true" />}
-        Menu
+        {t("nav.menu")}
       </button>
       <nav className="hidden min-w-0 flex-1 items-center gap-1 overflow-x-auto [scrollbar-width:none] xl:flex [&::-webkit-scrollbar]:hidden">
         {LINKS.map((l) => (
@@ -79,7 +82,7 @@ export default function Nav() {
                 : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white"
             }`}
           >
-            {l.label}
+            {t(l.key)}
           </Link>
         ))}
       </nav>
@@ -96,7 +99,7 @@ export default function Nav() {
                   : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white"
               }`}
             >
-              {l.label}
+              {t(l.key)}
             </Link>
           ))}
         </nav>

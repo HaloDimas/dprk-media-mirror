@@ -3,20 +3,54 @@
 import { useMemo, useState } from "react";
 import { Mail, X } from "lucide-react";
 import type { DirectoryCategory, DirectoryStatus } from "@/data/directory";
+import { useLanguage } from "@/i18n/LanguageContext";
+import { T } from "@/i18n/T";
+
+/** Category titles/blurbs are UI chrome and live in the dictionaries —
+ *  only the entry names/descriptions (verified data records) stay in
+ *  data/directory.ts untranslated. */
+const CAT_KEY: Record<string, { title: string; blurb: string }> = {
+  "news-media": { title: "directory.catNewsMedia", blurb: "directory.catNewsMediaBlurb" },
+  government: { title: "directory.catGovernment", blurb: "directory.catGovernmentBlurb" },
+  "education-research": { title: "directory.catEducation", blurb: "directory.catEducationBlurb" },
+  culture: { title: "directory.catCulture", blurb: "directory.catCultureBlurb" },
+  tourism: { title: "directory.catTourism", blurb: "directory.catTourismBlurb" },
+  business: { title: "directory.catBusiness", blurb: "directory.catBusinessBlurb" },
+  older: { title: "directory.catOlder", blurb: "directory.catOlderBlurb" },
+};
+
+const STATUS_BADGE_KEY: Record<DirectoryStatus, string> = {
+  live: "directory.liveVerified",
+  active: "directory.activeJuly",
+  flaky: "directory.flakyLabel",
+  dead: "directory.deadLabel",
+  "not-a-website": "directory.notWebsiteLabel",
+  "mail-only": "directory.mailOnlyLabel",
+};
+
+const STATUS_LABEL_KEY: Record<DirectoryStatus, string> = {
+  live: "directory.statusLive",
+  active: "directory.statusActive",
+  flaky: "directory.statusFlaky",
+  dead: "directory.statusDead",
+  "not-a-website": "directory.statusNotWebsite",
+  "mail-only": "directory.statusMailOnly",
+};
 
 export function StatusBadge({ status }: { status: DirectoryStatus }) {
+  const { t } = useLanguage();
   if (status === "live")
     return (
       <span className="inline-flex items-center gap-1.5 rounded bg-emerald-100 dark:bg-emerald-900/70 px-2 py-0.5 text-[11px] font-semibold text-emerald-800 dark:text-emerald-200">
         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-300" aria-hidden="true" />
-        Live (verified 15 Nov 2026)
+        {t(STATUS_BADGE_KEY.live)}
       </span>
     );
   if (status === "active")
     return (
       <span className="inline-flex items-center gap-1.5 rounded bg-emerald-100 dark:bg-emerald-900/70 px-2 py-0.5 text-[11px] font-semibold text-emerald-800 dark:text-emerald-200">
         <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-300" aria-hidden="true" />
-        Active (July 2026 list)
+        {t(STATUS_BADGE_KEY.active)}
       </span>
     );
   if (status === "flaky")
@@ -27,38 +61,29 @@ export function StatusBadge({ status }: { status: DirectoryStatus }) {
           style={{ background: "linear-gradient(90deg, #fcd34d 50%, transparent 50%)" }}
           aria-hidden="true"
         />
-        Active domain, unreachable here
+        {t(STATUS_BADGE_KEY.flaky)}
       </span>
     );
   if (status === "dead")
     return (
       <span className="inline-flex items-center gap-1.5 rounded bg-red-100 dark:bg-red-900/70 px-2 py-0.5 text-[11px] font-semibold text-red-800 dark:text-red-200">
         <X className="h-3 w-3" aria-hidden="true" />
-        Dead
+        {t(STATUS_BADGE_KEY.dead)}
       </span>
     );
   if (status === "not-a-website")
     return (
       <span className="rounded bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
-        — Not a website
+        {t(STATUS_BADGE_KEY["not-a-website"])}
       </span>
     );
   return (
     <span className="inline-flex items-center gap-1.5 rounded bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
       <Mail className="h-3 w-3" aria-hidden="true" />
-      Mail server only
+      {t(STATUS_BADGE_KEY["mail-only"])}
     </span>
   );
 }
-
-const STATUS_LABELS: Record<DirectoryStatus, string> = {
-  live: "Live",
-  active: "Active domain",
-  flaky: "Active domain, unreachable here",
-  dead: "Dead",
-  "not-a-website": "Not a website",
-  "mail-only": "Mail server only",
-};
 
 export default function DirectoryBrowser({
   categories,
@@ -67,6 +92,7 @@ export default function DirectoryBrowser({
   categories: DirectoryCategory[];
   total: number;
 }) {
+  const { t } = useLanguage();
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<string>("all");
   const [status, setStatus] = useState<string>("all");
@@ -115,27 +141,31 @@ export default function DirectoryBrowser({
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search by name, description or URL…" aria-label="Search the directory"
+          placeholder={t("directory.searchPlaceholder")} aria-label={t("directory.searchAria")}
           className="min-w-56 flex-1 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
         />
         <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
-          Category
+          <T k="directory.category" />
           <select value={cat} onChange={(e) => setCat(e.target.value)} className={selectCls}>
-            <option value="all">All categories ({total})</option>
+            <option value="all">
+              <T k="directory.allCategories" values={{ n: total }} />
+            </option>
             {categories.map((c) => (
               <option key={c.id} value={c.id}>
-                {c.title} ({catCounts.get(c.id) ?? 0})
+                {t(CAT_KEY[c.id]?.title ?? "") || c.title} ({catCounts.get(c.id) ?? 0})
               </option>
             ))}
           </select>
         </label>
         <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
-          Status
+          <T k="directory.status" />
           <select value={status} onChange={(e) => setStatus(e.target.value)} className={selectCls}>
-            <option value="all">All statuses</option>
-            {(Object.keys(STATUS_LABELS) as DirectoryStatus[]).map((s) => (
+            <option value="all">
+              <T k="directory.allStatuses" />
+            </option>
+            {(Object.keys(STATUS_LABEL_KEY) as DirectoryStatus[]).map((s) => (
               <option key={s} value={s}>
-                {STATUS_LABELS[s]} ({statusCounts.get(s) ?? 0})
+                <T k={STATUS_LABEL_KEY[s]} /> ({statusCounts.get(s) ?? 0})
               </option>
             ))}
           </select>
@@ -143,17 +173,27 @@ export default function DirectoryBrowser({
       </div>
 
       <p className="mt-3 text-xs text-zinc-500">
-        {shown} of {total} sites.
-        {status !== "all" && ` ${STATUS_LABELS[status as DirectoryStatus]}: ${statusCounts.get(status as DirectoryStatus) ?? 0} total.`}
+        <T k="directory.ofSites" values={{ shown, total }} />
+        {status !== "all" && (
+          <>
+            {" "}
+            <T
+              k="directory.statusTotal"
+              values={{ label: t(STATUS_LABEL_KEY[status as DirectoryStatus]), n: statusCounts.get(status as DirectoryStatus) ?? 0 }}
+            />
+          </>
+        )}
       </p>
 
       <div className="mt-5 space-y-8">
         {filtered.map((c) => (
           <section key={c.id}>
             <h2 className="border-l-4 border-red-700 pl-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-              {c.title} ({c.entries.length})
+              <T k={CAT_KEY[c.id]?.title ?? ""} /> ({c.entries.length})
             </h2>
-            <p className="mt-0.5 pl-3 text-sm text-zinc-500">{c.blurb}</p>
+            <p className="mt-0.5 pl-3 text-sm text-zinc-500">
+              <T k={CAT_KEY[c.id]?.blurb ?? ""} />
+            </p>
             <ul className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
               {c.entries.map((entry) => (
                 <li
@@ -166,9 +206,11 @@ export default function DirectoryBrowser({
                   </div>
                   {entry.description && <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{entry.description}</p>}
                   <p className="mt-2 font-mono text-xs text-zinc-500">
-                    {entry.url ? entry.url : "URL pending verification"}
+                    {entry.url ? entry.url : <T k="directory.urlPending" />}
                   </p>
-                  <p className="mt-1 text-[11px] uppercase tracking-wide text-zinc-600 dark:text-zinc-400">{c.title}</p>
+                  <p className="mt-1 text-[11px] uppercase tracking-wide text-zinc-600 dark:text-zinc-400">
+                    <T k={CAT_KEY[c.id]?.title ?? ""} />
+                  </p>
                 </li>
               ))}
             </ul>
@@ -176,7 +218,7 @@ export default function DirectoryBrowser({
         ))}
         {filtered.length === 0 && (
           <p className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-6 text-center text-sm text-zinc-600 dark:text-zinc-400">
-            No sites match your filters.
+            <T k="directory.noMatch" />
           </p>
         )}
       </div>

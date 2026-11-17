@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { KCNW_SOURCE_GROUPS } from "@/lib/kcnw-sources";
 import type { KcnwArticle } from "@/lib/types";
+import { useLanguage } from "@/i18n/LanguageContext";
+import { T } from "@/i18n/T";
 
 type SearchState = {
   status: "idle" | "loading" | "done" | "unavailable" | "not-configured" | "error";
@@ -34,6 +36,7 @@ function ArticleCard({ a }: { a: KcnwArticle }) {
 }
 
 export default function ArchiveBrowser() {
+  const { t } = useLanguage();
   // --- Search (authenticated, full 1.37M archive) ---
   const [q, setQ] = useState("");
   const [source, setSource] = useState("");
@@ -118,24 +121,25 @@ export default function ArchiveBrowser() {
       {/* Search the full archive */}
       <section>
         <h2 className="border-l-4 border-red-700 pl-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-          Search the full archive — 1.37M articles
+          <T k="archive.searchHeading" />
         </h2>
         <p className="mt-1 pl-3 text-sm text-zinc-600 dark:text-zinc-400">
-          Search every KCNA Watch article back to 2016. Results are paginated, 20 per page. There is
-          no date filter — the archive&apos;s date parameters do not work.
+          <T k="archive.searchDesc" />
         </p>
         <form onSubmit={onSearch} className="mt-4 flex flex-wrap items-end gap-2">
           <input
             type="search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search the archive… e.g. Kim Jong Un" aria-label="Search the archive"
+            placeholder={t("archive.searchPlaceholder")} aria-label={t("archive.searchAria")}
             className="min-w-56 flex-1 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
           />
           <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
-            Source
+            <T k="archive.source" />
             <select value={source} onChange={(e) => setSource(e.target.value)} className={selectCls}>
-              <option value="">All sources</option>
+              <option value="">
+                <T k="archive.allSources" />
+              </option>
               {KCNW_SOURCE_GROUPS.map((g) => (
                 <optgroup key={g.group} label={g.group}>
                   {g.options.map((o) => (
@@ -148,43 +152,54 @@ export default function ArchiveBrowser() {
             </select>
           </label>
           <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
-            Sort
+            <T k="archive.sort" />
             <select value={sort} onChange={(e) => setSort(e.target.value)} className={selectCls}>
-              <option value="">Latest first</option>
-              <option value="pop">Most popular</option>
+              <option value="">
+                <T k="archive.latestFirst" />
+              </option>
+              <option value="pop">
+                <T k="archive.mostPopular" />
+              </option>
             </select>
           </label>
           <button
             type="submit"
             className="rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
           >
-            Search
+            <T k="archive.searchButton" />
           </button>
         </form>
 
         {search.status === "loading" && (
-          <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">Searching the archive…</p>
+          <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
+            <T k="archive.searching" />
+          </p>
         )}
         {search.status === "unavailable" && (
           <p className="mt-4 rounded-xl border border-amber-300 dark:border-amber-800/60 bg-amber-100 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">
-            Archive search is unavailable — the mirror&apos;s KCNA Watch session has expired. The
-            browse section below still works (it needs no login).
+            <T k="archive.unavailable" />
           </p>
         )}
         {search.status === "not-configured" && (
           <p className="mt-4 rounded-xl border border-amber-300 dark:border-amber-800/60 bg-amber-100 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">
-            Archive search is not configured yet. The browse section below still works (it needs no
-            login).
+            <T k="archive.notConfigured" />
           </p>
         )}
         {search.status === "error" && (
-          <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">The search failed. Please try again.</p>
+          <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
+            <T k="archive.error" />
+          </p>
         )}
         {search.status === "done" && (
           <>
             <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
-              {search.count.toLocaleString()} results
-              {search.articles.length > 0 && ` — showing ${search.articles.length}`}
+              <T k="archive.results" values={{ n: search.count.toLocaleString() }} />
+              {search.articles.length > 0 && (
+                <>
+                  {" "}
+                  <T k="archive.showing" values={{ n: search.articles.length }} />
+                </>
+              )}
             </p>
             <ul className="mt-3 space-y-3">
               {search.articles.map((a) => (
@@ -193,7 +208,7 @@ export default function ArchiveBrowser() {
             </ul>
             {search.articles.length === 0 && (
               <p className="mt-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-6 text-center text-sm text-zinc-600 dark:text-zinc-400">
-                No articles match your search.
+                <T k="archive.noMatch" />
               </p>
             )}
             {search.hasMore && (
@@ -202,7 +217,7 @@ export default function ArchiveBrowser() {
                 disabled={loadingMore}
                 className="mt-4 rounded-md bg-zinc-100 dark:bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 disabled:opacity-50"
               >
-                {loadingMore ? "Loading…" : "Load more (next 20)"}
+                {loadingMore ? <T k="archive.loading" /> : <T k="archive.loadMore20" />}
               </button>
             )}
           </>
@@ -212,11 +227,10 @@ export default function ArchiveBrowser() {
       {/* Browse the archive */}
       <section>
         <h2 className="border-l-4 border-red-700 pl-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-          Browse the archive — latest first, back to ~2015
+          <T k="archive.browseHeading" />
         </h2>
         <p className="mt-1 pl-3 text-sm text-zinc-600 dark:text-zinc-400">
-          Walk back through ~430,000 articles, 10 at a time. No login needed. Note: at very deep
-          offsets the ordering can repeat or skip articles.
+          <T k="archive.browseDesc" />
         </p>
         <ul className="mt-4 space-y-3">
           {browse.map((a) => (
@@ -224,7 +238,9 @@ export default function ArchiveBrowser() {
           ))}
         </ul>
         {browseError && (
-          <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">Could not load more articles. Please try again.</p>
+          <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+            <T k="archive.browseError" />
+          </p>
         )}
         {browseHasMore && (
           <button
@@ -232,11 +248,13 @@ export default function ArchiveBrowser() {
             disabled={browseLoading}
             className="mt-4 rounded-md bg-zinc-100 dark:bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 disabled:opacity-50"
           >
-            {browseLoading ? "Loading…" : "Load more (next 10)"}
+            {browseLoading ? <T k="archive.loading" /> : <T k="archive.loadMore10" />}
           </button>
         )}
         {!browseHasMore && browse.length > 0 && (
-          <p className="mt-4 text-sm text-zinc-500">End of the browsable archive.</p>
+          <p className="mt-4 text-sm text-zinc-500">
+            <T k="archive.endOfArchive" />
+          </p>
         )}
       </section>
     </div>

@@ -3,10 +3,13 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import type { NewsItem } from "@/lib/types";
+import { useLanguage } from "@/i18n/LanguageContext";
+import { T } from "@/i18n/T";
 
 type DateRange = "all" | "today" | "week";
 
 export default function NewsSearch({ items }: { items: NewsItem[] }) {
+  const { t } = useLanguage();
   const [q, setQ] = useState("");
   const [source, setSource] = useState<string>("all");
   const [range, setRange] = useState<DateRange>("all");
@@ -75,6 +78,12 @@ export default function NewsSearch({ items }: { items: NewsItem[] }) {
     return list;
   }, [allItems, q, source, range, sort]);
 
+  const rangeLabels: [DateRange, string][] = [
+    ["all", t("news.allDates")],
+    ["today", t("news.today", { n: counts.today })],
+    ["week", t("news.thisWeek", { n: counts.week })],
+  ];
+
   return (
     <div>
       <div className="flex flex-wrap gap-2">
@@ -82,17 +91,19 @@ export default function NewsSearch({ items }: { items: NewsItem[] }) {
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search headlines…" aria-label="Search headlines"
+          placeholder={t("news.searchPlaceholder")} aria-label={t("news.searchAria")}
           className="min-w-56 flex-1 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
         />
         <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
-          Source
+          <T k="news.source" />
           <select
             value={source}
             onChange={(e) => setSource(e.target.value)}
             className="min-w-0 max-w-full truncate rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-2 text-sm text-zinc-900 dark:text-zinc-100"
           >
-            <option value="all">All sources ({allItems.length})</option>
+            <option value="all">
+              <T k="news.allSources" values={{ n: allItems.length }} />
+            </option>
             {sourceCounts.map(([s, n]) => (
               <option key={s} value={s}>
                 {s} ({n})
@@ -103,14 +114,8 @@ export default function NewsSearch({ items }: { items: NewsItem[] }) {
       </div>
 
       <div className="mt-2 flex flex-wrap items-center gap-2">
-        <div className="flex gap-1" role="group" aria-label="Date range">
-          {(
-            [
-              ["all", "All dates"],
-              ["today", `Today (${counts.today})`],
-              ["week", `This week (${counts.week})`],
-            ] as [DateRange, string][]
-          ).map(([r, label]) => (
+        <div className="flex gap-1" role="group" aria-label={t("news.dateRange")}>
+          {rangeLabels.map(([r, label]) => (
             <button
               key={r}
               onClick={() => setRange(r)}
@@ -123,26 +128,29 @@ export default function NewsSearch({ items }: { items: NewsItem[] }) {
           ))}
         </div>
         <label className="ml-auto flex min-w-0 items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
-          Sort
+          <T k="news.sort" />
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as "latest" | "oldest")}
             className="min-w-0 max-w-full truncate rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-sm text-zinc-900 dark:text-zinc-100"
           >
-            <option value="latest">Latest first</option>
-            <option value="oldest">Oldest first</option>
+            <option value="latest">
+              <T k="news.latestFirst" />
+            </option>
+            <option value="oldest">
+              <T k="news.oldestFirst" />
+            </option>
           </select>
         </label>
       </div>
 
       <p className="mt-3 text-xs text-zinc-500">
-        {filtered.length} of {allItems.length} articles. KNS, KCNA, Rodong Sinmun, Pyongyang Times, Voice
-        of Korea and Korean Architecture articles open in full on this site. KCNA Watch articles open
-        in full while the mirror&apos;s KCNA Watch session is live — if the session has expired, the
-        excerpt is shown instead. Minju Joson, Naenara, Youth Sinmun and Ryugyong items show the
-        headline and date — their article pages cannot be fetched (see each article page for why).
+        <T k="news.countOf" values={{ shown: filtered.length, total: allItems.length }} />{" "}
+        <T k="news.explainer" />
         {rodongLoading && (
-          <span className="ml-2 text-zinc-600 dark:text-zinc-400">Loading Rodong Sinmun in the background…</span>
+          <span className="ml-2 text-zinc-600 dark:text-zinc-400">
+            <T k="news.loadingRodong" />
+          </span>
         )}
       </p>
 
@@ -162,7 +170,9 @@ export default function NewsSearch({ items }: { items: NewsItem[] }) {
                   <span className="rounded bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-zinc-700 dark:text-zinc-300">{it.source}</span>
                   <span className="text-zinc-500">{it.date}</span>
                   {it.kind === "excerpt" && (
-                    <span className="rounded bg-amber-100 dark:bg-amber-900/70 px-2 py-0.5 text-amber-800 dark:text-amber-200">Excerpt only</span>
+                    <span className="rounded bg-amber-100 dark:bg-amber-900/70 px-2 py-0.5 text-amber-800 dark:text-amber-200">
+                      <T k="news.excerptOnly" />
+                    </span>
                   )}
                 </div>
                 <h2 className="mt-1 font-medium leading-snug text-zinc-900 dark:text-zinc-100">{it.title}</h2>
@@ -173,7 +183,7 @@ export default function NewsSearch({ items }: { items: NewsItem[] }) {
         ))}
         {filtered.length === 0 && (
           <li className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-6 text-center text-sm text-zinc-600 dark:text-zinc-400">
-            No articles match your filters.
+            <T k="news.noMatch" />
           </li>
         )}
       </ul>

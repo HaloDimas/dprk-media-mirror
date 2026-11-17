@@ -1,19 +1,27 @@
 /** Shared loading UI: shown instantly on navigation while a route loads,
     so users never stare at a frozen-looking page. */
 
-export function Spinner({ label = "Loading..." }: { label?: string }) {
+"use client";
+
+import { useLanguage } from "@/i18n/LanguageContext";
+
+/** labelKey: a dictionary key (e.g. "loading.page") translated live;
+ *  label: a fixed string (English fallback). Defaults to "loading.default". */
+export function Spinner({ label, labelKey }: { label?: string; labelKey?: string }) {
+  const { t } = useLanguage();
+  const text = labelKey ? t(labelKey) : label ?? t("loading.default");
   return (
     <div className="flex flex-col items-center justify-center gap-4 py-24 text-center">
       <div
         className="h-12 w-12 animate-spin rounded-full border-4 border-zinc-200 dark:border-zinc-800 border-t-red-500"
         role="status"
-        aria-label={label}
+        aria-label={text}
       />
       <div>
         <p className="text-lg font-bold tracking-tight text-zinc-900 dark:text-white">
           DPRK <span className="text-red-500">Media Mirror</span>
         </p>
-        <p className="mt-1 animate-pulse text-sm text-zinc-600 dark:text-zinc-400">{label}</p>
+        <p className="mt-1 animate-pulse text-sm text-zinc-600 dark:text-zinc-400">{text}</p>
       </div>
     </div>
   );

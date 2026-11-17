@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
 import { getAllNews, getArticle } from "@/lib/sources";
+import { T } from "@/i18n/T";
 
 // Articles NOT prerendered at build time — they render on demand instead
 // (dynamicParams below), because rendering one needs a live fetch from a
@@ -70,7 +71,9 @@ async function ArticleContent({ params }: { params: Promise<{ id: string }> }) {
         <span className="rounded bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-zinc-700 dark:text-zinc-300">{article.source}</span>
         <span className="text-zinc-500">{article.date}</span>
         {article.kind === "excerpt" && (
-          <span className="rounded bg-amber-100 dark:bg-amber-900/70 px-2 py-0.5 text-amber-800 dark:text-amber-200">Excerpt only</span>
+          <span className="rounded bg-amber-100 dark:bg-amber-900/70 px-2 py-0.5 text-amber-800 dark:text-amber-200">
+            <T k="article.excerptOnly" />
+          </span>
         )}
       </div>
       <h1 className="mt-2 text-2xl font-bold leading-snug text-zinc-900 dark:text-white">{article.title}</h1>
@@ -88,7 +91,7 @@ async function ArticleContent({ params }: { params: Promise<{ id: string }> }) {
           rel="noopener noreferrer"
           className="mt-4 inline-flex items-center gap-2 rounded-lg border border-red-300 dark:border-red-800 bg-red-100 dark:bg-red-950/40 px-4 py-2.5 text-sm font-medium text-red-800 dark:text-red-200 transition-colors hover:bg-red-900/50"
         >
-          Read the full article on the original site
+          <T k="article.readOriginal" />
           <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
         </a>
       )}
@@ -111,17 +114,19 @@ async function ArticleContent({ params }: { params: Promise<{ id: string }> }) {
         )}
         {article.blocks.length === 0 && (
           <p className="text-sm text-zinc-600 dark:text-zinc-400">
-            The article text could not be loaded. Please try again later.
+            <T k="article.textUnavailable" />
           </p>
         )}
       </div>
 
       <p className="mt-8 border-t border-zinc-200 dark:border-zinc-800 pt-4 text-xs text-zinc-500">
-        {article.kind === "full"
-          ? `Full article mirrored on this site from ${article.source}.`
-          : article.source === "KCNA Watch"
-            ? "Excerpt mirrored on this site from KCNA Watch. The full text needs a live KCNA Watch session — the mirror's session is currently expired or not configured."
-            : `Excerpt mirrored on this site from ${article.source}. The full text cannot be fetched from this source.`}
+        {article.kind === "full" ? (
+          <T k="article.fullMirrored" values={{ source: article.source }} />
+        ) : article.source === "KCNA Watch" ? (
+          <T k="article.excerptKcnw" />
+        ) : (
+          <T k="article.excerptOther" values={{ source: article.source }} />
+        )}
       </p>
 
       {/* Prev / Next */}
@@ -132,7 +137,7 @@ async function ArticleContent({ params }: { params: Promise<{ id: string }> }) {
             className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-4 transition-colors hover:border-red-800"
           >
             <span className="inline-flex items-center gap-1 text-xs uppercase tracking-wide text-zinc-500">
-              <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" /> Older
+              <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" /> <T k="article.older" />
             </span>
             <span className="mt-1 block text-sm font-medium leading-snug text-zinc-900 dark:text-zinc-100">{older.title}</span>
           </Link>
@@ -145,7 +150,7 @@ async function ArticleContent({ params }: { params: Promise<{ id: string }> }) {
             className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-4 text-right transition-colors hover:border-red-800"
           >
             <span className="inline-flex items-center justify-end gap-1 text-xs uppercase tracking-wide text-zinc-500">
-              Newer <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+              <T k="article.newer" /> <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
             </span>
             <span className="mt-1 block text-sm font-medium leading-snug text-zinc-900 dark:text-zinc-100">{newer.title}</span>
           </Link>
@@ -159,7 +164,7 @@ async function ArticleContent({ params }: { params: Promise<{ id: string }> }) {
         <section className="mt-8">
           <h2 className="mb-3 flex items-baseline gap-2 text-base font-bold text-zinc-900 dark:text-white">
             <span className="inline-block h-4 w-1 rounded bg-red-600" />
-            Related from {article.source}
+            <T k="article.relatedFrom" values={{ source: article.source }} />
           </h2>
           <ul className="space-y-2">
             {related.map((r) => (
@@ -186,10 +191,10 @@ export default function ArticlePage({ params }: { params: Promise<{ id: string }
   return (
     <article className="mx-auto max-w-3xl">
       <Link href="/news" className="inline-flex items-center gap-1 text-sm text-red-600 dark:text-red-400 hover:underline">
-        <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" /> All news
+        <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" /> <T k="article.allNews" />
       </Link>
       <Suspense
-        fallback={<p className="mt-6 text-sm text-zinc-600 dark:text-zinc-400">Loading article…</p>}
+        fallback={<p className="mt-6 text-sm text-zinc-600 dark:text-zinc-400"><T k="loading.article" /></p>}
       >
         <ArticleContent params={params} />
       </Suspense>

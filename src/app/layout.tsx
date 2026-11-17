@@ -6,6 +6,9 @@ import Link from "next/link";
 import { Suspense } from "react";
 import Nav, { NavSearch } from "@/components/Nav";
 import ThemeToggle from "@/components/ThemeToggle";
+import LanguageSelector from "@/components/LanguageSelector";
+import { LanguageProvider } from "@/i18n/LanguageContext";
+import { T } from "@/i18n/T";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -55,8 +58,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             __html: `(function(){try{var t=localStorage.getItem("dprk-theme");if(t!=="light"){document.documentElement.classList.add("dark")}}catch(e){document.documentElement.classList.add("dark")}})();`,
           }}
         />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var l=localStorage.getItem("dprk-language");if(l==="id"||l==="ko"||l==="en"){document.documentElement.lang=l}else{var n=(navigator.language||"").toLowerCase();document.documentElement.lang=n.indexOf("id")===0?"id":n.indexOf("ko")===0?"ko":"en"}}catch(e){}})();`,
+          }}
+        />
       </head>
       <body className="flex min-h-full flex-col bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
+        <LanguageProvider>
         <header className="border-b border-zinc-200 bg-white/95 dark:border-zinc-800 dark:bg-zinc-950/95">
           <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-3 px-4 py-4">
             <Link href="/" className="flex shrink-0 items-baseline gap-2">
@@ -82,6 +91,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <div className="flex w-full shrink-0 items-center gap-2 sm:w-auto">
                 <NavSearch />
                 <ThemeToggle />
+                <LanguageSelector />
               </div>
             </Suspense>
           </div>
@@ -93,30 +103,29 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <div className="mx-auto max-w-6xl px-4 py-6 text-xs leading-relaxed text-zinc-500">
             <nav className="mb-4 flex flex-wrap gap-x-5 gap-y-2" aria-label="Footer">
               <Link href="/contact" className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white">
-                Contact
+                <T k="footer.contact" />
               </Link>
               <Link href="/faq" className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white">
-                FAQ
+                <T k="footer.faq" />
               </Link>
               <Link href="/privacy" className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white">
-                Privacy Policy
+                <T k="footer.privacy" />
               </Link>
               <Link href="/terms" className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white">
-                Terms &amp; Conditions
+                <T k="footer.terms" />
               </Link>
             </nav>
             <p>
-              DPRK Media Mirror — live TV, radio, news, recordings and publications from Koryo Front
-              and KCNA Watch. Programme times are Pyongyang Time (UTC+9).
+              <T k="footer.about" />
             </p>
             <p className="mt-2">
-              DPRK Media Mirror content is hosted here for educational access purposes only | All materials
-              copyright of the Korea D.P.R. government.
+              <T k="footer.legal" />
             </p>
           </div>
         </footer>
         <Analytics />
         <SpeedInsights />
+        </LanguageProvider>
       </body>
     </html>
   );

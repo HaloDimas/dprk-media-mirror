@@ -93,14 +93,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               </Link>
             </nav>
             <p>
-              DPRK Media Mirror — live TV, radio, programme guides, news, recordings and publications
-              mirrored onto this site from Koryo Front and KCNA Watch. All reading and watching happens
-              here; nothing on this site sends you to another site to read or watch.
-            </p>
-            <p className="mt-2">
-              Sources mirrored: Koryo Front (live TV, radio, programme guide, recordings, publications,
-              Korea News Service articles) and KCNA Watch (latest headlines, excerpt only — full text
-              requires a free KCNA Watch account). Programme times are Pyongyang Time (UTC+9).
+              DPRK Media Mirror — live TV, radio, news, recordings and publications from Koryo Front
+              and KCNA Watch. Programme times are Pyongyang Time (UTC+9).
             </p>
             <p className="mt-2">
               DPRK Media Mirror content is hosted here for educational access purposes only | All materials

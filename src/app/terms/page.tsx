@@ -11,6 +11,9 @@ export default function TermsPage() {
     <div className="mx-auto max-w-3xl">
       <h1 className="text-2xl font-bold text-white">Terms &amp; Conditions</h1>
       <p className="mt-2 text-sm text-zinc-400">Last updated: 15 November 2026.</p>
+      <p className="mt-2 text-sm leading-relaxed text-zinc-300">
+        By using this site, you agree to these Terms &amp; Conditions.
+      </p>
 
       <h2 className="mt-8 text-lg font-semibold text-white">What this site is</h2>
       <p className="mt-2 text-sm leading-relaxed text-zinc-300">

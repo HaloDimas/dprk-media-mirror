@@ -17,6 +17,7 @@ export const id: Dictionary = {
     searchAria: "Cari di mirror",
     menu: "Menu",
     toggleMenuAria: "Buka/tutup menu",
+    settings: "Pengaturan",
   },
   lang: {
     buttonAria: "Ganti bahasa",

@@ -18,6 +18,7 @@ export const en = {
     searchAria: "Search the mirror",
     menu: "Menu",
     toggleMenuAria: "Toggle menu",
+    settings: "Settings",
   },
   lang: {
     buttonAria: "Change language",

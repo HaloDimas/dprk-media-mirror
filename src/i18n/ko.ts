@@ -19,6 +19,7 @@ export const ko: Dictionary = {
     searchAria: "미러 검색",
     menu: "메뉴",
     toggleMenuAria: "메뉴 열기/닫기",
+    settings: "설정",
   },
   lang: {
     buttonAria: "언어 변경",

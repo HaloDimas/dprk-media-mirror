@@ -96,7 +96,7 @@ export default function DirectoryBrowser({
   }, [categories, q, cat, status]);
 
   const shown = filtered.reduce((n, c) => n + c.entries.length, 0);
-  const selectCls = "rounded-md border border-zinc-700 bg-zinc-900 px-2 py-2 text-sm text-zinc-100";
+  const selectCls = "min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-2 text-sm text-zinc-100";
 
   return (
     <div>
@@ -108,7 +108,7 @@ export default function DirectoryBrowser({
           placeholder="Search by name, description or URL…"
           className="min-w-56 flex-1 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
         />
-        <label className="flex items-center gap-2 text-xs text-zinc-400">
+        <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-400">
           Category
           <select value={cat} onChange={(e) => setCat(e.target.value)} className={selectCls}>
             <option value="all">All categories ({total})</option>
@@ -119,7 +119,7 @@ export default function DirectoryBrowser({
             ))}
           </select>
         </label>
-        <label className="flex items-center gap-2 text-xs text-zinc-400">
+        <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-400">
           Status
           <select value={status} onChange={(e) => setStatus(e.target.value)} className={selectCls}>
             <option value="all">All statuses</option>

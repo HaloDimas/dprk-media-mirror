@@ -21,6 +21,14 @@ body {
   background-attachment: fixed;
 }
 
+/* Safety net: no single wide element (e.g. a <select> with a very long
+   option) may ever push the page sideways on mobile. Inner scroll
+   containers (like the nav) still scroll on their own. */
+html,
+body {
+  overflow-x: clip;
+}
+
 /* Consistent section headers with a red accent bar. */
 .section-title {
   border-left: 4px solid #b91c1c;

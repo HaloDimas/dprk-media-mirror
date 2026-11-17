@@ -97,7 +97,7 @@ export default function PublicationsBrowser({
   }, [publications]);
 
   const selectCls =
-    "rounded-md border border-zinc-700 bg-zinc-900 px-2 py-2 text-sm text-zinc-100";
+    "min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-2 text-sm text-zinc-100";
 
   return (
     <div>
@@ -131,7 +131,7 @@ export default function PublicationsBrowser({
           placeholder="Search titles…"
           className="min-w-56 flex-1 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
         />
-        <label className="flex items-center gap-2 text-xs text-zinc-400">
+        <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-400">
           Type
           <select value={type} onChange={(e) => setType(e.target.value as typeof type)} className={selectCls}>
             <option value="all">All ({publications.length + periodicals.length})</option>
@@ -141,9 +141,9 @@ export default function PublicationsBrowser({
             <option value="periodical">Periodical ({periodicals.length})</option>
           </select>
         </label>
-        <label className="flex items-center gap-2 text-xs text-zinc-400">
+        <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-400">
           Publication
-          <select value={pub} onChange={(e) => setPub(e.target.value)} className={selectCls}>
+          <select value={pub} onChange={(e) => setPub(e.target.value)} className={`${selectCls} w-44 sm:w-56`}>
             <option value="all">All publications</option>
             {pubNames.map((n) => (
               <option key={n} value={n}>
@@ -152,7 +152,7 @@ export default function PublicationsBrowser({
             ))}
           </select>
         </label>
-        <label className="flex items-center gap-2 text-xs text-zinc-400">
+        <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-400">
           Year
           <select value={year} onChange={(e) => setYear(e.target.value)} className={selectCls}>
             <option value="all">All years</option>
@@ -163,7 +163,7 @@ export default function PublicationsBrowser({
             ))}
           </select>
         </label>
-        <label className="ml-auto flex items-center gap-2 text-xs text-zinc-400">
+        <label className="ml-auto flex min-w-0 items-center gap-2 text-xs text-zinc-400">
           Sort
           <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} className={selectCls}>
             <option value="newest">Newest first</option>

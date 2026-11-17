@@ -85,12 +85,12 @@ export default function NewsSearch({ items }: { items: NewsItem[] }) {
           placeholder="Search headlines…"
           className="min-w-56 flex-1 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
         />
-        <label className="flex items-center gap-2 text-xs text-zinc-400">
+        <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-400">
           Source
           <select
             value={source}
             onChange={(e) => setSource(e.target.value)}
-            className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-2 text-sm text-zinc-100"
+            className="min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-2 text-sm text-zinc-100"
           >
             <option value="all">All sources ({allItems.length})</option>
             {sourceCounts.map(([s, n]) => (
@@ -122,12 +122,12 @@ export default function NewsSearch({ items }: { items: NewsItem[] }) {
             </button>
           ))}
         </div>
-        <label className="ml-auto flex items-center gap-2 text-xs text-zinc-400">
+        <label className="ml-auto flex min-w-0 items-center gap-2 text-xs text-zinc-400">
           Sort
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as "latest" | "oldest")}
-            className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100"
+            className="min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100"
           >
             <option value="latest">Latest first</option>
             <option value="oldest">Oldest first</option>

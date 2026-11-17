@@ -238,12 +238,12 @@ export default function ScheduleGuide({
           >
             ← Prev day
           </button>
-          <label className="flex items-center gap-2 text-sm text-zinc-300">
+          <label className="flex min-w-0 items-center gap-2 text-sm text-zinc-300">
             <input
               type="date"
               value={date}
               onChange={(e) => e.target.value && setDate(e.target.value)}
-              className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100 [color-scheme:dark]"
+              className="min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100 [color-scheme:dark]"
             />
           </label>
           <button
@@ -268,7 +268,7 @@ export default function ScheduleGuide({
         <select
           value={category}
           onChange={(e) => setCategory(e.target.value)}
-          className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-2 text-sm text-zinc-100"
+          className="min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-2 text-sm text-zinc-100"
           aria-label="Filter by category"
         >
           <option value="all">All categories ({(current?.programs ?? []).length})</option>

@@ -111,7 +111,7 @@ export default function ArchiveBrowser() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const selectCls = "rounded-md border border-zinc-700 bg-zinc-900 px-2 py-2 text-sm text-zinc-100";
+  const selectCls = "min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-2 text-sm text-zinc-100";
 
   return (
     <div className="space-y-10">
@@ -132,7 +132,7 @@ export default function ArchiveBrowser() {
             placeholder="Search the archive… e.g. Kim Jong Un"
             className="min-w-56 flex-1 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
           />
-          <label className="flex items-center gap-2 text-xs text-zinc-400">
+          <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-400">
             Source
             <select value={source} onChange={(e) => setSource(e.target.value)} className={selectCls}>
               <option value="">All sources</option>
@@ -147,7 +147,7 @@ export default function ArchiveBrowser() {
               ))}
             </select>
           </label>
-          <label className="flex items-center gap-2 text-xs text-zinc-400">
+          <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-400">
             Sort
             <select value={sort} onChange={(e) => setSort(e.target.value)} className={selectCls}>
               <option value="">Latest first</option>

@@ -181,30 +181,30 @@ export default function GlobalSearch() {
       {/* Filters */}
       <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
         <div className="flex flex-wrap items-end gap-3">
-          <label className="flex flex-col gap-1 text-xs text-zinc-400">
+          <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400">
             From
             <input
               type="date"
               value={from}
               onChange={(e) => setParam({ from: e.target.value })}
-              className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100 [color-scheme:dark]"
+              className="min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100 [color-scheme:dark]"
             />
           </label>
-          <label className="flex flex-col gap-1 text-xs text-zinc-400">
+          <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400">
             To
             <input
               type="date"
               value={to}
               onChange={(e) => setParam({ to: e.target.value })}
-              className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100 [color-scheme:dark]"
+              className="min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100 [color-scheme:dark]"
             />
           </label>
-          <label className="flex flex-col gap-1 text-xs text-zinc-400">
+          <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400">
             Channel
             <select
               value={channel}
               onChange={(e) => setParam({ channel: e.target.value })}
-              className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100"
+              className="min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100"
             >
               <option value="all">All channels</option>
               <option value="kctv">KCTV</option>
@@ -212,12 +212,12 @@ export default function GlobalSearch() {
               <option value="ryongnamsan">Ryongnamsan TV</option>
             </select>
           </label>
-          <label className="flex flex-col gap-1 text-xs text-zinc-400">
+          <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400">
             Category
             <select
               value={category}
               onChange={(e) => setParam({ category: e.target.value })}
-              className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100"
+              className="min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100"
             >
               <option value="all">All categories</option>
               {(data?.facets.categories ?? []).map((c) => (
@@ -227,12 +227,12 @@ export default function GlobalSearch() {
               ))}
             </select>
           </label>
-          <label className="flex flex-col gap-1 text-xs text-zinc-400">
+          <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400">
             Source
             <select
               value={source}
               onChange={(e) => setParam({ source: e.target.value })}
-              className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100"
+              className="min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100"
             >
               <option value="all">All sources</option>
               {(data?.facets.sources ?? []).map((s) => (
@@ -242,24 +242,24 @@ export default function GlobalSearch() {
               ))}
             </select>
           </label>
-          <label className="flex flex-col gap-1 text-xs text-zinc-400">
+          <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400">
             Language
             <select
               value={lang}
               onChange={(e) => setParam({ lang: e.target.value })}
-              className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100"
+              className="min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100"
             >
               <option value="all">All languages</option>
               <option value="en">English</option>
               <option value="ko">Korean</option>
             </select>
           </label>
-          <label className="flex flex-col gap-1 text-xs text-zinc-400">
+          <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400">
             Sort
             <select
               value={sort}
               onChange={(e) => setParam({ sort: e.target.value })}
-              className="rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100"
+              className="min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100"
             >
               <option value="relevance">Relevance</option>
               <option value="newest">Newest first</option>

@@ -37,6 +37,22 @@ body {
   color: #f4f4f5;
 }
 
+/* Subtle hover transitions for interactive elements that don't already
+   carry a Tailwind transition utility. (Utilities win where both apply:
+   this lives in @layer base, below the utilities layer.) */
+@layer base {
+  @media (prefers-reduced-motion: no-preference) {
+    a,
+    button,
+    select,
+    input {
+      transition-property: color, background-color, border-color;
+      transition-duration: 150ms;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  }
+}
+
 /* Slim scrollbars for the dark theme */
 ::-webkit-scrollbar {
   width: 10px;

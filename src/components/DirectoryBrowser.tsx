@@ -105,7 +105,7 @@ export default function DirectoryBrowser({
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search by name, description or URL…"
+          placeholder="Search by name, description or URL…" aria-label="Search the directory"
           className="min-w-56 flex-1 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
         />
         <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-400">

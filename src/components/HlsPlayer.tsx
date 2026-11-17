@@ -637,10 +637,11 @@ export default function HlsPlayer({
           <button
             type="button"
             onClick={takeScreenshot}
+            aria-label="Save the current frame as a PNG"
             title="Save the current frame as a PNG"
-            className="rounded border border-zinc-700 bg-zinc-800 px-2.5 py-1 text-xs font-medium text-zinc-200 hover:bg-zinc-700"
+            className="rounded border border-zinc-700 bg-zinc-800 px-2.5 py-1 text-xs font-medium text-zinc-200 transition-colors hover:bg-zinc-700"
           >
-            📷 Screenshot
+            <span aria-hidden="true">📷 </span>Screenshot
           </button>
           <button
             type="button"

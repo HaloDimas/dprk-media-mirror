@@ -243,6 +243,7 @@ export default function ScheduleGuide({
               type="date"
               value={date}
               onChange={(e) => e.target.value && setDate(e.target.value)}
+              aria-label="Choose date"
               className="min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100 [color-scheme:dark]"
             />
           </label>
@@ -262,7 +263,7 @@ export default function ScheduleGuide({
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search programme titles (English or Korean)…"
+          placeholder="Search programme titles (English or Korean)…" aria-label="Search programme titles"
           className="min-w-56 flex-1 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
         />
         <select

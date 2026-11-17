@@ -145,7 +145,7 @@ export default function GlobalSearch() {
           type="search"
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Search news, recordings, publications, programmes, directory…"
+          placeholder="Search news, recordings, publications, programmes, directory…" aria-label="Search the mirror"
           className="min-w-0 flex-1 rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
           autoFocus
         />

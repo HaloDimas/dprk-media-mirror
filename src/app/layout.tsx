@@ -18,9 +18,27 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://dprkmedia.vercel.app"),
   title: "DPRK Media Mirror — KCTV, Radio, News & Publications",
   description:
     "A single mirror of North Korean state media: live KCTV, Athletic TV and Ryongnamsan TV, radio, the full programme guide, KCNA news, recordings and publications — all on one site.",
+  icons: {
+    icon: "/favicon.svg",
+  },
+  openGraph: {
+    type: "website",
+    siteName: "DPRK Media Mirror",
+    title: "DPRK Media Mirror — KCTV, Radio, News & Publications",
+    description:
+      "Live North Korean TV and radio, programme guides, KCNA news, recordings and publications — mirrored on one site.",
+    url: "https://dprkmedia.vercel.app",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "DPRK Media Mirror — KCTV, Radio, News & Publications",
+    description:
+      "Live North Korean TV and radio, programme guides, KCNA news, recordings and publications — mirrored on one site.",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

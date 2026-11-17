@@ -82,7 +82,7 @@ export default function NewsSearch({ items }: { items: NewsItem[] }) {
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search headlines…"
+          placeholder="Search headlines…" aria-label="Search headlines"
           className="min-w-56 flex-1 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
         />
         <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-400">

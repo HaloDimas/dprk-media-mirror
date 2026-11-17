@@ -3,19 +3,55 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { getAllNews, getArticle } from "@/lib/sources";
 
-// Prerender the article pages we know about at build time. New articles
+// Articles NOT prerendered at build time — they render on demand instead
+// (dynamicParams below), because rendering one needs a live fetch from a
+// flaky upstream that can exceed the 60s static-generation limit and fail
+// the whole build:
+// - "kcna-" (KCNA Watch homepage): the body fetch is a 25s no-store request
+//   that Cloudflare often challenges.
+// - "kcnad-", "rodong-", "pytimes-", "vok-", "korarch-": full-text articles
+//   whose bodies are fetched from slow .kp servers (one VOK article URL
+//   now 404s at the source; Pyongyang Times / KCNA pages have timed out
+//   past 60s during prerender).
+// Safe to prerender: KNS articles (fast API) and excerpt-only items
+// (Minju, Naenara, Youth, Ryugyong), which need no body fetch at all.
+const SLOW_FULL_PREFIXES = ["kcnad-", "rodong-", "pytimes-", "vok-", "korarch-"];
+
+// Cap the prerender set so the build stays fast even as the feed grows.
+const MAX_PRERENDERED = 80;
+
+// Cache Components requires generateStaticParams to return at least one
+// param. If the feed is completely unreachable at build time, return a
+// placeholder that the page turns into a 404 immediately (no fetch).
+const PLACEHOLDER_ID = "__placeholder__";
+
+// Unlisted articles render on demand at request time (and are cached after).
+// (No `dynamicParams` export: it is incompatible with cacheComponents —
+// on-demand rendering of unlisted params is the default under PPR.)
+
+// Prerender only the articles that render fast and reliably. New articles
 // that appear later are rendered on demand (partial prefetching) and cached.
 export async function generateStaticParams() {
   try {
     const items = await getAllNews();
-    return items.map((it) => ({ id: it.id }));
+    const fast = items
+      .filter((it) => {
+        if (it.id.startsWith("kcna-")) return false;
+        if (it.kind === "full" && SLOW_FULL_PREFIXES.some((p) => it.id.startsWith(p))) return false;
+        return true;
+      })
+      .slice(0, MAX_PRERENDERED);
+    if (fast.length === 0) return [{ id: PLACEHOLDER_ID }];
+    return fast.map((it) => ({ id: it.id }));
   } catch {
-    return [];
+    return [{ id: PLACEHOLDER_ID }];
   }
 }
 
 async function ArticleContent({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
+  // Build-time placeholder (feed unreachable): 404 without any fetch.
+  if (id === PLACEHOLDER_ID) notFound();
   const [article, allNews] = await Promise.all([getArticle(id), getAllNews()]);
   if (!article) notFound();
 

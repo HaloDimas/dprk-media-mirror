@@ -1,0 +1,46 @@
+"use client";
+
+import { useEffect } from "react";
+import Link from "next/link";
+
+export default function Error({
+  error,
+  retry,
+}: {
+  error: Error & { digest?: string };
+  retry: () => void;
+}) {
+  useEffect(() => {
+    // Log the error for the server logs; the message shown to the visitor
+    // stays generic so no upstream detail leaks to the client.
+    console.error(error);
+  }, [error]);
+
+  return (
+    <div className="mx-auto max-w-2xl py-16 text-center">
+      <h1 className="text-2xl font-bold text-white">Something went wrong</h1>
+      <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+        This page could not be loaded. The mirror fetches live data from North Korean sources
+        that are often slow or briefly unreachable — trying again usually works.
+      </p>
+      {error?.digest && (
+        <p className="mt-3 text-xs text-zinc-500">Error reference: {error.digest}</p>
+      )}
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <button
+          type="button"
+          onClick={() => retry()}
+          className="rounded-lg bg-red-700 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-600"
+        >
+          Try again
+        </button>
+        <Link
+          href="/"
+          className="rounded-lg border border-zinc-700 bg-zinc-900 px-5 py-2.5 text-sm font-medium text-zinc-200 transition-colors hover:bg-zinc-800"
+        >
+          Go to the home page
+        </Link>
+      </div>
+    </div>
+  );
+}

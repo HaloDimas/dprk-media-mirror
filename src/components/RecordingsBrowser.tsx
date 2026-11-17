@@ -72,7 +72,7 @@ export default function RecordingsBrowser({ items }: { items: RecordingItem[] })
           type="search"
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search recordings…"
+          placeholder="Search recordings…" aria-label="Search recordings"
           className="min-w-56 flex-1 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
         />
         {CATS.map((c) => (

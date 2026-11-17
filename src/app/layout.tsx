@@ -5,6 +5,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import { Suspense } from "react";
 import Nav, { NavSearch } from "@/components/Nav";
+import SettingsApplier from "@/components/SettingsApplier";
 import ThemeToggle from "@/components/ThemeToggle";
 import LanguageSelector from "@/components/LanguageSelector";
 import { LanguageProvider } from "@/i18n/LanguageContext";
@@ -63,9 +64,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             __html: `(function(){try{var l=localStorage.getItem("dprk-language");if(l==="id"||l==="ko"||l==="en"){document.documentElement.lang=l}else{var n=(navigator.language||"").toLowerCase();document.documentElement.lang=n.indexOf("id")===0?"id":n.indexOf("ko")===0?"ko":"en"}}catch(e){}})();`,
           }}
         />
+        {/* No-flash nav-appearance script: apply the saved frosted header
+            before first paint so the header never flashes solid. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{if(localStorage.getItem("dprk-nav-appearance")==="frosted"){document.documentElement.classList.add("nav-frosted")}}catch(e){}})();`,
+          }}
+        />
       </head>
       <body className="flex min-h-full flex-col bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
         <LanguageProvider>
+        <SettingsApplier />
         <header className="border-b border-zinc-200 bg-white/95 dark:border-zinc-800 dark:bg-zinc-950/95">
           <div className="mx-auto flex max-w-7xl flex-wrap items-center gap-x-4 gap-y-3 px-4 py-4">
             <Link href="/" className="flex shrink-0 items-baseline gap-2">
@@ -113,6 +122,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               </Link>
               <Link href="/terms" className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white">
                 <T k="footer.terms" />
+              </Link>
+              <Link href="/settings" className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white">
+                <T k="footer.settings" />
+              </Link>
+              <Link href="/eula" className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white">
+                <T k="footer.eula" />
               </Link>
             </nav>
             <p>

@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import HlsPlayer from "@/components/HlsPlayer";
-import { programTitle, useLanguage } from "@/i18n/LanguageContext";
+import EpgLangSwitch from "@/components/EpgLangSwitch";
+import { programTitle, useEpgLang, useLanguage } from "@/i18n/LanguageContext";
 import { T } from "@/i18n/T";
 import { CHANNELS, findNowNext, nowPyt, todayPyt, type ChannelId, type EpgData, type Program } from "@/lib/types";
 
@@ -74,7 +75,8 @@ function minsLeft(p: Program, now: string): number {
 }
 
 export default function LivePage() {
-  const { lang, t } = useLanguage();
+  const { t } = useLanguage();
+  const epgLang = useEpgLang();
   const [channel, setChannel] = useState<ChannelId>("kctv");
   // Video server: Koryo Front CDN (embedded player) or Koryo TV (their own
   // player — Koryo TV binds its sessions to the viewer's IP, so it cannot
@@ -133,8 +135,8 @@ export default function LivePage() {
   }, [channel, info.status, info.hls]);
 
   const { now: nowProg, next: nextProg } = epg ? findNowNext(epg.programs, now) : { now: null, next: null };
-  const nowTitle = nowProg ? programTitle(nowProg, lang) : null;
-  const nextTitle = nextProg ? programTitle(nextProg, lang) : null;
+  const nowTitle = nowProg ? programTitle(nowProg, epgLang) : null;
+  const nextTitle = nextProg ? programTitle(nextProg, epgLang) : null;
 
   return (
     <div className="space-y-5">
@@ -143,19 +145,22 @@ export default function LivePage() {
       </h1>
 
       <section aria-label={t("live.nowOnAll")}>
-        <h2 className="border-l-4 border-red-700 pl-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-          <T k="live.nowOnAll" />{" "}
-          <span className="font-normal text-zinc-500">
-            · <T k="live.pyongyangTime" values={{ time: now }} />
-          </span>
-        </h2>
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 className="border-l-4 border-red-700 pl-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+            <T k="live.nowOnAll" />{" "}
+            <span className="font-normal text-zinc-500">
+              · <T k="live.pyongyangTime" values={{ time: now }} />
+            </span>
+          </h2>
+          <EpgLangSwitch compact />
+        </div>
         <div className="mt-3 grid gap-3 sm:grid-cols-3">
           {TV.filter((c) => c.status === "live" && c.hls).map((c) => {
             const d = allEpg[c.id];
             const { now: n, next: nx } = d ? findNowNext(d.programs, now) : { now: null, next: null };
             const selected = channel === c.id;
-            const nTitle = n ? programTitle(n, lang) : null;
-            const nxTitle = nx ? programTitle(nx, lang) : null;
+            const nTitle = n ? programTitle(n, epgLang) : null;
+            const nxTitle = nx ? programTitle(nx, epgLang) : null;
             return (
               <button
                 key={c.id}
@@ -396,7 +401,7 @@ export default function LivePage() {
               {epg && epg.programs.length > 0 ? (
                 epg.programs.map((p) => {
                   const isNow = nowProg === p;
-                  const title = programTitle(p, lang);
+                  const title = programTitle(p, epgLang);
                   return (
                     <div
                       key={`${p.start}-${p.en}`}

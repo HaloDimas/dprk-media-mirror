@@ -29,6 +29,8 @@ export const id: Dictionary = {
     sourcesPage: "Halaman Sumber",
     mirroredSources: "Sumber yang Dicerminkan",
     terms: "Syarat & Ketentuan",
+    eula: "Perjanjian Lisensi Pengguna Akhir",
+    settings: "Halaman Pengaturan",
     contactPage: "Halaman Kontak",
     statusPage: "Halaman Status",
   },
@@ -37,6 +39,8 @@ export const id: Dictionary = {
     faq: "FAQ",
     privacy: "Kebijakan Privasi",
     terms: "Syarat & Ketentuan",
+    settings: "Pengaturan",
+    eula: "EULA",
     about:
       "DPRK Media Mirror — TV langsung, radio, berita, rekaman, dan publikasi dari Koryo Front dan KCNA Watch. Waktu tayang menggunakan Waktu Pyongyang (UTC+9).",
     legal:
@@ -168,6 +172,109 @@ export const id: Dictionary = {
     atLiveEdge: "Anda sudah di titik live",
     behindLiveEdge: "Anda tertinggal dari titik live",
     audioOnlyAriaSuffix: "audio saja",
+    fullscreen: "Layar penuh",
+    fullscreenTitle: "Tonton layar penuh (latar blur)",
+    fullscreenExit: "Keluar dari layar penuh",
+  },
+  epg: {
+    label: "Judul tayangan",
+    auto: "Otomatis",
+    english: "Inggris",
+    korean: "Korea",
+    autoDesc: "Mengikuti bahasa situs",
+  },
+  settings: {
+    title: "Pengaturan",
+    intro:
+      "Sesuaikan tampilan dan pemutaran mirror. Semua pengaturan hanya tersimpan di browser ini.",
+    appearance: "Tampilan",
+    themeLabel: "Tema",
+    themeDark: "Gelap",
+    themeLight: "Terang",
+    themeDesc: "Tema gelap adalah bawaan situs ini.",
+    languageLabel: "Bahasa antarmuka",
+    languageDesc:
+      "Bahasa untuk menu dan tombol. Isi berita dan judul tayangan tidak diterjemahkan.",
+    playback: "Pemutaran",
+    watchTimeLabel: "Statistik waktu menonton",
+    watchTimeDesc:
+      "Catat berapa lama Anda menonton dan mendengarkan, per channel dan stasiun. Hanya tersimpan di browser ini.",
+    watchTimeOn: "Aktif",
+    watchTimeOff: "Mati",
+    fullscreenBlurLabel: "Blur layar penuh",
+    fullscreenBlurDesc:
+      "Tampilkan latar blur yang lembut di belakang video saat layar penuh.",
+    guide: "Panduan tayangan",
+    epgLabel: "Bahasa judul tayangan",
+    epgDesc:
+      "Bahasa yang dipakai untuk judul tayangan. Otomatis mengikuti bahasa situs.",
+    navigation: "Navigasi",
+    navAppearanceLabel: "Gaya header",
+    navAppearanceDesc: "Tampilan bar navigasi di atas.",
+    navClassic: "Klasik",
+    navClassicDesc: "Header solid, seperti sekarang.",
+    navFrosted: "Frosted",
+    navFrostedDesc:
+      "Header tembus pandang dengan efek blur; tetap terlihat saat Anda menggulir.",
+    statsTitle: "Waktu menonton",
+    statsIntro:
+      "Waktu menonton dan mendengarkan, dihitung hanya saat benar-benar diputar. Hanya tersimpan di browser ini.",
+    statsToday: "Hari ini",
+    stats7: "7 hari",
+    statsAll: "Sepanjang waktu",
+    statsNoData: "Belum ada waktu menonton yang tercatat.",
+    statsClear: "Hapus statistik",
+    statsOffNote:
+      "Pelacakan waktu menonton sedang mati — aktifkan di atas untuk mulai mencatat.",
+    statsChannel: "Channel / stasiun",
+  },
+  eula: {
+    title: "Perjanjian Lisensi Pengguna Akhir",
+    lastUpdated: "Terakhir diperbarui: 17 November 2026.",
+    intro:
+      "Perjanjian ini mengatur penggunaan Anda atas situs DPRK Media Mirror. Teks perjanjian di bawah ini dalam bahasa Inggris.",
+    sections: [
+      {
+        h: "Grant of use",
+        p: [
+          "DPRK Media Mirror (the “Site”) is provided free of charge for personal, non-commercial use. You may read, watch and listen to the mirrored content on this Site for your own information, research and archival purposes. No account, sign-in or payment is required, and no licence key is issued. This agreement does not transfer any ownership of the Site, its code, or the mirrored content to you.",
+        ],
+      },
+      {
+        h: "Content ownership",
+        p: [
+          "All articles, broadcasts, recordings, publications, images and programme data mirrored on this Site belong to their original broadcasters and publishers, including KCNA, Korean Central Television, Rodong Sinmun, Pyongyang Times, Voice of Korea and the other sources named on this Site. The Site reproduces that content for information, research and archival purposes only. Nothing in this agreement gives you any right to the content itself.",
+        ],
+      },
+      {
+        h: "Acceptable use",
+        p: [],
+        bullets: [
+          "Use the Site only for personal reading, watching and research.",
+          "Do not copy, re-publish or sell the mirrored content as your own, and do not present yourself as the mirror, a broadcaster, or any government.",
+          "Do not scrape, bulk-download or redistribute the mirrored content.",
+          "Do not attempt to disrupt the Site, its media proxy, or the upstream sources.",
+        ],
+      },
+      {
+        h: "No warranty",
+        p: [
+          "The Site is provided “as is” and “as available”, without any warranty of any kind. Live streams, programme guides and news depend on upstream sources that are often slow, intermittent or temporarily unavailable. The operator does not guarantee that any stream, article or schedule is complete, current or uninterrupted.",
+        ],
+      },
+      {
+        h: "Limitation of liability",
+        p: [
+          "To the fullest extent permitted by law, the operator is not liable for any loss or damage arising from your use of, or inability to use, this Site — including missed broadcasts, incomplete or outdated information, or reliance on mirrored content.",
+        ],
+      },
+      {
+        h: "Changes and termination",
+        p: [
+          "The operator may change, suspend or stop the Site at any time, with or without notice. This agreement may also change; the “Last updated” date above will change with it. Continued use of the Site after a change means you accept the updated agreement.",
+        ],
+      },
+    ],
   },
   radio: {
     title: "Radio",

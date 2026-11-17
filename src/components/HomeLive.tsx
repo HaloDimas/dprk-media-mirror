@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import HlsPlayer from "@/components/HlsPlayer";
-import { programTitle, useLanguage } from "@/i18n/LanguageContext";
+import { programTitle, useEpgLang } from "@/i18n/LanguageContext";
 import { T } from "@/i18n/T";
 import type { Program } from "@/lib/types";
 
@@ -31,9 +31,9 @@ export default function HomeLive({
   nowTime: string;
   snapshot: boolean;
 }) {
-  const { lang } = useLanguage();
-  const nowTitle = now ? programTitle(now, lang) : null;
-  const nextTitle = next ? programTitle(next, lang) : null;
+  const epgLang = useEpgLang();
+  const nowTitle = now ? programTitle(now, epgLang) : null;
+  const nextTitle = next ? programTitle(next, epgLang) : null;
 
   return (
     <section>
@@ -102,8 +102,8 @@ export default function HomeLive({
           </h2>
           <ul className="mt-3 space-y-4">
             {channelNow.map((c) => {
-              const cNow = c.now ? programTitle(c.now, lang) : null;
-              const cNext = c.next ? programTitle(c.next, lang) : null;
+              const cNow = c.now ? programTitle(c.now, epgLang) : null;
+              const cNext = c.next ? programTitle(c.next, epgLang) : null;
               return (
                 <li key={c.id}>
                   <Link href="/live" className="block rounded-lg p-2 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/60">

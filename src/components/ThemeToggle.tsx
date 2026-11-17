@@ -2,16 +2,18 @@
 
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
+import {
+  applyThemeClass as applyTheme,
+  getTheme,
+  setThemePreference,
+  THEME_CHANGED_EVENT,
+  THEME_STORAGE_KEY,
+  type Theme,
+} from "@/lib/settings";
 
-/** localStorage key for the saved theme. Dark is the default when
-    nothing is stored (see the no-flash script in layout.tsx). */
-export const THEME_STORAGE_KEY = "dprk-theme";
-
-export type Theme = "dark" | "light";
-
-export function applyTheme(theme: Theme) {
-  document.documentElement.classList.toggle("dark", theme === "dark");
-}
+// Re-exported so existing imports keep working; @/lib/settings is the
+// single source of truth for the theme key and helpers.
+export { THEME_STORAGE_KEY, type Theme, applyTheme };
 
 export default function ThemeToggle() {
   const [theme, setTheme] = useState<Theme>("dark");
@@ -19,23 +21,18 @@ export default function ThemeToggle() {
 
   useEffect(() => {
     setMounted(true);
-    try {
-      const saved = localStorage.getItem(THEME_STORAGE_KEY);
-      setTheme(saved === "light" ? "light" : "dark");
-    } catch {
-      // Storage unavailable (private mode) — stay on the default dark theme.
-    }
+    setTheme(getTheme());
+    // The Settings page writes the same key — re-read when it changes so
+    // the header icon always matches the saved theme.
+    const onThemeChange = () => setTheme(getTheme());
+    window.addEventListener(THEME_CHANGED_EVENT, onThemeChange);
+    return () => window.removeEventListener(THEME_CHANGED_EVENT, onThemeChange);
   }, []);
 
   const toggle = () => {
     const next: Theme = theme === "dark" ? "light" : "dark";
     setTheme(next);
-    applyTheme(next);
-    try {
-      localStorage.setItem(THEME_STORAGE_KEY, next);
-    } catch {
-      // Storage unavailable — the choice just won't persist.
-    }
+    setThemePreference(next);
   };
 
   const shared =

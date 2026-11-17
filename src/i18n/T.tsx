@@ -15,6 +15,8 @@ const LINK_TARGETS: Record<string, { href: string; labelKey: string }> = {
   sourcesPage: { href: "/sources", labelKey: "links.sourcesPage" },
   mirroredSources: { href: "/sources", labelKey: "links.mirroredSources" },
   terms: { href: "/terms", labelKey: "links.terms" },
+  eula: { href: "/eula", labelKey: "links.eula" },
+  settings: { href: "/settings", labelKey: "links.settings" },
   contactPage: { href: "/contact", labelKey: "links.contactPage" },
   statusPage: { href: "/status", labelKey: "links.statusPage" },
 };

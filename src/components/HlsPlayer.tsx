@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Camera, PictureInPicture2, X } from "lucide-react";
+import { Camera, Maximize, Minimize, PictureInPicture2, X } from "lucide-react";
 import Hls from "hls.js";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { T } from "@/i18n/T";
+import { useWatchTime } from "@/lib/watchtime";
+import { getFullscreenBlur, SETTINGS_CHANGED_EVENT } from "@/lib/settings";
 
 /**
  * Live TV player. The video element is fed ONLY our own HLS proxy
@@ -76,6 +78,17 @@ export default function HlsPlayer({
   }>({ resolution: "—", bitrate: "—", bufferSec: "—", dropped: "—" });
   const [pipActive, setPipActive] = useState(false);
   const [shotMsg, setShotMsg] = useState<string | null>(null);
+  // Watch time: count only while the media is actually playing.
+  const [playing, setPlaying] = useState(false);
+  useWatchTime(audioOnly ? "kcbs" : channel, playing);
+  // Fullscreen blur: the wrapper goes fullscreen (not the video — the
+  // native controls' fullscreen button fullscreens only the video and
+  // bypasses the blur canvas), and a low-res copy of the current frame
+  // is drawn blurred behind the video.
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const blurCanvasRef = useRef<HTMLCanvasElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const [blurEnabled, setBlurEnabled] = useState(true);
 
   const toggleSubs = () => {
     const hls = hlsRef.current;
@@ -135,6 +148,23 @@ export default function HlsPlayer({
       }
     } catch {
       // PiP unsupported or rejected — nothing to do.
+    }
+  };
+
+  /** Fullscreen the player WRAPPER (so the blur canvas is included).
+   *  The native controls' fullscreen button fullscreens only the video
+   *  and cannot show the blur — this button is the blur path. */
+  const toggleFullscreen = async () => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper) return;
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        await wrapper.requestFullscreen();
+      }
+    } catch {
+      // Fullscreen unsupported or denied — nothing to do.
     }
   };
 
@@ -219,6 +249,74 @@ export default function HlsPlayer({
       media.removeEventListener("leavepictureinpicture", onLeave);
     };
   }, [audioOnly]);
+
+  // Watch time: "playing" is ground truth — pause/waiting/ended stop it.
+  useEffect(() => {
+    const media = mediaRef.current;
+    if (!media) return;
+    const onPlaying = () => setPlaying(true);
+    const onPause = () => setPlaying(false);
+    const onWaiting = () => setPlaying(false);
+    const onEnded = () => setPlaying(false);
+    media.addEventListener("playing", onPlaying);
+    media.addEventListener("pause", onPause);
+    media.addEventListener("waiting", onWaiting);
+    media.addEventListener("ended", onEnded);
+    return () => {
+      media.removeEventListener("playing", onPlaying);
+      media.removeEventListener("pause", onPause);
+      media.removeEventListener("waiting", onWaiting);
+      media.removeEventListener("ended", onEnded);
+    };
+  }, [audioOnly]);
+
+  // Fullscreen blur setting (from Settings; live-updates).
+  useEffect(() => {
+    setBlurEnabled(getFullscreenBlur());
+    const onChange = () => setBlurEnabled(getFullscreenBlur());
+    window.addEventListener(SETTINGS_CHANGED_EVENT, onChange);
+    return () => window.removeEventListener(SETTINGS_CHANGED_EVENT, onChange);
+  }, []);
+
+  // Track whether OUR wrapper is the fullscreen element (the native
+  // controls' fullscreen button fullscreens the video instead — that
+  // path has no blur canvas; the custom button below is the blur path).
+  useEffect(() => {
+    const onFsChange = () => {
+      setIsFullscreen(document.fullscreenElement === wrapperRef.current);
+    };
+    document.addEventListener("fullscreenchange", onFsChange);
+    return () => document.removeEventListener("fullscreenchange", onFsChange);
+  }, []);
+
+  // While fullscreen with blur on, repaint a low-res copy of the current
+  // frame into the backdrop canvas twice a second (the video element has
+  // crossOrigin="anonymous" and the proxy sends CORS *, so drawImage is
+  // allowed; if it ever throws, the last good frame simply stays).
+  useEffect(() => {
+    if (!isFullscreen || !blurEnabled || audioOnly) return;
+    const video = mediaRef.current as HTMLVideoElement | null;
+    const canvas = blurCanvasRef.current;
+    if (!video || !canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const draw = () => {
+      try {
+        if (video.videoWidth && video.videoHeight) {
+          if (canvas.width !== 320) {
+            canvas.width = 320;
+            canvas.height = 180;
+          }
+          ctx.drawImage(video, 0, 0, 320, 180);
+        }
+      } catch {
+        // Cross-origin draw blocked — keep the previous frame.
+      }
+    };
+    draw();
+    const id = setInterval(draw, 500);
+    return () => clearInterval(id);
+  }, [isFullscreen, blurEnabled, audioOnly]);
 
   useEffect(() => {
     const media = mediaRef.current;
@@ -522,12 +620,22 @@ export default function HlsPlayer({
 
   return (
     <div className="w-full">
-      <div className="relative aspect-video w-full overflow-hidden rounded-xl bg-black">
+      <div
+        ref={wrapperRef}
+        className="fs-wrap relative aspect-video w-full overflow-hidden rounded-xl bg-black"
+      >
+        {isFullscreen && blurEnabled && (
+          <canvas
+            ref={blurCanvasRef}
+            aria-hidden="true"
+            className="absolute inset-0 h-full w-full scale-110 object-cover opacity-70 blur-2xl"
+          />
+        )}
         <video
           ref={(el) => {
             mediaRef.current = el;
           }}
-          className="h-full w-full"
+          className="relative z-10 h-full w-full"
           controls
           playsInline
           crossOrigin="anonymous"
@@ -659,6 +767,20 @@ export default function HlsPlayer({
             className="inline-flex items-center gap-1.5 rounded border border-zinc-300 bg-white px-2.5 py-1 text-xs font-medium text-zinc-800 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
           >
             <Camera className="h-3.5 w-3.5" aria-hidden="true" /> <T k="player.screenshot" />
+          </button>
+          <button
+            type="button"
+            onClick={toggleFullscreen}
+            aria-label={isFullscreen ? t("player.fullscreenExit") : t("player.fullscreen")}
+            title={t("player.fullscreenTitle")}
+            className="inline-flex items-center gap-1.5 rounded border border-zinc-300 bg-white px-2.5 py-1 text-xs font-medium text-zinc-800 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
+          >
+            {isFullscreen ? (
+              <Minimize className="h-3.5 w-3.5" aria-hidden="true" />
+            ) : (
+              <Maximize className="h-3.5 w-3.5" aria-hidden="true" />
+            )}{" "}
+            <T k="player.fullscreen" />
           </button>
           <button
             type="button"

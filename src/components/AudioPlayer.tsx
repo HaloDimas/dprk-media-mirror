@@ -2,6 +2,7 @@
 
 import { useEffect, useImperativeHandle, useRef, useState, type Ref } from "react";
 import Hls from "hls.js";
+import { useWatchTime } from "@/lib/watchtime";
 
 export type AudioStatus = "idle" | "connecting" | "live" | "paused" | "error";
 
@@ -54,6 +55,10 @@ export default function AudioPlayer({
   const gainRef = useRef<GainNode | null>(null);
   const [status, setStatus] = useState<AudioStatus>("idle");
   const [error, setError] = useState<string | null>(null);
+
+  // Watch time: status "live" is set by the media element's `playing`
+  // event, so time is only counted while the station is actually playing.
+  useWatchTime(channel, status === "live");
 
   useEffect(() => {
     const audio = audioRef.current;

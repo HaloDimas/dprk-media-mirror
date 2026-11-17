@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { ChannelId, EpgData, Program } from "@/lib/types";
 import { findNowNext, nowPyt, todayPyt } from "@/lib/types";
-import { programTitle, useLanguage } from "@/i18n/LanguageContext";
+import { programTitle, useEpgLang, useLanguage } from "@/i18n/LanguageContext";
 import { T } from "@/i18n/T";
 
 const TABS: { id: ChannelId; label: string; ko: string }[] = [
@@ -28,8 +28,8 @@ function shiftDate(date: string, days: number): string {
 }
 
 function ProgramRow({ p, isNow, isNext }: { p: Program; isNow: boolean; isNext: boolean }) {
-  const { lang } = useLanguage();
-  const title = programTitle(p, lang);
+  const epgLang = useEpgLang();
+  const title = programTitle(p, epgLang);
   return (
     <li
       className={`rounded-lg border px-4 py-3 ${
@@ -69,7 +69,8 @@ export default function ScheduleGuide({
   initialDate: string;
   initial: Partial<Record<ChannelId, EpgData>>;
 }) {
-  const { lang, t } = useLanguage();
+  const { t } = useLanguage();
+  const epgLang = useEpgLang();
   const [channel, setChannel] = useState<ChannelId>("kctv");
   const [date, setDate] = useState(initialDate);
   const [data, setData] = useState<Record<ChannelId, EpgData | null>>({
@@ -201,14 +202,14 @@ export default function ScheduleGuide({
                       <span className="mr-1 rounded bg-red-600 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">
                         <T k="common.now" />
                       </span>
-                      {programTitle(n, lang).primary}
+                      {programTitle(n, epgLang).primary}
                     </p>
                     <p className="mt-0.5 font-mono text-xs text-zinc-500">
                       {n.start} – {n.end}
                     </p>
                     {nx && (
                       <p className="mt-1 truncate text-xs text-zinc-600 dark:text-zinc-400">
-                        <T k="schedule.next" />: {programTitle(nx, lang).primary} ({nx.start})
+                        <T k="schedule.next" />: {programTitle(nx, epgLang).primary} ({nx.start})
                       </p>
                     )}
                   </>

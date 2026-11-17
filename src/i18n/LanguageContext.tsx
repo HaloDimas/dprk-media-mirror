@@ -5,6 +5,10 @@ import { en, type Dictionary } from "./en";
 import { id } from "./id";
 import { ko } from "./ko";
 import { detectLanguage, LANGUAGE_STORAGE_KEY, type Language } from "./types";
+import {
+  getEpgLangSetting,
+  SETTINGS_CHANGED_EVENT,
+} from "@/lib/settings";
 import type { Program } from "@/lib/types";
 
 /** All dictionaries, keyed by language — exported so client components
@@ -104,4 +108,23 @@ export function programTitle(
   const secondary =
     lang === "ko" ? (p.en && p.en !== primary ? p.en : null) : p.ko && p.ko !== primary ? p.ko : null;
   return { primary, secondary };
+}
+
+/** Effective programme-title language: the stored EPG setting
+ *  ("dprk-epg-lang"), or the UI language when set to "auto" (Korean UI
+ *  -> Korean titles, anything else -> English, matching programTitle's
+ *  own preference). Live-updates when the setting changes. */
+export function useEpgLang(): Language {
+  const { lang } = useLanguage();
+  const [setting, setSetting] = useState<"auto" | "en" | "ko">("auto");
+
+  useEffect(() => {
+    setSetting(getEpgLangSetting());
+    const onChange = () => setSetting(getEpgLangSetting());
+    window.addEventListener(SETTINGS_CHANGED_EVENT, onChange);
+    return () => window.removeEventListener(SETTINGS_CHANGED_EVENT, onChange);
+  }, []);
+
+  if (setting === "en" || setting === "ko") return setting;
+  return lang === "ko" ? "ko" : "en";
 }

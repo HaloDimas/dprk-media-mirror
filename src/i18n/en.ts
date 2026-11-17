@@ -30,6 +30,8 @@ export const en = {
     sourcesPage: "Sources page",
     mirroredSources: "Mirrored Sources",
     terms: "Terms & Conditions",
+    eula: "End User License Agreement",
+    settings: "Settings page",
     contactPage: "Contact page",
     statusPage: "Status page",
   },
@@ -38,6 +40,8 @@ export const en = {
     faq: "FAQ",
     privacy: "Privacy Policy",
     terms: "Terms & Conditions",
+    settings: "Settings",
+    eula: "EULA",
     about:
       "DPRK Media Mirror — live TV, radio, news, recordings and publications from Koryo Front and KCNA Watch. Programme times are Pyongyang Time (UTC+9).",
     legal:
@@ -169,6 +173,109 @@ export const en = {
     atLiveEdge: "You are at the live edge",
     behindLiveEdge: "You are behind the live edge",
     audioOnlyAriaSuffix: "audio only",
+    fullscreen: "Fullscreen",
+    fullscreenTitle: "Watch fullscreen (blurred backdrop)",
+    fullscreenExit: "Exit fullscreen",
+  },
+  epg: {
+    label: "Programme titles",
+    auto: "Auto",
+    english: "English",
+    korean: "한국어",
+    autoDesc: "Follows the site language",
+  },
+  settings: {
+    title: "Settings",
+    intro:
+      "Adjust how the mirror looks and plays. Every setting is stored only in this browser.",
+    appearance: "Appearance",
+    themeLabel: "Theme",
+    themeDark: "Dark",
+    themeLight: "Light",
+    themeDesc: "Dark is this site's default theme.",
+    languageLabel: "Interface language",
+    languageDesc:
+      "The language for menus and buttons. News content and programme titles are not translated.",
+    playback: "Playback",
+    watchTimeLabel: "Watch time stats",
+    watchTimeDesc:
+      "Keep a local record of how long you watch and listen, per channel and station. Stored only in this browser.",
+    watchTimeOn: "On",
+    watchTimeOff: "Off",
+    fullscreenBlurLabel: "Fullscreen blur",
+    fullscreenBlurDesc:
+      "Show a soft blurred backdrop behind the video in fullscreen.",
+    guide: "Programme guide",
+    epgLabel: "Programme titles",
+    epgDesc:
+      "Which language to show programme titles in. Auto follows the site language.",
+    navigation: "Navigation",
+    navAppearanceLabel: "Header style",
+    navAppearanceDesc: "How the top navigation bar looks.",
+    navClassic: "Classic",
+    navClassicDesc: "Solid header, as now.",
+    navFrosted: "Frosted",
+    navFrostedDesc:
+      "Translucent header with a blur effect; it stays visible while you scroll.",
+    statsTitle: "Watch time",
+    statsIntro:
+      "Time spent watching and listening, counted only while actually playing. Stored only in this browser.",
+    statsToday: "Today",
+    stats7: "7 days",
+    statsAll: "All time",
+    statsNoData: "No watch time recorded yet.",
+    statsClear: "Clear stats",
+    statsOffNote:
+      "Watch time tracking is off — turn it on above to start recording.",
+    statsChannel: "Channel / station",
+  },
+  eula: {
+    title: "End User License Agreement",
+    lastUpdated: "Last updated: 17 November 2026.",
+    intro:
+      "This agreement covers your use of the DPRK Media Mirror website. The agreement text below is in English.",
+    sections: [
+      {
+        h: "Grant of use",
+        p: [
+          "DPRK Media Mirror (the “Site”) is provided free of charge for personal, non-commercial use. You may read, watch and listen to the mirrored content on this Site for your own information, research and archival purposes. No account, sign-in or payment is required, and no licence key is issued. This agreement does not transfer any ownership of the Site, its code, or the mirrored content to you.",
+        ],
+      },
+      {
+        h: "Content ownership",
+        p: [
+          "All articles, broadcasts, recordings, publications, images and programme data mirrored on this Site belong to their original broadcasters and publishers, including KCNA, Korean Central Television, Rodong Sinmun, Pyongyang Times, Voice of Korea and the other sources named on this Site. The Site reproduces that content for information, research and archival purposes only. Nothing in this agreement gives you any right to the content itself.",
+        ],
+      },
+      {
+        h: "Acceptable use",
+        p: [],
+        bullets: [
+          "Use the Site only for personal reading, watching and research.",
+          "Do not copy, re-publish or sell the mirrored content as your own, and do not present yourself as the mirror, a broadcaster, or any government.",
+          "Do not scrape, bulk-download or redistribute the mirrored content.",
+          "Do not attempt to disrupt the Site, its media proxy, or the upstream sources.",
+        ],
+      },
+      {
+        h: "No warranty",
+        p: [
+          "The Site is provided “as is” and “as available”, without any warranty of any kind. Live streams, programme guides and news depend on upstream sources that are often slow, intermittent or temporarily unavailable. The operator does not guarantee that any stream, article or schedule is complete, current or uninterrupted.",
+        ],
+      },
+      {
+        h: "Limitation of liability",
+        p: [
+          "To the fullest extent permitted by law, the operator is not liable for any loss or damage arising from your use of, or inability to use, this Site — including missed broadcasts, incomplete or outdated information, or reliance on mirrored content.",
+        ],
+      },
+      {
+        h: "Changes and termination",
+        p: [
+          "The operator may change, suspend or stop the Site at any time, with or without notice. This agreement may also change; the “Last updated” date above will change with it. Continued use of the Site after a change means you accept the updated agreement.",
+        ],
+      },
+    ] as RichSection[],
   },
   radio: {
     title: "Radio",

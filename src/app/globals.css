@@ -99,6 +99,36 @@ body {
   outline-offset: 2px;
 }
 
+/* Frosted nav appearance (Settings > Navigation > Frosted): the site
+ *  header becomes translucent with a backdrop blur and sticks to the
+ *  top so the effect is visible while scrolling. Scoped to
+ *  `body > header` so the per-channel header on /live is untouched. */
+html.nav-frosted body > header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background-color: rgb(255 255 255 / 0.72);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  backdrop-filter: blur(14px) saturate(1.4);
+}
+html.nav-frosted.dark body > header {
+  background-color: rgb(9 9 11 / 0.72);
+}
+
+/* Fullscreen player (HlsPlayer): when the wrapper is the fullscreen
+ *  element it fills the screen (no 16:9 box, no rounded corners) so
+ *  the blurred backdrop canvas covers the whole display and the video
+ *  letterboxes inside it. */
+.fs-wrap:fullscreen {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: auto;
+  border-radius: 0;
+}
+.fs-wrap:fullscreen video {
+  object-fit: contain;
+}
+
 /* Smooth hover lift for cards that are links. */
 a[class*="rounded-xl"]:hover {
   transition: border-color 0.15s ease, background-color 0.15s ease;

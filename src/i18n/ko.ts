@@ -31,6 +31,8 @@ export const ko: Dictionary = {
     sourcesPage: "출처 페이지",
     mirroredSources: "미러링 출처",
     terms: "이용약관",
+    eula: "최종 사용자 라이선스 계약",
+    settings: "설정 페이지",
     contactPage: "연락처 페이지",
     statusPage: "상태 페이지",
   },
@@ -39,6 +41,8 @@ export const ko: Dictionary = {
     faq: "자주 묻는 질문",
     privacy: "개인정보처리방침",
     terms: "이용약관",
+    settings: "설정",
+    eula: "EULA",
     about:
       "DPRK Media Mirror — 고려프론트와 KCNA Watch에서 가져온 라이브 TV, 라디오, 뉴스, 녹화 및 출판물. 방송 시간은 평양 시간(UTC+9) 기준입니다.",
     legal:
@@ -170,6 +174,109 @@ export const ko: Dictionary = {
     atLiveEdge: "라이브 지점에 있습니다",
     behindLiveEdge: "라이브 지점보다 뒤처져 있습니다",
     audioOnlyAriaSuffix: "오디오만",
+    fullscreen: "전체 화면",
+    fullscreenTitle: "전체 화면으로 보기 (흐릿한 배경)",
+    fullscreenExit: "전체 화면 종료",
+  },
+  epg: {
+    label: "방송 제목",
+    auto: "자동",
+    english: "영어",
+    korean: "한국어",
+    autoDesc: "사이트 언어를 따릅니다",
+  },
+  settings: {
+    title: "설정",
+    intro:
+      "미러의 화면과 재생을 조정합니다. 모든 설정은 이 브라우저에만 저장됩니다.",
+    appearance: "화면",
+    themeLabel: "테마",
+    themeDark: "다크",
+    themeLight: "라이트",
+    themeDesc: "다크 테마가 이 사이트의 기본값입니다.",
+    languageLabel: "인터페이스 언어",
+    languageDesc:
+      "메뉴와 버튼의 언어입니다. 뉴스 내용과 방송 제목은 번역되지 않습니다.",
+    playback: "재생",
+    watchTimeLabel: "시청 시간 통계",
+    watchTimeDesc:
+      "채널과 방송국별로 시청·청취 시간을 기록합니다. 이 브라우저에만 저장됩니다.",
+    watchTimeOn: "켜짐",
+    watchTimeOff: "꺼짐",
+    fullscreenBlurLabel: "전체 화면 블러",
+    fullscreenBlurDesc:
+      "전체 화면에서 비디오 뒤에 부드럽게 흐릿한 배경을 표시합니다.",
+    guide: "방송 편성표",
+    epgLabel: "방송 제목 언어",
+    epgDesc:
+      "방송 제목에 사용할 언어입니다. 자동은 사이트 언어를 따릅니다.",
+    navigation: "탐색",
+    navAppearanceLabel: "헤더 스타일",
+    navAppearanceDesc: "상단 탐색 모음의 모양입니다.",
+    navClassic: "클래식",
+    navClassicDesc: "지금처럼 단단한 헤더입니다.",
+    navFrosted: "프로스티드",
+    navFrostedDesc:
+      "반투명 헤더에 블러 효과가 적용되며, 스크롤해도 계속 보입니다.",
+    statsTitle: "시청 시간",
+    statsIntro:
+      "실제로 재생 중인 시간만 계산한 시청·청취 시간입니다. 이 브라우저에만 저장됩니다.",
+    statsToday: "오늘",
+    stats7: "7일",
+    statsAll: "전체",
+    statsNoData: "기록된 시청 시간이 아직 없습니다.",
+    statsClear: "통계 지우기",
+    statsOffNote:
+      "시청 시간 기록이 꺼져 있습니다 — 위에서 켜면 기록이 시작됩니다.",
+    statsChannel: "채널 / 방송국",
+  },
+  eula: {
+    title: "최종 사용자 라이선스 계약",
+    lastUpdated: "최종 업데이트: 2026년 11월 17일.",
+    intro:
+      "이 계약은 DPRK Media Mirror 웹사이트 사용에 적용됩니다. 아래 계약 본문은 영어로 작성되어 있습니다.",
+    sections: [
+      {
+        h: "Grant of use",
+        p: [
+          "DPRK Media Mirror (the “Site”) is provided free of charge for personal, non-commercial use. You may read, watch and listen to the mirrored content on this Site for your own information, research and archival purposes. No account, sign-in or payment is required, and no licence key is issued. This agreement does not transfer any ownership of the Site, its code, or the mirrored content to you.",
+        ],
+      },
+      {
+        h: "Content ownership",
+        p: [
+          "All articles, broadcasts, recordings, publications, images and programme data mirrored on this Site belong to their original broadcasters and publishers, including KCNA, Korean Central Television, Rodong Sinmun, Pyongyang Times, Voice of Korea and the other sources named on this Site. The Site reproduces that content for information, research and archival purposes only. Nothing in this agreement gives you any right to the content itself.",
+        ],
+      },
+      {
+        h: "Acceptable use",
+        p: [],
+        bullets: [
+          "Use the Site only for personal reading, watching and research.",
+          "Do not copy, re-publish or sell the mirrored content as your own, and do not present yourself as the mirror, a broadcaster, or any government.",
+          "Do not scrape, bulk-download or redistribute the mirrored content.",
+          "Do not attempt to disrupt the Site, its media proxy, or the upstream sources.",
+        ],
+      },
+      {
+        h: "No warranty",
+        p: [
+          "The Site is provided “as is” and “as available”, without any warranty of any kind. Live streams, programme guides and news depend on upstream sources that are often slow, intermittent or temporarily unavailable. The operator does not guarantee that any stream, article or schedule is complete, current or uninterrupted.",
+        ],
+      },
+      {
+        h: "Limitation of liability",
+        p: [
+          "To the fullest extent permitted by law, the operator is not liable for any loss or damage arising from your use of, or inability to use, this Site — including missed broadcasts, incomplete or outdated information, or reliance on mirrored content.",
+        ],
+      },
+      {
+        h: "Changes and termination",
+        p: [
+          "The operator may change, suspend or stop the Site at any time, with or without notice. This agreement may also change; the “Last updated” date above will change with it. Continued use of the Site after a change means you accept the updated agreement.",
+        ],
+      },
+    ],
   },
   radio: {
     title: "라디오",

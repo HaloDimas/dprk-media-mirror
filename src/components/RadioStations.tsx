@@ -31,7 +31,7 @@ function statusText(status: AudioStatus, boost: boolean): string {
 
 function LiveBadge() {
   return (
-    <span className="flex items-center gap-1.5 rounded bg-red-600/20 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-red-400">
+    <span className="flex items-center gap-1.5 rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
       <span className="relative flex h-2 w-2">
         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
         <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />

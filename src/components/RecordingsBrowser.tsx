@@ -142,9 +142,13 @@ function RecordingCard({ it, onPlay }: { it: RecordingItem; onPlay: (it: Recordi
             <Download className="h-4 w-4" aria-hidden="true" /> <T k="recordings.download" />
           </a>
           {/* Share copies the recording's file URL (the direct link to
-              this video); the page URL alone would not identify it. */}
-          <ShareButton url={it.url} />
-          <SaveButton item={{ id: it.slug, type: "recording", title: it.title, date: it.date, url: "/recordings" }} />
+              this video); the page URL alone would not identify it.
+              Icon-only here: the three labelled buttons need ~300px but
+              the card's content is only 237px at xl 4-col (264px at sm
+              2-col), so labelled Copy/Save clipped the Save button off
+              the card edge. The Download button keeps its label. */}
+          <ShareButton url={it.url} iconOnly />
+          <SaveButton item={{ id: it.slug, type: "recording", title: it.title, date: it.date, url: "/recordings" }} iconOnly />
         </div>
       </div>
     </li>

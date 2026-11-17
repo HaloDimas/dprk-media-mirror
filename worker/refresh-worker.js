@@ -36,7 +36,7 @@
  * is enough (48 trigger runs/day is far below the 100k requests/day limit).
  */
 
-const REFRESH_URL = "https://dprk-media-mirror.vercel.app/api/cron/refresh";
+const REFRESH_URL = "https://dprkmedia.vercel.app/api/cron/refresh";
 
 /** A scheduled run: the refresh endpoint's own result, as JSON. */
 async function triggerRefresh(env) {

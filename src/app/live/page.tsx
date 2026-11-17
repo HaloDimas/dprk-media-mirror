@@ -31,6 +31,37 @@ function koryoTvUrl(channel: ChannelId): string {
   return `https://koryo.tv/channel/${slug}`;
 }
 
+/** Channel mark in a white rounded tile. The logos are dark grey / gold on
+ *  transparent, so the white tile keeps every one readable in both the
+ *  dark and the light theme. */
+function ChannelLogo({
+  src,
+  alt,
+  size,
+}: {
+  src: string;
+  alt: string;
+  size: "sm" | "md" | "lg";
+}) {
+  const box =
+    size === "sm" ? "h-6 w-9" : size === "md" ? "h-12 w-16" : "h-16 w-24";
+  return (
+    <span
+      className={`flex shrink-0 items-center justify-center rounded-lg bg-white p-1 ring-1 ring-zinc-200 ${box}`}
+    >
+      <img src={src} alt={alt} className="max-h-full max-w-full object-contain" loading="lazy" />
+    </span>
+  );
+}
+
+/** Whole minutes left in a programme (NaN when the times are unknown). */
+function minsLeft(p: Program, now: string): number {
+  const n = toMin(now);
+  const e = toMin(p.end);
+  if (!Number.isFinite(n) || !Number.isFinite(e)) return NaN;
+  return e - n;
+}
+
 export default function LivePage() {
   const { lang, t } = useLanguage();
   const [channel, setChannel] = useState<ChannelId>("kctv");
@@ -124,14 +155,17 @@ export default function LivePage() {
                     : "border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 hover:border-red-800"
                 }`}
               >
-                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                  {c.name} <span className="font-normal text-zinc-500">· {c.korean}</span>
-                  {selected && (
-                    <span className="ml-2 rounded bg-red-700 px-1.5 py-0.5 text-[10px] text-white">
-                      <T k="live.watching" />
-                    </span>
-                  )}
-                </p>
+                <div className="flex items-center gap-3">
+                  <ChannelLogo src={c.logo} alt={`${c.name} logo`} size="md" />
+                  <p className="min-w-0 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                    {c.name} <span className="font-normal text-zinc-500">· {c.korean}</span>
+                    {selected && (
+                      <span className="ml-2 rounded bg-red-700 px-1.5 py-0.5 text-[10px] text-white">
+                        <T k="live.watching" />
+                      </span>
+                    )}
+                  </p>
+                </div>
                 {n && nTitle ? (
                   <p className="mt-1.5 text-sm text-zinc-800 dark:text-zinc-200">
                     <span className="font-semibold text-red-600 dark:text-red-400">
@@ -167,18 +201,35 @@ export default function LivePage() {
             role="tab"
             aria-selected={channel === c.id}
             onClick={() => setChannel(c.id)}
-            className={`rounded-md px-3 py-1.5 text-sm font-medium ${
+            className={`flex items-center gap-2 rounded-md px-2.5 py-1.5 text-sm font-medium ${
               channel === c.id ? "bg-red-700 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
             }`}
           >
+            <ChannelLogo src={c.logo} alt={`${c.name} logo`} size="sm" />
             {c.name}
           </button>
         ))}
       </div>
 
+      {/* Channel header — logo tile + large Korean title + English subtitle. */}
+      <header className="flex items-center gap-4">
+        <ChannelLogo src={info.logo} alt={`${info.name} logo`} size="lg" />
+        <div className="min-w-0">
+          <p className="text-2xl font-bold leading-tight text-zinc-900 dark:text-amber-400 sm:text-3xl">
+            {info.korean}
+          </p>
+          <p className="mt-0.5 text-sm text-zinc-600 dark:text-zinc-400">
+            <T k="live.channelHeaderSub" values={{ name: info.name }} />
+          </p>
+        </div>
+      </header>
+
       {info.status === "coming-soon" ? (
         <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-8 text-center">
-          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+          <div className="flex justify-center">
+            <ChannelLogo src={info.logo} alt={`${info.name} logo`} size="lg" />
+          </div>
+          <h2 className="mt-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             {info.name} <T k="live.comingSoon" />
           </h2>
           <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
@@ -254,24 +305,47 @@ export default function LivePage() {
               <span className="text-xs font-bold uppercase tracking-widest text-zinc-700 dark:text-zinc-300">
                 <T k="live.nowOnAir" />
               </span>
-              <span className="ml-auto text-xs text-zinc-500">
-                <T k="live.pyongyangTime" values={{ time: now }} />
+              <span className="ml-auto flex items-center gap-2">
+                <ChannelLogo src={info.logo} alt={`${info.name} logo`} size="sm" />
+                <span className="text-xs text-zinc-500">
+                  <T k="live.pyongyangTime" values={{ time: now }} />
+                </span>
               </span>
             </div>
             <div className="px-4 py-4">
               {nowProg && nowTitle ? (
                 <>
-                  <span className="inline-block rounded bg-blue-100 dark:bg-blue-900/70 px-2 py-0.5 text-xs font-medium text-blue-800 dark:text-blue-200">
-                    {nowProg.category}
-                  </span>
-                  <h2 className="mt-2 text-lg font-bold leading-snug text-zinc-900 dark:text-white">{nowTitle.primary}</h2>
-                  {nowTitle.secondary && <p className="mt-0.5 text-sm text-zinc-600 dark:text-zinc-400">{nowTitle.secondary}</p>}
-                  <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-                    {nowProg.start} – {nowProg.end}
-                  </p>
+                  <div className="flex flex-wrap gap-x-6 gap-y-3">
+                    <div className="min-w-0 flex-1">
+                      <span className="inline-block rounded bg-blue-100 dark:bg-blue-900/70 px-2 py-0.5 text-xs font-medium text-blue-800 dark:text-blue-200">
+                        {nowProg.category}
+                      </span>
+                      <h2 className="mt-2 text-lg font-bold leading-snug text-zinc-900 dark:text-white">{nowTitle.primary}</h2>
+                      {nowTitle.secondary && <p className="mt-0.5 text-sm text-zinc-600 dark:text-zinc-400">{nowTitle.secondary}</p>}
+                      <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+                        {nowProg.start} – {nowProg.end}
+                        {Number.isFinite(minsLeft(nowProg, now)) && minsLeft(nowProg, now) > 0 && (
+                          <> · {t("live.minLeft", { n: minsLeft(nowProg, now) })}</>
+                        )}
+                      </p>
+                    </div>
+                    {nextProg && nextTitle && (
+                      <div className="w-full shrink-0 sm:w-60 sm:text-right">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">
+                          <T k="live.upNext" />
+                        </p>
+                        <p className="mt-1 text-sm font-medium leading-snug text-zinc-900 dark:text-zinc-100">
+                          {nextTitle.primary}
+                        </p>
+                        <p className="mt-0.5 text-xs text-zinc-500">
+                          {nextProg.start} – {nextProg.end}
+                        </p>
+                      </div>
+                    )}
+                  </div>
                   {/* Live progress through the current programme. */}
                   <div
-                    className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800"
+                    className="mt-4 h-1.5 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800"
                     role="progressbar"
                     aria-valuenow={Math.round(progressPct(nowProg, now))}
                     aria-valuemin={0}
@@ -283,15 +357,6 @@ export default function LivePage() {
                       style={{ width: `${progressPct(nowProg, now)}%` }}
                     />
                   </div>
-                  {nextProg && nextTitle && (
-                    <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
-                      <span className="font-semibold text-zinc-700 dark:text-zinc-300">
-                        <T k="common.next" />:
-                      </span>{" "}
-                      {nextTitle.primary}{" "}
-                      <span className="text-zinc-500">({nextProg.start} – {nextProg.end})</span>
-                    </p>
-                  )}
                 </>
               ) : (
                 <p className="text-sm text-zinc-600 dark:text-zinc-400">

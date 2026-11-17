@@ -117,6 +117,9 @@ export const en = {
     nowOnAirAria: "Now on air",
     guideAria: "Programme guide",
     progressAria: "Progress through the current programme",
+    channelHeaderSub: "Live from Pyongyang, DPRK · {name}",
+    minLeft: "{n} min left",
+    upNext: "Up next",
   },
   player: {
     dataSaver: "Data saver",

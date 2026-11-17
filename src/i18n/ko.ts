@@ -118,6 +118,9 @@ export const ko: Dictionary = {
     nowOnAirAria: "현재 방송 중",
     guideAria: "편성표",
     progressAria: "현재 방송 진행률",
+    channelHeaderSub: "평양에서 생방송 · {name}",
+    minLeft: "{n}분 남음",
+    upNext: "다음 방송",
   },
   player: {
     dataSaver: "데이터 절약",

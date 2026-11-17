@@ -24,6 +24,8 @@ export interface ChannelInfo {
   hls: string | null; // CDN channel key, null when not streaming yet
   status: "live" | "off-air" | "coming-soon";
   note: string;
+  /** Broadcaster's own channel mark, served from /public/channels. */
+  logo: string;
 }
 
 export const CHANNELS: ChannelInfo[] = [
@@ -35,6 +37,7 @@ export const CHANNELS: ChannelInfo[] = [
     hls: "kctv",
     status: "live",
     note: "Main national channel",
+    logo: "/channels/Korean-Central-Television.png",
   },
   {
     id: "sports",
@@ -44,6 +47,7 @@ export const CHANNELS: ChannelInfo[] = [
     hls: "sports",
     status: "live",
     note: "Sports channel — broadcasts from late afternoon",
+    logo: "/channels/Sports-TV.png",
   },
   {
     id: "ryongnamsan",
@@ -53,6 +57,7 @@ export const CHANNELS: ChannelInfo[] = [
     hls: "ryongnamsan",
     status: "live",
     note: "Educational channel — weekdays only",
+    logo: "/channels/Ryongnamsan-tv.png",
   },
   {
     id: "mansudae",
@@ -62,6 +67,7 @@ export const CHANNELS: ChannelInfo[] = [
     hls: null,
     status: "coming-soon",
     note: "Coming soon — no stream or guide published yet",
+    logo: "/channels/Mansudae-TV.png",
   },
 ];
 

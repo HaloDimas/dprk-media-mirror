@@ -116,6 +116,9 @@ export const id: Dictionary = {
     nowOnAirAria: "Sedang tayang",
     guideAria: "Panduan acara",
     progressAria: "Progres acara yang sedang tayang",
+    channelHeaderSub: "Siaran langsung dari Pyongyang, RPDK · {name}",
+    minLeft: "tersisa {n} mnt",
+    upNext: "Berikutnya",
   },
   player: {
     dataSaver: "Hemat data",

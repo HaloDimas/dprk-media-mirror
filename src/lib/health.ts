@@ -6,6 +6,12 @@
 // and the last automated refresh run on THIS instance. The /status page also
 // live-probes every source when it is requested (cached 60s), so the page
 // stays accurate even on a fresh instance that has no recorded history yet.
+//
+// One exception: the LAST AUTOMATED REFRESH does not come from this memory.
+// The Cloudflare cron Worker records each successful refresh in KV and the
+// /status page reads it back through the Worker's fetch handler — that
+// record survives Vercel redeploys, so the page shows the real last run
+// instead of "no refresh recorded on this server instance yet".
 // Nothing here contains or logs a credential.
 
 import {
@@ -60,15 +66,36 @@ export interface RefreshRun {
   results: { id: string; ok: boolean; count: number | null; ms: number; error?: string }[];
 }
 
+/**
+ * The last automated refresh as recorded by the Cloudflare cron Worker
+ * (KV, via the Worker's fetch handler). This is the source of truth for
+ * the /status page — it survives Vercel redeploys, unlike RefreshRun.
+ * Counts are null when the Worker could not parse the refresh result.
+ */
+export interface WorkerLastRefresh {
+  at: string;
+  ok: number | null;
+  failed: number | null;
+  skipped: number | null;
+  durationMs: number | null;
+}
+
 export interface StatusSnapshot {
   checkedAt: string;
   sources: SourceHealth[];
   lastRefresh: RefreshRun | null;
+  /** Last refresh per the Cloudflare Worker (KV), or null if unknown. */
+  workerLastRefresh: WorkerLastRefresh | null;
 }
 
 // ---------------------------------------------------------------- Store
 const healthMap = new Map<string, Omit<SourceHealth, "id" | "name" | "provides" | "group">>();
 let lastRefresh: RefreshRun | null = null;
+let workerLastRefresh: WorkerLastRefresh | null = null;
+
+export function getWorkerLastRefresh(): WorkerLastRefresh | null {
+  return workerLastRefresh;
+}
 
 export function recordOutcome(
   id: string,
@@ -153,13 +180,35 @@ async function probeCfHls(): Promise<number> {
   return 1;
 }
 
-/** Probe the Cloudflare cron Worker (sweet-bird-3c29): its status endpoint. */
+/** Probe the Cloudflare cron Worker (sweet-bird-3c29): its status endpoint.
+ * The current Worker returns JSON ({ status, cronSecretSet, lastRefresh });
+ * an older deployed Worker returns plain text, which is still accepted so
+ * the probe does not report the Worker down just because the new code has
+ * not been pasted in yet. The KV last-refresh record (when present) is
+ * stored for the /status page; a failed probe leaves the previous value
+ * untouched. */
 async function probeCfRefresh(): Promise<number> {
   const res = await fetchWithTimeout("https://sweet-bird-3c29.hypothernia-apparel.workers.dev/", 8000, {
     "User-Agent": UA,
   });
   if (!res.ok) throw new Error(`Refresh worker -> HTTP ${res.status}`);
   const text = await res.text();
+  try {
+    const data = JSON.parse(text) as {
+      status?: string;
+      cronSecretSet?: boolean;
+      lastRefresh?: WorkerLastRefresh | null;
+    };
+    if (data && typeof data === "object" && typeof data.cronSecretSet === "boolean") {
+      // New-format response: refresh the KV record (null = no run yet).
+      workerLastRefresh = data.lastRefresh ?? null;
+      if (!data.cronSecretSet) throw new Error("Refresh worker secret not set");
+      return 1;
+    }
+  } catch (e) {
+    if (e instanceof Error && e.message === "Refresh worker secret not set") throw e;
+    // Not JSON (old Worker) — fall through to the legacy text check.
+  }
   if (!text.includes("CRON_SECRET is set")) throw new Error("Refresh worker secret not set");
   return 1;
 }
@@ -258,7 +307,7 @@ function shortError(e: unknown): string {
 export async function getStatusSnapshot(): Promise<StatusSnapshot> {
   const now = Date.now();
   if (cachedSnapshot && now - cachedSnapshot.at < SNAPSHOT_TTL_MS) {
-    return { ...cachedSnapshot.data, lastRefresh: getLastRefresh() };
+    return { ...cachedSnapshot.data, lastRefresh: getLastRefresh(), workerLastRefresh: getWorkerLastRefresh() };
   }
   const checkedAt = new Date().toISOString();
   const settled = await Promise.allSettled(
@@ -298,7 +347,7 @@ export async function getStatusSnapshot(): Promise<StatusSnapshot> {
       lastChecked: rec?.lastChecked ?? null,
     };
   });
-  const snapshot: StatusSnapshot = { checkedAt, sources, lastRefresh: getLastRefresh() };
+  const snapshot: StatusSnapshot = { checkedAt, sources, lastRefresh: getLastRefresh(), workerLastRefresh: getWorkerLastRefresh() };
   cachedSnapshot = { at: now, data: snapshot };
   return snapshot;
 }

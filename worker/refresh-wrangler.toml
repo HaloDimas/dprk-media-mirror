@@ -4,3 +4,21 @@ compatibility_date = "2025-01-01"
 
 [triggers]
 crons = ["*/30 * * * *"]
+
+# KV namespace for the last-refresh record (read by the /status page).
+# The Worker only WRITES to it after a successful refresh, and /status
+# reads it back through the Worker's fetch handler — so the "last
+# automated refresh" readout survives Vercel redeploys. The binding is
+# OPTIONAL: without it the refresh still runs, it just isn't recorded.
+#
+# To enable it (dashboard, no wrangler needed):
+#   1. Workers & Pages -> KV -> Create a namespace (e.g. "dprk-refresh-state").
+#   2. Open the sweet-bird-3c29 Worker -> Settings -> Variables ->
+#      Add binding -> type "KV Namespace", variable name REFRESH_STATE,
+#      select the namespace you just created -> Save -> redeploy the Worker.
+# With wrangler instead: `wrangler kv namespace create REFRESH_STATE`,
+# then uncomment the block below and paste the returned id.
+#
+# [[kv_namespaces]]
+# binding = "REFRESH_STATE"
+# id = "<paste the namespace id here>"

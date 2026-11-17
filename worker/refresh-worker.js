@@ -19,13 +19,61 @@
  *   - Dashboard: Worker Settings -> Triggers -> Cron Triggers -> Add.
  *   - wrangler: see wrangler.toml [triggers] below.
  *
- * Deploy: paste this file into a new Worker in the Cloudflare dashboard
- * (Start with Hello World! -> replace the code -> Deploy), or
- * `npx wrangler deploy` from this folder. Free plan is enough
- * (48 trigger runs/day is far below the 100k requests/day limit).
+ * Last-refresh record (KV): after each successful refresh this Worker
+ * stores the result in a KV namespace so the /status page can show the
+ * REAL last refresh instead of "no refresh recorded on this server
+ * instance" (Vercel instances are stateless — an in-memory record dies
+ * on every deploy). The KV binding is optional: if REFRESH_STATE is not
+ * bound yet, the refresh still runs and the log notes the missing
+ * binding. To enable it, create a KV namespace in the Cloudflare
+ * dashboard and bind it as REFRESH_STATE on this Worker (see
+ * refresh-wrangler.toml for the commented binding example).
+ * The /status page reads the record from this Worker's fetch handler.
+ *
+ * Deploy: paste this file into the existing Worker in the Cloudflare
+ * dashboard (Workers & Pages -> sweet-bird-3c29 -> Edit code -> replace
+ * all -> Deploy), or `npx wrangler deploy` from this folder. Free plan
+ * is enough (48 trigger runs/day is far below the 100k requests/day limit).
  */
 
 const REFRESH_URL = "https://dprk-media-mirror.vercel.app/api/cron/refresh";
+
+/** A scheduled run: the refresh endpoint's own result, as JSON. */
+async function triggerRefresh(env) {
+  const res = await fetch(REFRESH_URL, {
+    headers: { Authorization: `Bearer ${env.CRON_SECRET}` },
+  });
+  const body = await res.text();
+  console.log(`dprk-refresh: ${res.status} ${body.slice(0, 300)}`);
+
+  if (!res.ok) {
+    // A failed refresh leaves the previous KV record untouched, so
+    // /status can still show the last GOOD run (and flags it stale
+    // once it is more than an hour old).
+    console.error(`dprk-refresh: refresh endpoint returned HTTP ${res.status}; KV record not updated.`);
+    return;
+  }
+
+  // Record the run in KV so /status survives Vercel redeploys.
+  const binding = env.REFRESH_STATE;
+  if (!binding) {
+    console.log("dprk-refresh: no REFRESH_STATE KV binding — last refresh is not recorded (bind one in the dashboard to enable it).");
+    return;
+  }
+  try {
+    const data = JSON.parse(body);
+    const record = {
+      at: data.startedAt ?? new Date().toISOString(),
+      ok: typeof data.ok === "number" ? data.ok : null,
+      failed: typeof data.failed === "number" ? data.failed : null,
+      skipped: typeof data.skipped === "number" ? data.skipped : null,
+      durationMs: typeof data.durationMs === "number" ? data.durationMs : null,
+    };
+    await binding.put("last", JSON.stringify(record));
+  } catch (e) {
+    console.error("dprk-refresh: could not record the refresh in KV", e);
+  }
+}
 
 export default {
   async scheduled(_event, env, ctx) {
@@ -37,11 +85,7 @@ export default {
     ctx.waitUntil(
       (async () => {
         try {
-          const res = await fetch(REFRESH_URL, {
-            headers: { Authorization: `Bearer ${secret}` },
-          });
-          const body = await res.text();
-          console.log(`dprk-refresh: ${res.status} ${body.slice(0, 300)}`);
+          await triggerRefresh(env);
         } catch (e) {
           console.error("dprk-refresh: fetch failed", e);
         }
@@ -49,14 +93,24 @@ export default {
     );
   },
 
-  // HTTP GET is only for a quick manual check that the Worker is deployed.
+  // HTTP GET is only for a quick manual check that the Worker is deployed
+  // and for the /status page, which reads lastRefresh from this JSON.
   // It does NOT trigger a refresh (the cron trigger does that).
   async fetch(_request, env) {
     const configured = Boolean(env.CRON_SECRET);
+    let lastRefresh = null;
+    const binding = env.REFRESH_STATE;
+    if (binding) {
+      try {
+        const raw = await binding.get("last");
+        if (raw) lastRefresh = JSON.parse(raw);
+      } catch (e) {
+        console.error("dprk-refresh: could not read the KV record", e);
+      }
+    }
     return new Response(
-      `dprk-refresh worker is up. CRON_SECRET ${configured ? "is set" : "is NOT set"}; ` +
-        "refresh runs on the Cron Trigger (every 30 min).",
-      { headers: { "Content-Type": "text/plain" } }
+      JSON.stringify({ status: "up", cronSecretSet: configured, lastRefresh }),
+      { headers: { "Content-Type": "application/json" } }
     );
   },
 };

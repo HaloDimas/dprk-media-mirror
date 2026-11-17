@@ -14,10 +14,18 @@ const BADGE: Record<SourceStatus, string> = {
 };
 
 const LABEL: Record<SourceStatus, string> = {
-  live: "● Live",
-  degraded: "● Degraded",
-  down: "● Down",
-  unknown: "○ Unknown",
+  live: "Live",
+  degraded: "Degraded",
+  down: "Down",
+  unknown: "Unknown",
+};
+
+/** Status dot colours (the dot is a CSS span, never a text glyph). */
+const DOT: Record<SourceStatus, string> = {
+  live: "bg-emerald-300",
+  degraded: "bg-amber-300",
+  down: "bg-red-300",
+  unknown: "border border-zinc-400 bg-transparent",
 };
 
 function timeAgo(iso: string | null, now: number): string {
@@ -39,6 +47,13 @@ function fmtTime(iso: string | null): string {
   return d.toISOString().replace("T", " ").slice(0, 19) + " UTC";
 }
 
+/** Absolute time in WIB (UTC+7), the timezone the mirror's audience reads. */
+function fmtTimeWib(iso: string | null): string {
+  if (!iso) return "—";
+  const d = new Date(new Date(iso).getTime() + 7 * 3600 * 1000);
+  return d.toISOString().replace("T", " ").slice(0, 19) + " WIB";
+}
+
 export default async function StatusPage() {
   // Opt into dynamic rendering (segment `dynamic` config is banned under
   // cacheComponents in this Next.js version).
@@ -48,6 +63,33 @@ export default async function StatusPage() {
   const counts = { live: 0, degraded: 0, down: 0, unknown: 0 } as Record<SourceStatus, number>;
   for (const s of snapshot.sources) counts[s.status]++;
   const groups = ["Koryo Front", "KCNA Watch", "DPRK sites (.kp)", "Cloudflare Workers"];
+
+  // Last automated refresh: the Cloudflare Worker's KV record is the source
+  // of truth (it survives Vercel redeploys); the in-memory run recorded by
+  // this server instance is only a fallback when the Worker has no record.
+  const workerRefresh = snapshot.workerLastRefresh;
+  const refresh = workerRefresh
+    ? {
+        at: workerRefresh.at,
+        ok: workerRefresh.ok,
+        failed: workerRefresh.failed,
+        skipped: workerRefresh.skipped,
+        durationMs: workerRefresh.durationMs,
+      }
+    : snapshot.lastRefresh
+      ? {
+          at: snapshot.lastRefresh.startedAt,
+          ok: snapshot.lastRefresh.ok,
+          failed: snapshot.lastRefresh.failed,
+          skipped: snapshot.lastRefresh.skipped,
+          durationMs: snapshot.lastRefresh.durationMs,
+        }
+      : null;
+  const refreshAgeMs = refresh ? now - new Date(refresh.at).getTime() : null;
+  const refreshStale = refreshAgeMs !== null && refreshAgeMs > 60 * 60 * 1000;
+  const nextRunIso = refresh
+    ? new Date(new Date(refresh.at).getTime() + 30 * 60 * 1000).toISOString()
+    : null;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
@@ -76,30 +118,42 @@ export default async function StatusPage() {
 
       <section className="mt-6 rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
         <h2 className="font-semibold text-white">Automated refresh</h2>
-        {snapshot.lastRefresh ? (
+        {refresh ? (
           <div className="mt-2 text-sm text-zinc-300">
             <p>
-              Last run: <span className="text-zinc-100">{fmtTime(snapshot.lastRefresh.startedAt)}</span> (
-              {timeAgo(snapshot.lastRefresh.startedAt, now)}) —{" "}
-              <span className="text-emerald-300">{snapshot.lastRefresh.ok} ok</span>,{" "}
-              <span className="text-red-300">{snapshot.lastRefresh.failed} failed</span>
-              {snapshot.lastRefresh.skipped > 0 && (
-                <>, <span className="text-amber-300">{snapshot.lastRefresh.skipped} skipped</span></>
-              )}{" "}
-              in {(snapshot.lastRefresh.durationMs / 1000).toFixed(1)}s.
+              Last automated refresh: <span className="text-zinc-100">{fmtTimeWib(refresh.at)}</span> (
+              {timeAgo(refresh.at, now)}) —{" "}
+              {refresh.ok !== null ? (
+                <>
+                  <span className="text-emerald-300">{refresh.ok} ok</span>,{" "}
+                  <span className="text-red-300">{refresh.failed} failed</span>
+                  {refresh.skipped !== null && refresh.skipped > 0 && (
+                    <>, <span className="text-amber-300">{refresh.skipped} skipped</span></>
+                  )}{" "}
+                  in {refresh.durationMs !== null ? `${(refresh.durationMs / 1000).toFixed(1)}s` : "—"}.
+                </>
+              ) : (
+                "the run finished but its result could not be read."
+              )}
             </p>
             <p className="mt-1 text-zinc-400">
-              The refresh runs automatically every 30 minutes (Cloudflare Worker → /api/cron/refresh)
-              and warms the caches for every page, so data stays fresh with no manual work.
+              Next run expected around {fmtTimeWib(nextRunIso)} — the refresh runs automatically
+              every 30 minutes (Cloudflare Worker calls /api/cron/refresh) and warms the caches
+              for every page, so data stays fresh with no manual work.
             </p>
+            {refreshStale && (
+              <p className="mt-2 rounded-lg border border-amber-800 bg-amber-950/60 px-3 py-2 text-amber-200">
+                Last refresh was more than an hour ago — the schedule may be stalled. Check the
+                Cloudflare Worker (sweet-bird-3c29) triggers and that its CRON_SECRET matches the
+                one in Vercel.
+              </p>
+            )}
           </div>
         ) : (
           <p className="mt-2 text-sm text-zinc-400">
-            No automated refresh has been recorded on this server instance yet. The first scheduled
-            refresh runs within 30 minutes of deployment — it needs the{" "}
-            <code className="rounded bg-zinc-800 px-1 text-zinc-200">CRON_SECRET</code> environment
-            variable set in the Vercel dashboard (and the same value as a secret in the Cloudflare
-            cron Worker), otherwise the refresh endpoint refuses to run.
+            Automated refresh is configured (Cloudflare Worker, every 30 minutes). No run recorded
+            yet — the first run happens within 30 minutes. It needs the same CRON_SECRET secret in
+            the Vercel dashboard and in the Cloudflare Worker.
           </p>
         )}
       </section>
@@ -129,7 +183,8 @@ export default async function StatusPage() {
                       <td className="px-4 py-2 font-medium text-zinc-100">{s.name}</td>
                       <td className="px-4 py-2 text-zinc-400">{s.provides}</td>
                       <td className="px-4 py-2">
-                        <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${BADGE[s.status]}`}>
+                        <span className={`inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium ${BADGE[s.status]}`}>
+                          <span className={`h-1.5 w-1.5 rounded-full ${DOT[s.status]}`} aria-hidden="true" />
                           {LABEL[s.status]}
                         </span>
                       </td>
@@ -162,10 +217,13 @@ export default async function StatusPage() {
             configured) is Unknown.
           </li>
           <li>
-            The automated refresh (<code className="rounded bg-zinc-800 px-1 text-zinc-200">/api/cron/refresh</code>)
+            The automated refresh (
+            <code className="rounded bg-zinc-800 px-1 text-zinc-200">/api/cron/refresh</code>)
             runs every 30 minutes, triggered by the Cloudflare cron Worker, and re-fetches every
             source in turn, so pages serve fresh data. It is protected by a secret and never
-            hammers a source (sequential requests, short delays, 55s overall cap).
+            hammers a source (sequential requests, short delays, 55s overall cap). The last-run
+            readout above comes from the Worker&apos;s own record, so it survives redeploys —
+            the per-source last-success history on this page is per server instance only.
           </li>
           <li>
             This server is stateless, so the recorded history on this page only covers what this

@@ -31,23 +31,34 @@ function koryoTvUrl(channel: ChannelId): string {
   return `https://koryo.tv/channel/${slug}`;
 }
 
-/** Channel mark in a white rounded tile. The logos are dark grey / gold on
- *  transparent, so the white tile keeps every one readable in both the
- *  dark and the light theme. */
+/** Tile tone per channel. The gold marks (Ryongnamsan, Mansudae) and the
+ *  KCTV mark (white ring around the red torch) wash out on white, so they
+ *  sit on a dark tile; the Sports mark is dark calligraphy, so it needs
+ *  the white tile. The tile colour is about the artwork, not the theme —
+ *  it is the same in dark and light mode. */
+function logoTone(id: ChannelId): "dark" | "light" {
+  return id === "sports" ? "light" : "dark";
+}
+
+/** Channel mark in a rounded tile. */
 function ChannelLogo({
   src,
   alt,
   size,
+  tone,
 }: {
   src: string;
   alt: string;
   size: "sm" | "md" | "lg";
+  tone: "dark" | "light";
 }) {
   const box =
     size === "sm" ? "h-6 w-9" : size === "md" ? "h-12 w-16" : "h-16 w-24";
+  const tile =
+    tone === "dark" ? "bg-zinc-900 ring-zinc-700" : "bg-white ring-zinc-200";
   return (
     <span
-      className={`flex shrink-0 items-center justify-center rounded-lg bg-white p-1 ring-1 ring-zinc-200 ${box}`}
+      className={`flex shrink-0 items-center justify-center rounded-lg p-1 ring-1 ${tile} ${box}`}
     >
       <img src={src} alt={alt} className="max-h-full max-w-full object-contain" loading="lazy" />
     </span>
@@ -156,7 +167,7 @@ export default function LivePage() {
                 }`}
               >
                 <div className="flex items-center gap-3">
-                  <ChannelLogo src={c.logo} alt={`${c.name} logo`} size="md" />
+                  <ChannelLogo src={c.logo} alt={`${c.name} logo`} size="md" tone={logoTone(c.id)} />
                   <p className="min-w-0 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                     {c.name} <span className="font-normal text-zinc-500">· {c.korean}</span>
                     {selected && (
@@ -205,7 +216,7 @@ export default function LivePage() {
               channel === c.id ? "bg-red-700 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
             }`}
           >
-            <ChannelLogo src={c.logo} alt={`${c.name} logo`} size="sm" />
+            <ChannelLogo src={c.logo} alt={`${c.name} logo`} size="sm" tone={logoTone(c.id)} />
             {c.name}
           </button>
         ))}
@@ -213,7 +224,7 @@ export default function LivePage() {
 
       {/* Channel header — logo tile + large Korean title + English subtitle. */}
       <header className="flex items-center gap-4">
-        <ChannelLogo src={info.logo} alt={`${info.name} logo`} size="lg" />
+        <ChannelLogo src={info.logo} alt={`${info.name} logo`} size="lg" tone={logoTone(info.id)} />
         <div className="min-w-0">
           <p className="text-2xl font-bold leading-tight text-zinc-900 dark:text-amber-400 sm:text-3xl">
             {info.korean}
@@ -227,7 +238,7 @@ export default function LivePage() {
       {info.status === "coming-soon" ? (
         <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-8 text-center">
           <div className="flex justify-center">
-            <ChannelLogo src={info.logo} alt={`${info.name} logo`} size="lg" />
+            <ChannelLogo src={info.logo} alt={`${info.name} logo`} size="lg" tone={logoTone(info.id)} />
           </div>
           <h2 className="mt-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
             {info.name} <T k="live.comingSoon" />
@@ -306,7 +317,7 @@ export default function LivePage() {
                 <T k="live.nowOnAir" />
               </span>
               <span className="ml-auto flex items-center gap-2">
-                <ChannelLogo src={info.logo} alt={`${info.name} logo`} size="sm" />
+                <ChannelLogo src={info.logo} alt={`${info.name} logo`} size="sm" tone={logoTone(info.id)} />
                 <span className="text-xs text-zinc-500">
                   <T k="live.pyongyangTime" values={{ time: now }} />
                 </span>

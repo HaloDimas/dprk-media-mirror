@@ -35,7 +35,7 @@ export function NavSearch() {
         const query = q.trim();
         router.push(query ? `/search?q=${encodeURIComponent(query)}` : "/search");
       }}
-      className="flex w-full items-center sm:w-48"
+      className="flex w-full items-center sm:w-44"
     >
       <input
         type="search"
@@ -76,7 +76,7 @@ export default function Nav() {
           <Link
             key={l.href}
             href={l.href}
-            className={`whitespace-nowrap rounded-md px-2 py-1.5 text-[13px] font-medium transition-colors ${
+            className={`whitespace-nowrap rounded-md px-1.5 py-1.5 text-[13px] font-medium transition-colors ${
               active(l.href)
                 ? "bg-red-700 text-white"
                 : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white"

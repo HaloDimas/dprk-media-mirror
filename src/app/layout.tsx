@@ -79,7 +79,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
                 <nav className="hidden flex-wrap gap-1 xl:flex" aria-hidden="true">
                   {["Home", "Live TV", "Schedule", "News", "Radio", "Recordings", "Publications", "Directory", "Sources", "Status"].map(
                     (label) => (
-                      <span key={label} className="rounded-md px-2 py-1.5 text-[13px] font-medium text-zinc-700 dark:text-zinc-300">
+                      <span key={label} className="rounded-md px-1.5 py-1.5 text-[13px] font-medium text-zinc-700 dark:text-zinc-300">
                         {label}
                       </span>
                     )

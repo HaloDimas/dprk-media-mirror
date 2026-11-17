@@ -145,10 +145,10 @@ const NOT_MIRRORED: Source[] = [
 ];
 
 const STATUS_LABEL: Record<Source["status"], { text: string; cls: string }> = {
-  live: { text: "Live — verified 15 Nov 2026", cls: "bg-emerald-900/70 text-emerald-200" },
-  flaky: { text: "Live — flaky, retries on", cls: "bg-amber-900/70 text-amber-200" },
-  partial: { text: "Partially mirrored", cls: "bg-amber-900/70 text-amber-200" },
-  "not-used": { text: "Not mirrored", cls: "bg-zinc-800 text-zinc-400" },
+  live: { text: "Live — verified 15 Nov 2026", cls: "bg-emerald-100 dark:bg-emerald-900/70 text-emerald-800 dark:text-emerald-200" },
+  flaky: { text: "Live — flaky, retries on", cls: "bg-amber-100 dark:bg-amber-900/70 text-amber-800 dark:text-amber-200" },
+  partial: { text: "Partially mirrored", cls: "bg-amber-100 dark:bg-amber-900/70 text-amber-800 dark:text-amber-200" },
+  "not-used": { text: "Not mirrored", cls: "bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400" },
 };
 
 function SourceCard({ s }: { s: Source }) {
@@ -156,15 +156,15 @@ function SourceCard({ s }: { s: Source }) {
   const inner = (
     <>
       <div className="flex flex-wrap items-center gap-2">
-        <h2 className="font-medium text-zinc-100">{s.name}</h2>
+        <h2 className="font-medium text-zinc-900 dark:text-zinc-100">{s.name}</h2>
         <span className={`rounded px-2 py-0.5 text-xs ${st.cls}`}>{st.text}</span>
       </div>
-      <p className="mt-1 text-sm font-medium text-red-400">{s.provides}</p>
-      <p className="mt-1 text-sm text-zinc-400">{s.note}</p>
+      <p className="mt-1 text-sm font-medium text-red-600 dark:text-red-400">{s.provides}</p>
+      <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{s.note}</p>
     </>
   );
   return (
-    <li className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 transition-colors hover:border-red-800">
+    <li className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-4 transition-colors hover:border-red-800">
       {s.href ? (
         <Link href={s.href} className="block">
           {inner}
@@ -179,8 +179,8 @@ function SourceCard({ s }: { s: Source }) {
 export default function SourcesPage() {
   return (
     <main className="mx-auto max-w-6xl px-4 py-6">
-      <h1 className="text-2xl font-bold text-zinc-100">Mirrored sources</h1>
-      <p className="mt-2 max-w-3xl text-sm text-zinc-400">
+      <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Mirrored sources</h1>
+      <p className="mt-2 max-w-3xl text-sm text-zinc-600 dark:text-zinc-400">
         Every North Korean source this site mirrors, what it provides, and its live status. All .kp
         sites only work over plain HTTP (port 80) — HTTPS returns nothing — and the origin is
         flaky/intermittent, so every .kp fetch is retried and cached; if a source is unreachable the
@@ -188,7 +188,7 @@ export default function SourcesPage() {
         out to a source site for reading or watching.
       </p>
 
-      <h2 className="mt-8 border-l-4 border-red-700 pl-3 text-lg font-semibold text-zinc-100">
+      <h2 className="mt-8 border-l-4 border-red-700 pl-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
         Mirrored ({MIRRORED.length})
       </h2>
       <ul className="mt-4 grid gap-3 md:grid-cols-2">
@@ -197,7 +197,7 @@ export default function SourcesPage() {
         ))}
       </ul>
 
-      <h2 className="mt-10 border-l-4 border-zinc-600 pl-3 text-lg font-semibold text-zinc-100">
+      <h2 className="mt-10 border-l-4 border-zinc-400 dark:border-zinc-600 pl-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
         Not mirrored — dead, not a website, or already covered
       </h2>
       <ul className="mt-4 grid gap-3 md:grid-cols-2">

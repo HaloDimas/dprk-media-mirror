@@ -41,7 +41,7 @@ export function NavSearch() {
         onChange={(e) => setQ(e.target.value)}
         placeholder="Search the mirror…"
         aria-label="Search the mirror"
-        className="w-full rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
+        className="w-full rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-1.5 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
       />
     </form>
   );
@@ -63,7 +63,7 @@ export default function Nav() {
         aria-label="Toggle menu"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-zinc-700 px-3 py-1.5 text-sm font-medium text-zinc-200 hover:bg-zinc-800 xl:hidden"
+        className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-zinc-300 dark:border-zinc-700 px-3 py-1.5 text-sm font-medium text-zinc-800 dark:text-zinc-200 hover:bg-zinc-100 dark:hover:bg-zinc-800 xl:hidden"
       >
         {open ? <X className="h-4 w-4" aria-hidden="true" /> : <Menu className="h-4 w-4" aria-hidden="true" />}
         Menu
@@ -76,7 +76,7 @@ export default function Nav() {
             className={`whitespace-nowrap rounded-md px-2 py-1.5 text-[13px] font-medium transition-colors ${
               active(l.href)
                 ? "bg-red-700 text-white"
-                : "text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white"
             }`}
           >
             {l.label}
@@ -84,7 +84,7 @@ export default function Nav() {
         ))}
       </nav>
       {open && (
-        <nav className="flex w-full flex-col gap-1 border-t border-zinc-800 pt-2 xl:hidden">
+        <nav className="flex w-full flex-col gap-1 border-t border-zinc-200 dark:border-zinc-800 pt-2 xl:hidden">
           {LINKS.map((l) => (
             <Link
               key={l.href}
@@ -93,7 +93,7 @@ export default function Nav() {
               className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                 active(l.href)
                   ? "bg-red-700 text-white"
-                  : "text-zinc-300 hover:bg-zinc-800 hover:text-white"
+                  : "text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 hover:text-zinc-900 dark:hover:text-white"
               }`}
             >
               {l.label}

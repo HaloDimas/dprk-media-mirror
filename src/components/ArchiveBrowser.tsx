@@ -14,19 +14,19 @@ type SearchState = {
 
 function ArticleCard({ a }: { a: KcnwArticle }) {
   return (
-    <li className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/60 transition-colors hover:border-red-800">
-      <Link href={`/news/${a.id}`} className="flex gap-4 p-4 hover:bg-zinc-800/50">
+    <li className="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 transition-colors hover:border-red-800">
+      <Link href={`/news/${a.id}`} className="flex gap-4 p-4 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50">
         {a.image && (
           // eslint-disable-next-line @next/next/no-img-element
           <img src={a.image} alt="" className="hidden h-20 w-28 shrink-0 rounded-md object-cover sm:block" />
         )}
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="rounded bg-zinc-800 px-2 py-0.5 text-zinc-300">KCNA Watch</span>
+            <span className="rounded bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-zinc-700 dark:text-zinc-300">KCNA Watch</span>
             <span className="text-zinc-500">{a.date}</span>
           </div>
-          <h3 className="mt-1 font-medium leading-snug text-zinc-100">{a.title}</h3>
-          {a.excerpt && <p className="mt-1 line-clamp-2 text-sm text-zinc-400">{a.excerpt}</p>}
+          <h3 className="mt-1 font-medium leading-snug text-zinc-900 dark:text-zinc-100">{a.title}</h3>
+          {a.excerpt && <p className="mt-1 line-clamp-2 text-sm text-zinc-600 dark:text-zinc-400">{a.excerpt}</p>}
         </div>
       </Link>
     </li>
@@ -111,16 +111,16 @@ export default function ArchiveBrowser() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const selectCls = "min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-2 text-sm text-zinc-100";
+  const selectCls = "min-w-0 max-w-full truncate rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-2 text-sm text-zinc-900 dark:text-zinc-100";
 
   return (
     <div className="space-y-10">
       {/* Search the full archive */}
       <section>
-        <h2 className="border-l-4 border-red-700 pl-3 text-lg font-semibold text-zinc-100">
+        <h2 className="border-l-4 border-red-700 pl-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
           Search the full archive — 1.37M articles
         </h2>
-        <p className="mt-1 pl-3 text-sm text-zinc-400">
+        <p className="mt-1 pl-3 text-sm text-zinc-600 dark:text-zinc-400">
           Search every KCNA Watch article back to 2016. Results are paginated, 20 per page. There is
           no date filter — the archive&apos;s date parameters do not work.
         </p>
@@ -130,9 +130,9 @@ export default function ArchiveBrowser() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder="Search the archive… e.g. Kim Jong Un" aria-label="Search the archive"
-            className="min-w-56 flex-1 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
+            className="min-w-56 flex-1 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
           />
-          <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-400">
+          <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
             Source
             <select value={source} onChange={(e) => setSource(e.target.value)} className={selectCls}>
               <option value="">All sources</option>
@@ -147,7 +147,7 @@ export default function ArchiveBrowser() {
               ))}
             </select>
           </label>
-          <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-400">
+          <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
             Sort
             <select value={sort} onChange={(e) => setSort(e.target.value)} className={selectCls}>
               <option value="">Latest first</option>
@@ -163,26 +163,26 @@ export default function ArchiveBrowser() {
         </form>
 
         {search.status === "loading" && (
-          <p className="mt-4 text-sm text-zinc-400">Searching the archive…</p>
+          <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">Searching the archive…</p>
         )}
         {search.status === "unavailable" && (
-          <p className="mt-4 rounded-xl border border-amber-800/60 bg-amber-950/40 px-4 py-3 text-sm text-amber-200">
+          <p className="mt-4 rounded-xl border border-amber-300 dark:border-amber-800/60 bg-amber-100 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">
             Archive search is unavailable — the mirror&apos;s KCNA Watch session has expired. The
             browse section below still works (it needs no login).
           </p>
         )}
         {search.status === "not-configured" && (
-          <p className="mt-4 rounded-xl border border-amber-800/60 bg-amber-950/40 px-4 py-3 text-sm text-amber-200">
+          <p className="mt-4 rounded-xl border border-amber-300 dark:border-amber-800/60 bg-amber-100 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">
             Archive search is not configured yet. The browse section below still works (it needs no
             login).
           </p>
         )}
         {search.status === "error" && (
-          <p className="mt-4 text-sm text-zinc-400">The search failed. Please try again.</p>
+          <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">The search failed. Please try again.</p>
         )}
         {search.status === "done" && (
           <>
-            <p className="mt-4 text-sm text-zinc-400">
+            <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">
               {search.count.toLocaleString()} results
               {search.articles.length > 0 && ` — showing ${search.articles.length}`}
             </p>
@@ -192,7 +192,7 @@ export default function ArchiveBrowser() {
               ))}
             </ul>
             {search.articles.length === 0 && (
-              <p className="mt-3 rounded-xl border border-zinc-800 bg-zinc-900/60 p-6 text-center text-sm text-zinc-400">
+              <p className="mt-3 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-6 text-center text-sm text-zinc-600 dark:text-zinc-400">
                 No articles match your search.
               </p>
             )}
@@ -200,7 +200,7 @@ export default function ArchiveBrowser() {
               <button
                 onClick={() => runSearch(search.articles.length, true)}
                 disabled={loadingMore}
-                className="mt-4 rounded-md bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-200 hover:bg-zinc-700 disabled:opacity-50"
+                className="mt-4 rounded-md bg-zinc-100 dark:bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 disabled:opacity-50"
               >
                 {loadingMore ? "Loading…" : "Load more (next 20)"}
               </button>
@@ -211,10 +211,10 @@ export default function ArchiveBrowser() {
 
       {/* Browse the archive */}
       <section>
-        <h2 className="border-l-4 border-red-700 pl-3 text-lg font-semibold text-zinc-100">
+        <h2 className="border-l-4 border-red-700 pl-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
           Browse the archive — latest first, back to ~2015
         </h2>
-        <p className="mt-1 pl-3 text-sm text-zinc-400">
+        <p className="mt-1 pl-3 text-sm text-zinc-600 dark:text-zinc-400">
           Walk back through ~430,000 articles, 10 at a time. No login needed. Note: at very deep
           offsets the ordering can repeat or skip articles.
         </p>
@@ -224,13 +224,13 @@ export default function ArchiveBrowser() {
           ))}
         </ul>
         {browseError && (
-          <p className="mt-3 text-sm text-zinc-400">Could not load more articles. Please try again.</p>
+          <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">Could not load more articles. Please try again.</p>
         )}
         {browseHasMore && (
           <button
             onClick={() => loadBrowse(browseFrom, true)}
             disabled={browseLoading}
-            className="mt-4 rounded-md bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-200 hover:bg-zinc-700 disabled:opacity-50"
+            className="mt-4 rounded-md bg-zinc-100 dark:bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-800 dark:text-zinc-200 hover:bg-zinc-200 dark:hover:bg-zinc-700 disabled:opacity-50"
           >
             {browseLoading ? "Loading…" : "Load more (next 10)"}
           </button>

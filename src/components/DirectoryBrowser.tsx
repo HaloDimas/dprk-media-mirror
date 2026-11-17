@@ -7,21 +7,21 @@ import type { DirectoryCategory, DirectoryStatus } from "@/data/directory";
 export function StatusBadge({ status }: { status: DirectoryStatus }) {
   if (status === "live")
     return (
-      <span className="inline-flex items-center gap-1.5 rounded bg-emerald-900/70 px-2 py-0.5 text-[11px] font-semibold text-emerald-200">
-        <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" aria-hidden="true" />
+      <span className="inline-flex items-center gap-1.5 rounded bg-emerald-100 dark:bg-emerald-900/70 px-2 py-0.5 text-[11px] font-semibold text-emerald-800 dark:text-emerald-200">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-300" aria-hidden="true" />
         Live (verified 15 Nov 2026)
       </span>
     );
   if (status === "active")
     return (
-      <span className="inline-flex items-center gap-1.5 rounded bg-emerald-900/70 px-2 py-0.5 text-[11px] font-semibold text-emerald-200">
-        <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" aria-hidden="true" />
+      <span className="inline-flex items-center gap-1.5 rounded bg-emerald-100 dark:bg-emerald-900/70 px-2 py-0.5 text-[11px] font-semibold text-emerald-800 dark:text-emerald-200">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 dark:bg-emerald-300" aria-hidden="true" />
         Active (July 2026 list)
       </span>
     );
   if (status === "flaky")
     return (
-      <span className="inline-flex items-center gap-1.5 rounded bg-amber-900/70 px-2 py-0.5 text-[11px] font-semibold text-amber-200">
+      <span className="inline-flex items-center gap-1.5 rounded bg-amber-100 dark:bg-amber-900/70 px-2 py-0.5 text-[11px] font-semibold text-amber-800 dark:text-amber-200">
         <span
           className="h-1.5 w-1.5 rounded-full border border-amber-200"
           style={{ background: "linear-gradient(90deg, #fcd34d 50%, transparent 50%)" }}
@@ -32,19 +32,19 @@ export function StatusBadge({ status }: { status: DirectoryStatus }) {
     );
   if (status === "dead")
     return (
-      <span className="inline-flex items-center gap-1.5 rounded bg-red-900/70 px-2 py-0.5 text-[11px] font-semibold text-red-200">
+      <span className="inline-flex items-center gap-1.5 rounded bg-red-100 dark:bg-red-900/70 px-2 py-0.5 text-[11px] font-semibold text-red-800 dark:text-red-200">
         <X className="h-3 w-3" aria-hidden="true" />
         Dead
       </span>
     );
   if (status === "not-a-website")
     return (
-      <span className="rounded bg-zinc-800 px-2 py-0.5 text-[11px] font-semibold text-zinc-300">
+      <span className="rounded bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
         — Not a website
       </span>
     );
   return (
-    <span className="inline-flex items-center gap-1.5 rounded bg-zinc-800 px-2 py-0.5 text-[11px] font-semibold text-zinc-300">
+    <span className="inline-flex items-center gap-1.5 rounded bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-[11px] font-semibold text-zinc-700 dark:text-zinc-300">
       <Mail className="h-3 w-3" aria-hidden="true" />
       Mail server only
     </span>
@@ -106,7 +106,7 @@ export default function DirectoryBrowser({
   }, [categories, q, cat, status]);
 
   const shown = filtered.reduce((n, c) => n + c.entries.length, 0);
-  const selectCls = "min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-2 text-sm text-zinc-100";
+  const selectCls = "min-w-0 max-w-full truncate rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-2 text-sm text-zinc-900 dark:text-zinc-100";
 
   return (
     <div>
@@ -116,9 +116,9 @@ export default function DirectoryBrowser({
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search by name, description or URL…" aria-label="Search the directory"
-          className="min-w-56 flex-1 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
+          className="min-w-56 flex-1 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
         />
-        <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-400">
+        <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
           Category
           <select value={cat} onChange={(e) => setCat(e.target.value)} className={selectCls}>
             <option value="all">All categories ({total})</option>
@@ -129,7 +129,7 @@ export default function DirectoryBrowser({
             ))}
           </select>
         </label>
-        <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-400">
+        <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
           Status
           <select value={status} onChange={(e) => setStatus(e.target.value)} className={selectCls}>
             <option value="all">All statuses</option>
@@ -150,7 +150,7 @@ export default function DirectoryBrowser({
       <div className="mt-5 space-y-8">
         {filtered.map((c) => (
           <section key={c.id}>
-            <h2 className="border-l-4 border-red-700 pl-3 text-lg font-semibold text-zinc-100">
+            <h2 className="border-l-4 border-red-700 pl-3 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
               {c.title} ({c.entries.length})
             </h2>
             <p className="mt-0.5 pl-3 text-sm text-zinc-500">{c.blurb}</p>
@@ -158,24 +158,24 @@ export default function DirectoryBrowser({
               {c.entries.map((entry) => (
                 <li
                   key={entry.name}
-                  className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 transition-colors hover:border-red-800"
+                  className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-4 transition-colors hover:border-red-800"
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className="text-sm font-semibold text-zinc-100">{entry.name}</h3>
+                    <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">{entry.name}</h3>
                     <StatusBadge status={entry.status} />
                   </div>
-                  {entry.description && <p className="mt-1 text-sm text-zinc-400">{entry.description}</p>}
+                  {entry.description && <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{entry.description}</p>}
                   <p className="mt-2 font-mono text-xs text-zinc-500">
                     {entry.url ? entry.url : "URL pending verification"}
                   </p>
-                  <p className="mt-1 text-[11px] uppercase tracking-wide text-zinc-600">{c.title}</p>
+                  <p className="mt-1 text-[11px] uppercase tracking-wide text-zinc-600 dark:text-zinc-400">{c.title}</p>
                 </li>
               ))}
             </ul>
           </section>
         ))}
         {filtered.length === 0 && (
-          <p className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-6 text-center text-sm text-zinc-400">
+          <p className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-6 text-center text-sm text-zinc-600 dark:text-zinc-400">
             No sites match your filters.
           </p>
         )}

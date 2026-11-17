@@ -40,23 +40,23 @@ const CHANNEL_LABEL: Record<string, string> = {
 
 function ResultCard({ item }: { item: SearchResultItem }) {
   return (
-    <li className="rounded-xl border border-zinc-800 bg-zinc-900/60 transition-colors hover:border-red-800 hover:bg-zinc-800/60">
+    <li className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 transition-colors hover:border-red-800 hover:bg-zinc-100/60 dark:hover:bg-zinc-800/60">
       <Link href={item.href} className="block p-4">
         <div className="flex flex-wrap items-center gap-2 text-xs">
           {item.channel && (
-            <span className="rounded bg-red-900/70 px-2 py-0.5 font-semibold text-red-200">
+            <span className="rounded bg-red-100 dark:bg-red-900/70 px-2 py-0.5 font-semibold text-red-800 dark:text-red-200">
               {CHANNEL_LABEL[item.channel] ?? item.channel}
             </span>
           )}
           {item.category && (
-            <span className="rounded bg-zinc-800 px-2 py-0.5 text-zinc-300">{item.category}</span>
+            <span className="rounded bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-zinc-700 dark:text-zinc-300">{item.category}</span>
           )}
           {item.source && (
-            <span className="rounded bg-zinc-800 px-2 py-0.5 text-zinc-300">{item.source}</span>
+            <span className="rounded bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-zinc-700 dark:text-zinc-300">{item.source}</span>
           )}
           {item.date && <span className="text-zinc-500">{item.date}</span>}
         </div>
-        <h3 className="mt-1.5 text-sm font-medium leading-snug text-zinc-100">{item.title}</h3>
+        <h3 className="mt-1.5 text-sm font-medium leading-snug text-zinc-900 dark:text-zinc-100">{item.title}</h3>
         <p className="mt-0.5 text-xs text-zinc-500">{item.subtitle}</p>
       </Link>
     </li>
@@ -146,7 +146,7 @@ export default function GlobalSearch() {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder="Search news, recordings, publications, programmes, directory…" aria-label="Search the mirror"
-          className="min-w-0 flex-1 rounded-lg border border-zinc-700 bg-zinc-900 px-4 py-2.5 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
+          className="min-w-0 flex-1 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-4 py-2.5 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
           autoFocus
         />
         <button
@@ -168,7 +168,7 @@ export default function GlobalSearch() {
               aria-selected={type === t.id}
               onClick={() => setParam({ type: t.id === "all" ? "" : t.id })}
               className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-                type === t.id ? "bg-red-700 text-white" : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+                type === t.id ? "bg-red-700 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
               }`}
             >
               {t.label}
@@ -179,32 +179,32 @@ export default function GlobalSearch() {
       </div>
 
       {/* Filters */}
-      <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4">
+      <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-4">
         <div className="flex flex-wrap items-end gap-3">
-          <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400">
+          <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-600 dark:text-zinc-400">
             From
             <input
               type="date"
               value={from}
               onChange={(e) => setParam({ from: e.target.value })}
-              className="min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100 [color-scheme:dark]"
+              className="min-w-0 max-w-full truncate rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-sm text-zinc-900 dark:text-zinc-100 [color-scheme:light] dark:[color-scheme:dark]"
             />
           </label>
-          <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400">
+          <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-600 dark:text-zinc-400">
             To
             <input
               type="date"
               value={to}
               onChange={(e) => setParam({ to: e.target.value })}
-              className="min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100 [color-scheme:dark]"
+              className="min-w-0 max-w-full truncate rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-sm text-zinc-900 dark:text-zinc-100 [color-scheme:light] dark:[color-scheme:dark]"
             />
           </label>
-          <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400">
+          <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-600 dark:text-zinc-400">
             Channel
             <select
               value={channel}
               onChange={(e) => setParam({ channel: e.target.value })}
-              className="min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100"
+              className="min-w-0 max-w-full truncate rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-sm text-zinc-900 dark:text-zinc-100"
             >
               <option value="all">All channels</option>
               <option value="kctv">KCTV</option>
@@ -212,12 +212,12 @@ export default function GlobalSearch() {
               <option value="ryongnamsan">Ryongnamsan TV</option>
             </select>
           </label>
-          <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400">
+          <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-600 dark:text-zinc-400">
             Category
             <select
               value={category}
               onChange={(e) => setParam({ category: e.target.value })}
-              className="min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100"
+              className="min-w-0 max-w-full truncate rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-sm text-zinc-900 dark:text-zinc-100"
             >
               <option value="all">All categories</option>
               {(data?.facets.categories ?? []).map((c) => (
@@ -227,12 +227,12 @@ export default function GlobalSearch() {
               ))}
             </select>
           </label>
-          <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400">
+          <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-600 dark:text-zinc-400">
             Source
             <select
               value={source}
               onChange={(e) => setParam({ source: e.target.value })}
-              className="min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100"
+              className="min-w-0 max-w-full truncate rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-sm text-zinc-900 dark:text-zinc-100"
             >
               <option value="all">All sources</option>
               {(data?.facets.sources ?? []).map((s) => (
@@ -242,24 +242,24 @@ export default function GlobalSearch() {
               ))}
             </select>
           </label>
-          <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400">
+          <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-600 dark:text-zinc-400">
             Language
             <select
               value={lang}
               onChange={(e) => setParam({ lang: e.target.value })}
-              className="min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100"
+              className="min-w-0 max-w-full truncate rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-sm text-zinc-900 dark:text-zinc-100"
             >
               <option value="all">All languages</option>
               <option value="en">English</option>
               <option value="ko">Korean</option>
             </select>
           </label>
-          <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-400">
+          <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-600 dark:text-zinc-400">
             Sort
             <select
               value={sort}
               onChange={(e) => setParam({ sort: e.target.value })}
-              className="min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100"
+              className="min-w-0 max-w-full truncate rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-sm text-zinc-900 dark:text-zinc-100"
             >
               <option value="relevance">Relevance</option>
               <option value="newest">Newest first</option>
@@ -269,7 +269,7 @@ export default function GlobalSearch() {
           {hasActiveFilters && (
             <button
               onClick={() => router.replace(`${pathname}${q ? `?q=${encodeURIComponent(q)}` : ""}`, { scroll: false })}
-              className="rounded-md bg-zinc-800 px-3 py-1.5 text-sm text-zinc-300 hover:bg-zinc-700"
+              className="rounded-md bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
             >
               Clear filters
             </button>
@@ -283,28 +283,28 @@ export default function GlobalSearch() {
       </div>
 
       {/* Results */}
-      {loading && firstLoad.current && <p className="text-sm text-zinc-400">Searching…</p>}
+      {loading && firstLoad.current && <p className="text-sm text-zinc-600 dark:text-zinc-400">Searching…</p>}
       {error && (
-        <p className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-6 text-sm text-zinc-400">
+        <p className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-6 text-sm text-zinc-600 dark:text-zinc-400">
           Search is temporarily unavailable. Please try again later.
         </p>
       )}
       {data && !error && (
         <>
-          <p className="text-sm text-zinc-400">
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
             {loading ? "Updating…" : ""}
-            <span className="font-semibold text-zinc-100">{data.total}</span> result
+            <span className="font-semibold text-zinc-900 dark:text-zinc-100">{data.total}</span> result
             {data.total === 1 ? "" : "s"}
             {q ? (
               <>
-                {" "}for <span className="font-semibold text-zinc-100">&ldquo;{data.query}&rdquo;</span>
+                {" "}for <span className="font-semibold text-zinc-900 dark:text-zinc-100">&ldquo;{data.query}&rdquo;</span>
               </>
             ) : (
               " — showing everything"
             )}
           </p>
           {data.total === 0 && (
-            <p className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-6 text-center text-sm text-zinc-400">
+            <p className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-6 text-center text-sm text-zinc-600 dark:text-zinc-400">
               Nothing matches. Try a different keyword or loosen the filters.
             </p>
           )}
@@ -313,7 +313,7 @@ export default function GlobalSearch() {
             if (!items || items.length === 0) return null;
             return (
               <section key={g.id}>
-                <h2 className="mb-2 flex items-baseline gap-2 text-base font-bold text-white">
+                <h2 className="mb-2 flex items-baseline gap-2 text-base font-bold text-zinc-900 dark:text-white">
                   <span className="inline-block h-4 w-1 rounded bg-red-600" />
                   {GROUP_LABEL[g.id]}
                   <span className="text-sm font-normal text-zinc-500">

@@ -11,8 +11,8 @@ export default function DirectoryPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-xl font-bold text-white">Directory of DPRK Websites</h1>
-        <p className="mt-1 max-w-3xl text-sm text-zinc-400">
+        <h1 className="text-xl font-bold text-zinc-900 dark:text-white">Directory of DPRK Websites</h1>
+        <p className="mt-1 max-w-3xl text-sm text-zinc-600 dark:text-zinc-400">
           {DIRECTORY_TOTAL} official North Korean websites, grouped by category. This is an informational
           directory — the live TV, radio, news, recordings and publications on this mirror are read and
           watched on this site&apos;s own pages, not by opening the listed sites. &ldquo;Live&rdquo;
@@ -25,7 +25,7 @@ export default function DirectoryPage() {
 
       <DirectoryBrowser categories={DIRECTORY} total={DIRECTORY_TOTAL} />
 
-      <p className="border-t border-zinc-800 pt-4 text-xs text-zinc-500">
+      <p className="border-t border-zinc-200 dark:border-zinc-800 pt-4 text-xs text-zinc-500">
         Domains are taken from the July 2026 active .kp domains list and live-checked on 15 Nov 2026.
         Nothing in this directory is a link out to read or watch content — use Live TV, Schedule, News,
         Radio, Recordings and Publications above for that.

@@ -57,7 +57,7 @@ const QA: { q: string; a: React.ReactNode }[] = [
         session. When the session is unavailable the mirror shows the excerpt and a link to the
         original article. Articles from KCNA, Rodong Sinmun, Pyongyang Times, Voice of Korea and
         Korean Architecture are mirrored in full. See the{" "}
-        <Link href="/sources" className="text-red-400 underline hover:text-red-300">
+        <Link href="/sources" className="text-red-600 dark:text-red-400 underline hover:text-red-700 dark:hover:text-red-300">
           Sources page
         </Link>{" "}
         for what each source provides.
@@ -107,7 +107,7 @@ const QA: { q: string; a: React.ReactNode }[] = [
       <>
         No. It is an independent mirror built from publicly available feeds. The content belongs
         to its original broadcasters and publishers; see the{" "}
-        <Link href="/terms" className="text-red-400 underline hover:text-red-300">
+        <Link href="/terms" className="text-red-600 dark:text-red-400 underline hover:text-red-700 dark:hover:text-red-300">
           Terms &amp; Conditions
         </Link>{" "}
         for attribution.
@@ -119,10 +119,10 @@ const QA: { q: string; a: React.ReactNode }[] = [
 export default function FaqPage() {
   return (
     <div className="mx-auto max-w-3xl">
-      <h1 className="text-2xl font-bold text-white">Frequently Asked Questions</h1>
-      <p className="mt-2 text-sm text-zinc-400">
+      <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Frequently Asked Questions</h1>
+      <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
         Answers to the questions people ask most about the mirror. If yours is not here, see the{" "}
-        <Link href="/contact" className="text-red-400 underline hover:text-red-300">
+        <Link href="/contact" className="text-red-600 dark:text-red-400 underline hover:text-red-700 dark:hover:text-red-300">
           Contact page
         </Link>
         .
@@ -130,8 +130,8 @@ export default function FaqPage() {
       <div className="mt-6 space-y-6">
         {QA.map((item) => (
           <section key={item.q}>
-            <h2 className="text-base font-semibold text-white">{item.q}</h2>
-            <p className="mt-1 text-sm leading-relaxed text-zinc-300">{item.a}</p>
+            <h2 className="text-base font-semibold text-zinc-900 dark:text-white">{item.q}</h2>
+            <p className="mt-1 text-sm leading-relaxed text-zinc-700 dark:text-zinc-300">{item.a}</p>
           </section>
         ))}
       </div>

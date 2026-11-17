@@ -9,11 +9,11 @@ export const metadata: Metadata = {
 export default function NotFound() {
   return (
     <div className="mx-auto max-w-2xl py-16 text-center">
-      <p className="text-6xl font-bold text-red-600" aria-hidden="true">
+      <p className="text-6xl font-bold text-red-600 dark:text-red-500" aria-hidden="true">
         404
       </p>
-      <h1 className="mt-4 text-2xl font-bold text-white">Page not found</h1>
-      <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+      <h1 className="mt-4 text-2xl font-bold text-zinc-900 dark:text-white">Page not found</h1>
+      <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
         The page you are looking for does not exist, or it may have moved. The mirror&apos;s
         articles and programmes change every day, so older links can go stale.
       </p>
@@ -26,13 +26,13 @@ export default function NotFound() {
         </Link>
         <Link
           href="/news"
-          className="rounded-lg border border-zinc-700 bg-zinc-900 px-5 py-2.5 text-sm font-medium text-zinc-200 transition-colors hover:bg-zinc-800"
+          className="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-5 py-2.5 text-sm font-medium text-zinc-800 dark:text-zinc-200 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
         >
           Browse the news
         </Link>
         <Link
           href="/live"
-          className="rounded-lg border border-zinc-700 bg-zinc-900 px-5 py-2.5 text-sm font-medium text-zinc-200 transition-colors hover:bg-zinc-800"
+          className="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-5 py-2.5 text-sm font-medium text-zinc-800 dark:text-zinc-200 transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800"
         >
           Watch live TV
         </Link>

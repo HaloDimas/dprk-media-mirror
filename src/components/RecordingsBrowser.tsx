@@ -47,15 +47,15 @@ export default function RecordingsBrowser({ items }: { items: RecordingItem[] })
   return (
     <div>
       {playing && (
-        <div className="mb-6 rounded-xl border border-zinc-800 bg-zinc-900/70 p-4">
+        <div className="mb-6 rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/70 dark:bg-zinc-900/70 p-4">
           <div className="mb-2 flex items-start justify-between gap-4">
             <div>
-              <h2 className="font-semibold text-zinc-100">{playing.title}</h2>
+              <h2 className="font-semibold text-zinc-900 dark:text-zinc-100">{playing.title}</h2>
               <p className="text-xs text-zinc-500">{playing.date}</p>
             </div>
             <button
               onClick={() => setPlaying(null)}
-              className="rounded-md bg-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:bg-zinc-700"
+              className="rounded-md bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 text-xs text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
             >
               Close player
             </button>
@@ -74,14 +74,14 @@ export default function RecordingsBrowser({ items }: { items: RecordingItem[] })
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search recordings…" aria-label="Search recordings"
-          className="min-w-56 flex-1 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
+          className="min-w-56 flex-1 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
         />
         {CATS.map((c) => (
           <button
             key={c.id}
             onClick={() => setCat(c.id)}
             className={`rounded-md px-3 py-2 text-sm font-medium ${
-              cat === c.id ? "bg-red-700 text-white" : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+              cat === c.id ? "bg-red-700 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
             }`}
           >
             {c.label}
@@ -91,30 +91,30 @@ export default function RecordingsBrowser({ items }: { items: RecordingItem[] })
       </div>
 
       <div className="mt-2 flex flex-wrap items-center gap-3">
-        <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-400">
+        <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
           From
           <input
             type="date"
             value={from}
             onChange={(e) => setFrom(e.target.value)}
-            className="min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100 [color-scheme:dark]"
+            className="min-w-0 max-w-full truncate rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-sm text-zinc-900 dark:text-zinc-100 [color-scheme:light] dark:[color-scheme:dark]"
           />
         </label>
-        <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-400">
+        <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
           To
           <input
             type="date"
             value={to}
             onChange={(e) => setTo(e.target.value)}
-            className="min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100 [color-scheme:dark]"
+            className="min-w-0 max-w-full truncate rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-sm text-zinc-900 dark:text-zinc-100 [color-scheme:light] dark:[color-scheme:dark]"
           />
         </label>
-        <label className="ml-auto flex min-w-0 items-center gap-2 text-xs text-zinc-400">
+        <label className="ml-auto flex min-w-0 items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
           Sort
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as "newest" | "oldest")}
-            className="min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100"
+            className="min-w-0 max-w-full truncate rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-sm text-zinc-900 dark:text-zinc-100"
           >
             <option value="newest">Newest first</option>
             <option value="oldest">Oldest first</option>
@@ -126,7 +126,7 @@ export default function RecordingsBrowser({ items }: { items: RecordingItem[] })
               setFrom("");
               setTo("");
             }}
-            className="rounded-md bg-zinc-800 px-3 py-1.5 text-xs text-zinc-300 hover:bg-zinc-700"
+            className="rounded-md bg-zinc-100 dark:bg-zinc-800 px-3 py-1.5 text-xs text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
           >
             Clear dates
           </button>
@@ -142,12 +142,12 @@ export default function RecordingsBrowser({ items }: { items: RecordingItem[] })
         {filtered.map((it) => (
           <li
             key={it.slug}
-            className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 transition-colors hover:border-red-800"
+            className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-4 transition-colors hover:border-red-800"
           >
-            <span className="rounded bg-zinc-800 px-2 py-0.5 text-[11px] text-zinc-300">
+            <span className="rounded bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-[11px] text-zinc-700 dark:text-zinc-300">
               {CAT_LABEL[it.category]}
             </span>
-            <h2 className="mt-2 text-sm font-medium leading-snug text-zinc-100">{it.title}</h2>
+            <h2 className="mt-2 text-sm font-medium leading-snug text-zinc-900 dark:text-zinc-100">{it.title}</h2>
             <p className="mt-1 text-xs text-zinc-500">{it.date}</p>
             <button
               onClick={() => setPlaying(it)}
@@ -158,7 +158,7 @@ export default function RecordingsBrowser({ items }: { items: RecordingItem[] })
           </li>
         ))}
         {filtered.length === 0 && (
-          <li className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-6 text-center text-sm text-zinc-400 sm:col-span-2 lg:col-span-3">
+          <li className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-6 text-center text-sm text-zinc-600 dark:text-zinc-400 sm:col-span-2 lg:col-span-3">
             No recordings match your filters.
           </li>
         )}

@@ -37,7 +37,7 @@ export default function LatestNewsClient({ items }: { items: NewsItem[] }) {
 
   if (latest.length === 0) {
     return (
-      <p className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-6 text-sm text-zinc-400">
+      <p className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-6 text-sm text-zinc-600 dark:text-zinc-400">
         News is temporarily unavailable. Please try again later.
       </p>
     );
@@ -45,18 +45,18 @@ export default function LatestNewsClient({ items }: { items: NewsItem[] }) {
   return (
     <ul className="grid gap-3 md:grid-cols-2">
       {latest.map((it) => (
-        <li key={it.id} className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/60">
-          <Link href={`/news/${it.id}`} className="flex gap-3 p-4 hover:bg-zinc-800/50">
+        <li key={it.id} className="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60">
+          <Link href={`/news/${it.id}`} className="flex gap-3 p-4 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50">
             {it.image && (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={it.image} alt="" className="hidden h-16 w-24 shrink-0 rounded-md object-cover sm:block" />
             )}
             <div className="min-w-0">
               <div className="flex gap-2 text-xs">
-                <span className="rounded bg-zinc-800 px-2 py-0.5 text-zinc-300">{it.source}</span>
+                <span className="rounded bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-zinc-700 dark:text-zinc-300">{it.source}</span>
                 <span className="text-zinc-500">{it.date}</span>
               </div>
-              <h3 className="mt-1 text-sm font-medium leading-snug text-zinc-100">{it.title}</h3>
+              <h3 className="mt-1 text-sm font-medium leading-snug text-zinc-900 dark:text-zinc-100">{it.title}</h3>
             </div>
           </Link>
         </li>

@@ -1,6 +1,18 @@
 @import "tailwindcss";
 
+/* Class-based dark mode: the `dark:` variant follows the `.dark` class on
+   <html> (set by ThemeToggle + the no-flash script in layout.tsx),
+   NOT prefers-color-scheme. Dark is the default theme. */
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
+  color-scheme: light;
+  --background: #fafafa;
+  --foreground: #18181b;
+}
+
+.dark {
+  color-scheme: dark;
   --background: #09090b;
   --foreground: #f4f4f5;
 }
@@ -34,6 +46,9 @@ body {
   border-left: 4px solid #b91c1c;
   padding-left: 0.75rem;
   font-weight: 600;
+  color: #18181b;
+}
+.dark .section-title {
   color: #f4f4f5;
 }
 
@@ -53,19 +68,28 @@ body {
   }
 }
 
-/* Slim scrollbars for the dark theme */
+/* Slim scrollbars — light by default, dark under .dark. */
 ::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #3f3f46;
+  background: #d4d4d8;
   border-radius: 5px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #b91c1c;
 }
 ::-webkit-scrollbar-track {
+  background: #f4f4f5;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #3f3f46;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #b91c1c;
+}
+.dark ::-webkit-scrollbar-track {
   background: #18181b;
 }
 

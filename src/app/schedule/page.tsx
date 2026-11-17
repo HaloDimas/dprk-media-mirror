@@ -18,8 +18,8 @@ export default async function SchedulePage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-bold text-white">Full Programme Guide</h1>
-        <p className="mt-1 text-sm text-zinc-400">
+        <h1 className="text-xl font-bold text-zinc-900 dark:text-white">Full Programme Guide</h1>
+        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
           The complete schedule for every TV channel — KCTV, Athletic TV, Ryongnamsan TV and Mansudae TV —
           with English and Korean titles. Pick a date to see that day&apos;s guide.
         </p>

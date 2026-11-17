@@ -477,12 +477,12 @@ export default function HlsPlayer({
 
   if (audioOnly) {
     return (
-      <div className="relative w-full overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/60 p-5">
-        <p className="text-xs font-bold uppercase tracking-widest text-amber-400">Audio only · Data saver</p>
-        <h3 className="mt-2 text-base font-semibold text-white">
+      <div className="relative w-full overflow-hidden rounded-xl border border-zinc-200 bg-white/60 p-5 dark:border-zinc-800 dark:bg-zinc-900/60">
+        <p className="text-xs font-bold uppercase tracking-widest text-amber-600 dark:text-amber-400">Audio only · Data saver</p>
+        <h3 className="mt-2 text-base font-semibold text-zinc-900 dark:text-white">
           {title} — audio
         </h3>
-        <p className="mt-1 text-sm text-zinc-400">
+        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
           Playing the KCBS radio audio (~0.1 Mbps) instead of the TV video (~9.5 Mbps for KCTV).
           Uses roughly 100x less data.
         </p>
@@ -505,7 +505,7 @@ export default function HlsPlayer({
           </button>
         </div>
         {error && (
-          <p className="mt-3 text-sm text-red-300">{error}</p>
+          <p className="mt-3 text-sm text-red-700 dark:text-red-300">{error}</p>
         )}
       </div>
     );
@@ -600,10 +600,10 @@ export default function HlsPlayer({
       </div>
 
       {/* Player extras: live edge, speed, PiP, screenshot, stats. */}
-      <div className="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-2">
+      <div className="mt-2 flex flex-wrap items-center gap-2 rounded-lg border border-zinc-200 bg-white/60 px-3 py-2 dark:border-zinc-800 dark:bg-zinc-900/60">
         <span
           className={`inline-flex items-center gap-1.5 rounded px-2 py-0.5 text-xs font-bold ${
-            isLive ? "bg-red-700 text-white" : "bg-zinc-800 text-zinc-300"
+            isLive ? "bg-red-700 text-white" : "bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300"
           }`}
           title={isLive ? "You are at the live edge" : "You are behind the live edge"}
         >
@@ -619,12 +619,12 @@ export default function HlsPlayer({
             Jump to live
           </button>
         )}
-        <label className="ml-1 flex items-center gap-1.5 text-xs text-zinc-400">
+        <label className="ml-1 flex items-center gap-1.5 text-xs text-zinc-600 dark:text-zinc-400">
           Speed
           <select
             value={speed}
             onChange={(e) => changeSpeed(Number(e.target.value))}
-            className="rounded border border-zinc-700 bg-zinc-800 px-1.5 py-1 text-xs text-white"
+            className="rounded border border-zinc-300 bg-white px-1.5 py-1 text-xs text-zinc-900 dark:border-zinc-700 dark:bg-zinc-800 dark:text-white"
             aria-label="Playback speed"
           >
             {SPEEDS.map((s) => (
@@ -640,7 +640,7 @@ export default function HlsPlayer({
             onClick={takeScreenshot}
             aria-label="Save the current frame as a PNG"
             title="Save the current frame as a PNG"
-            className="inline-flex items-center gap-1.5 rounded border border-zinc-700 bg-zinc-800 px-2.5 py-1 text-xs font-medium text-zinc-200 transition-colors hover:bg-zinc-700"
+            className="inline-flex items-center gap-1.5 rounded border border-zinc-300 bg-white px-2.5 py-1 text-xs font-medium text-zinc-800 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
           >
             <Camera className="h-3.5 w-3.5" aria-hidden="true" /> Screenshot
           </button>
@@ -652,7 +652,7 @@ export default function HlsPlayer({
             className={`inline-flex items-center gap-1.5 rounded border px-2.5 py-1 text-xs font-medium ${
               pipActive
                 ? "border-red-700 bg-red-700 text-white"
-                : "border-zinc-700 bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
+                : "border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
             }`}
           >
             <PictureInPicture2 className="h-3.5 w-3.5" aria-hidden="true" /> PiP
@@ -665,7 +665,7 @@ export default function HlsPlayer({
             className={`rounded border px-2.5 py-1 text-xs font-medium ${
               showStats
                 ? "border-red-700 bg-red-700 text-white"
-                : "border-zinc-700 bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
+                : "border-zinc-300 bg-white text-zinc-800 hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200 dark:hover:bg-zinc-700"
             }`}
           >
             Stats
@@ -673,18 +673,18 @@ export default function HlsPlayer({
         </div>
       </div>
       {shotMsg && (
-        <p className="mt-1.5 text-xs text-zinc-400">{shotMsg}</p>
+        <p className="mt-1.5 text-xs text-zinc-600 dark:text-zinc-400">{shotMsg}</p>
       )}
       {showStats && (
-        <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-xs sm:grid-cols-4">
-          <p><span className="text-zinc-500">Resolution: </span><span className="text-zinc-200">{stats.resolution}</span></p>
-          <p><span className="text-zinc-500">Bitrate: </span><span className="text-zinc-200">{stats.bitrate}</span></p>
-          <p><span className="text-zinc-500">Buffer: </span><span className="text-zinc-200">{stats.bufferSec}</span></p>
-          <p><span className="text-zinc-500">Behind live: </span><span className="text-zinc-200">{latencySec !== null ? `${Math.round(latencySec)}s` : "—"}</span></p>
-          <p><span className="text-zinc-500">Dropped frames: </span><span className="text-zinc-200">{stats.dropped}</span></p>
-          <p><span className="text-zinc-500">Speed: </span><span className="text-zinc-200">{speed}×</span></p>
-          <p><span className="text-zinc-500">Channel: </span><span className="text-zinc-200">{channel}</span></p>
-          <p><span className="text-zinc-500">Source: </span><span className="text-zinc-200">{(process.env.NEXT_PUBLIC_HLS_PROXY || "").replace(/\/$/, "") ? "Cloudflare Worker" : "Vercel /api/hls"}</span></p>
+        <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 rounded-lg border border-zinc-200 bg-white/60 px-3 py-2 text-xs dark:border-zinc-800 dark:bg-zinc-900/60 sm:grid-cols-4">
+          <p><span className="text-zinc-500">Resolution: </span><span className="text-zinc-800 dark:text-zinc-200">{stats.resolution}</span></p>
+          <p><span className="text-zinc-500">Bitrate: </span><span className="text-zinc-800 dark:text-zinc-200">{stats.bitrate}</span></p>
+          <p><span className="text-zinc-500">Buffer: </span><span className="text-zinc-800 dark:text-zinc-200">{stats.bufferSec}</span></p>
+          <p><span className="text-zinc-500">Behind live: </span><span className="text-zinc-800 dark:text-zinc-200">{latencySec !== null ? `${Math.round(latencySec)}s` : "—"}</span></p>
+          <p><span className="text-zinc-500">Dropped frames: </span><span className="text-zinc-800 dark:text-zinc-200">{stats.dropped}</span></p>
+          <p><span className="text-zinc-500">Speed: </span><span className="text-zinc-800 dark:text-zinc-200">{speed}×</span></p>
+          <p><span className="text-zinc-500">Channel: </span><span className="text-zinc-800 dark:text-zinc-200">{channel}</span></p>
+          <p><span className="text-zinc-500">Source: </span><span className="text-zinc-800 dark:text-zinc-200">{(process.env.NEXT_PUBLIC_HLS_PROXY || "").replace(/\/$/, "") ? "Cloudflare Worker" : "Vercel /api/hls"}</span></p>
         </div>
       )}
       <p className="mt-1.5 text-[11px] text-zinc-500">

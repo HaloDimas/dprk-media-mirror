@@ -7,14 +7,14 @@ export default async function RecordingsPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-bold text-white">Recordings</h1>
-        <p className="mt-1 text-sm text-zinc-400">
+        <h1 className="text-xl font-bold text-zinc-900 dark:text-white">Recordings</h1>
+        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
           The KCTV broadcast archive — 8pm News editions, Revolutionary Activities and Society &amp;
           Culture programmes. Watch them in this site&apos;s own video player.
         </p>
       </div>
       {items.length === 0 ? (
-        <p className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-6 text-sm text-zinc-400">
+        <p className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-6 text-sm text-zinc-600 dark:text-zinc-400">
           Recordings are temporarily unavailable. Please try again later.
         </p>
       ) : (

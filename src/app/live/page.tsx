@@ -91,10 +91,10 @@ export default function LivePage() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-xl font-bold text-white">Live TV</h1>
+      <h1 className="text-xl font-bold text-zinc-900 dark:text-white">Live TV</h1>
 
       <section aria-label="Now on all channels">
-        <h2 className="border-l-4 border-red-700 pl-3 text-sm font-semibold text-zinc-100">
+        <h2 className="border-l-4 border-red-700 pl-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
           Now on all channels <span className="font-normal text-zinc-500">· Pyongyang time {now}</span>
         </h2>
         <div className="mt-3 grid gap-3 sm:grid-cols-3">
@@ -108,25 +108,25 @@ export default function LivePage() {
                 onClick={() => setChannel(c.id)}
                 className={`rounded-xl border p-4 text-left transition-colors ${
                   selected
-                    ? "border-red-700 bg-red-950/40"
-                    : "border-zinc-800 bg-zinc-900/60 hover:border-red-800"
+                    ? "border-red-300 dark:border-red-700 bg-red-100 dark:bg-red-950/40"
+                    : "border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 hover:border-red-800"
                 }`}
               >
-                <p className="text-sm font-semibold text-zinc-100">
+                <p className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                   {c.name} <span className="font-normal text-zinc-500">· {c.korean}</span>
                   {selected && <span className="ml-2 rounded bg-red-700 px-1.5 py-0.5 text-[10px] text-white">WATCHING</span>}
                 </p>
                 {n ? (
-                  <p className="mt-1.5 text-sm text-zinc-200">
-                    <span className="font-semibold text-red-400">Now:</span> {n.en}
+                  <p className="mt-1.5 text-sm text-zinc-800 dark:text-zinc-200">
+                    <span className="font-semibold text-red-600 dark:text-red-400">Now:</span> {n.en}
                     <span className="text-zinc-500"> ({n.start}–{n.end})</span>
                   </p>
                 ) : (
-                  <p className="mt-1.5 text-sm text-zinc-400">Off air at this hour.</p>
+                  <p className="mt-1.5 text-sm text-zinc-600 dark:text-zinc-400">Off air at this hour.</p>
                 )}
                 {nx && (
-                  <p className="mt-1 text-xs text-zinc-400">
-                    <span className="font-semibold text-zinc-300">Next:</span> {nx.en}
+                  <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
+                    <span className="font-semibold text-zinc-700 dark:text-zinc-300">Next:</span> {nx.en}
                     <span className="text-zinc-500"> ({nx.start}–{nx.end})</span>
                   </p>
                 )}
@@ -144,7 +144,7 @@ export default function LivePage() {
             aria-selected={channel === c.id}
             onClick={() => setChannel(c.id)}
             className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-              channel === c.id ? "bg-red-700 text-white" : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+              channel === c.id ? "bg-red-700 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
             }`}
           >
             {c.name}
@@ -153,9 +153,9 @@ export default function LivePage() {
       </div>
 
       {info.status === "coming-soon" ? (
-        <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-8 text-center">
-          <h2 className="text-lg font-semibold text-zinc-100">{info.name} — Coming Soon</h2>
-          <p className="mt-1 text-sm text-zinc-400">
+        <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-8 text-center">
+          <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">{info.name} — Coming Soon</h2>
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
             {info.korean} — {info.note}. There is no live stream or programme guide for this channel yet.
           </p>
         </div>
@@ -169,7 +169,7 @@ export default function LivePage() {
               onClick={() => setServer("koryofront")}
               aria-pressed={server === "koryofront"}
               className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-                server === "koryofront" ? "bg-red-700 text-white" : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+                server === "koryofront" ? "bg-red-700 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
               }`}
             >
               Koryo Front
@@ -179,7 +179,7 @@ export default function LivePage() {
               onClick={() => setServer("koryotv")}
               aria-pressed={server === "koryotv"}
               className={`rounded-md px-3 py-1.5 text-sm font-medium ${
-                server === "koryotv" ? "bg-red-700 text-white" : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+                server === "koryotv" ? "bg-red-700 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
               }`}
             >
               Koryo TV
@@ -192,9 +192,9 @@ export default function LivePage() {
           {server === "koryofront" ? (
             <HlsPlayer channel={info.hls!} title={`${info.name} Live`} />
           ) : (
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-8 text-center">
-              <h2 className="text-lg font-semibold text-zinc-100">Watch {info.name} on Koryo TV</h2>
-              <p className="mx-auto mt-2 max-w-md text-sm text-zinc-400">
+            <div className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-8 text-center">
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Watch {info.name} on Koryo TV</h2>
+              <p className="mx-auto mt-2 max-w-md text-sm text-zinc-600 dark:text-zinc-400">
                 Koryo TV binds its streams to each viewer&apos;s own connection, so it can&apos;t play
                 inside this mirror. If the Koryo Front server isn&apos;t working, watch the same
                 channel on Koryo TV&apos;s own player instead.
@@ -214,30 +214,30 @@ export default function LivePage() {
           {/* NOW ON AIR — Koryo Front style: current programme + live progress. */}
           <section
             aria-label="Now on air"
-            className="rounded-xl border border-zinc-800 bg-zinc-900/60"
+            className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60"
           >
-            <div className="flex items-center gap-2 border-b border-zinc-800 px-4 py-3">
+            <div className="flex items-center gap-2 border-b border-zinc-200 dark:border-zinc-800 px-4 py-3">
               <span className="relative flex h-2.5 w-2.5">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-500 opacity-75" />
                 <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-red-500" />
               </span>
-              <span className="text-xs font-bold uppercase tracking-widest text-zinc-300">Now on air</span>
+              <span className="text-xs font-bold uppercase tracking-widest text-zinc-700 dark:text-zinc-300">Now on air</span>
               <span className="ml-auto text-xs text-zinc-500">Pyongyang time {now}</span>
             </div>
             <div className="px-4 py-4">
               {nowProg ? (
                 <>
-                  <span className="inline-block rounded bg-blue-900/70 px-2 py-0.5 text-xs font-medium text-blue-200">
+                  <span className="inline-block rounded bg-blue-100 dark:bg-blue-900/70 px-2 py-0.5 text-xs font-medium text-blue-800 dark:text-blue-200">
                     {nowProg.category}
                   </span>
-                  <h2 className="mt-2 text-lg font-bold leading-snug text-white">{nowProg.en}</h2>
-                  {nowProg.ko && <p className="mt-0.5 text-sm text-zinc-400">{nowProg.ko}</p>}
-                  <p className="mt-2 text-sm text-zinc-400">
+                  <h2 className="mt-2 text-lg font-bold leading-snug text-zinc-900 dark:text-white">{nowProg.en}</h2>
+                  {nowProg.ko && <p className="mt-0.5 text-sm text-zinc-600 dark:text-zinc-400">{nowProg.ko}</p>}
+                  <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
                     {nowProg.start} – {nowProg.end}
                   </p>
                   {/* Live progress through the current programme. */}
                   <div
-                    className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-zinc-800"
+                    className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-zinc-100 dark:bg-zinc-800"
                     role="progressbar"
                     aria-valuenow={Math.round(progressPct(nowProg, now))}
                     aria-valuemin={0}
@@ -250,14 +250,14 @@ export default function LivePage() {
                     />
                   </div>
                   {nextProg && (
-                    <p className="mt-3 text-sm text-zinc-400">
-                      <span className="font-semibold text-zinc-300">Next:</span> {nextProg.en}{" "}
+                    <p className="mt-3 text-sm text-zinc-600 dark:text-zinc-400">
+                      <span className="font-semibold text-zinc-700 dark:text-zinc-300">Next:</span> {nextProg.en}{" "}
                       <span className="text-zinc-500">({nextProg.start} – {nextProg.end})</span>
                     </p>
                   )}
                 </>
               ) : (
-                <p className="text-sm text-zinc-400">
+                <p className="text-sm text-zinc-600 dark:text-zinc-400">
                   Off air at this hour. Check the programme guide below for broadcast hours.
                 </p>
               )}
@@ -268,32 +268,32 @@ export default function LivePage() {
           <section aria-label="Programme guide">
             <div className="flex items-baseline justify-between gap-3">
               <div>
-                <h2 className="text-lg font-bold text-white">Programme Guide</h2>
+                <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Programme Guide</h2>
                 <p className="text-sm text-zinc-500">
                   {info.name} · {info.korean} · Today
                 </p>
               </div>
-              <a href="/schedule" className="inline-flex shrink-0 items-center gap-1 text-sm text-red-400 hover:underline">
+              <a href="/schedule" className="inline-flex shrink-0 items-center gap-1 text-sm text-red-600 dark:text-red-400 hover:underline">
                 Full schedule <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
               </a>
             </div>
-            <div className="mt-3 overflow-hidden rounded-xl border border-zinc-800">
+            <div className="mt-3 overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800">
               {epg && epg.programs.length > 0 ? (
                 epg.programs.map((p) => {
                   const isNow = nowProg === p;
                   return (
                     <div
                       key={`${p.start}-${p.en}`}
-                      className={`flex gap-4 border-b border-zinc-800 px-4 py-3 last:border-b-0 ${
-                        isNow ? "bg-red-950/30" : "bg-zinc-900/60"
+                      className={`flex gap-4 border-b border-zinc-200 dark:border-zinc-800 px-4 py-3 last:border-b-0 ${
+                        isNow ? "bg-red-100 dark:bg-red-950/30" : "bg-white/60 dark:bg-zinc-900/60"
                       }`}
                     >
                       <div className="w-20 shrink-0 text-sm">
-                        <p className="font-mono font-semibold text-zinc-100">{p.start}</p>
+                        <p className="font-mono font-semibold text-zinc-900 dark:text-zinc-100">{p.start}</p>
                         <p className="font-mono text-xs text-zinc-500">– {p.end}</p>
                       </div>
                       <div className="min-w-0">
-                        <p className="text-sm font-medium leading-snug text-zinc-100">
+                        <p className="text-sm font-medium leading-snug text-zinc-900 dark:text-zinc-100">
                           {p.en}
                           {isNow && (
                             <span className="ml-2 rounded bg-red-700 px-1.5 py-0.5 align-middle text-[10px] font-bold uppercase text-white">
@@ -302,7 +302,7 @@ export default function LivePage() {
                           )}
                         </p>
                         {p.ko && <p className="mt-0.5 text-xs text-zinc-500">{p.ko}</p>}
-                        <span className="mt-1.5 inline-block rounded bg-zinc-800 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-zinc-400">
+                        <span className="mt-1.5 inline-block rounded bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 text-[10px] font-medium uppercase tracking-wide text-zinc-600 dark:text-zinc-400">
                           {p.category}
                         </span>
                       </div>
@@ -310,7 +310,7 @@ export default function LivePage() {
                   );
                 })
               ) : (
-                <p className="bg-zinc-900/60 px-4 py-6 text-sm text-zinc-400">
+                <p className="bg-white/60 dark:bg-zinc-900/60 px-4 py-6 text-sm text-zinc-600 dark:text-zinc-400">
                   Programme guide unavailable for this channel right now.
                 </p>
               )}

@@ -83,14 +83,14 @@ export default function NewsSearch({ items }: { items: NewsItem[] }) {
           value={q}
           onChange={(e) => setQ(e.target.value)}
           placeholder="Search headlines…" aria-label="Search headlines"
-          className="min-w-56 flex-1 rounded-md border border-zinc-700 bg-zinc-900 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
+          className="min-w-56 flex-1 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-500 focus:border-red-600 focus:outline-none"
         />
-        <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-400">
+        <label className="flex min-w-0 items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
           Source
           <select
             value={source}
             onChange={(e) => setSource(e.target.value)}
-            className="min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-2 text-sm text-zinc-100"
+            className="min-w-0 max-w-full truncate rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-2 text-sm text-zinc-900 dark:text-zinc-100"
           >
             <option value="all">All sources ({allItems.length})</option>
             {sourceCounts.map(([s, n]) => (
@@ -115,19 +115,19 @@ export default function NewsSearch({ items }: { items: NewsItem[] }) {
               key={r}
               onClick={() => setRange(r)}
               className={`rounded-md px-3 py-1.5 text-xs font-medium ${
-                range === r ? "bg-red-700 text-white" : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+                range === r ? "bg-red-700 text-white" : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700"
               }`}
             >
               {label}
             </button>
           ))}
         </div>
-        <label className="ml-auto flex min-w-0 items-center gap-2 text-xs text-zinc-400">
+        <label className="ml-auto flex min-w-0 items-center gap-2 text-xs text-zinc-600 dark:text-zinc-400">
           Sort
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value as "latest" | "oldest")}
-            className="min-w-0 max-w-full truncate rounded-md border border-zinc-700 bg-zinc-900 px-2 py-1.5 text-sm text-zinc-100"
+            className="min-w-0 max-w-full truncate rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-2 py-1.5 text-sm text-zinc-900 dark:text-zinc-100"
           >
             <option value="latest">Latest first</option>
             <option value="oldest">Oldest first</option>
@@ -142,7 +142,7 @@ export default function NewsSearch({ items }: { items: NewsItem[] }) {
         excerpt is shown instead. Minju Joson, Naenara, Youth Sinmun and Ryugyong items show the
         headline and date — their article pages cannot be fetched (see each article page for why).
         {rodongLoading && (
-          <span className="ml-2 text-zinc-400">Loading Rodong Sinmun in the background…</span>
+          <span className="ml-2 text-zinc-600 dark:text-zinc-400">Loading Rodong Sinmun in the background…</span>
         )}
       </p>
 
@@ -150,29 +150,29 @@ export default function NewsSearch({ items }: { items: NewsItem[] }) {
         {filtered.map((it) => (
           <li
             key={it.id}
-            className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/60 transition-colors hover:border-red-800"
+            className="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 transition-colors hover:border-red-800"
           >
-            <Link href={`/news/${it.id}`} className="flex gap-4 p-4 hover:bg-zinc-800/50">
+            <Link href={`/news/${it.id}`} className="flex gap-4 p-4 hover:bg-zinc-100/50 dark:hover:bg-zinc-800/50">
               {it.image && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={it.image} alt="" className="hidden h-20 w-28 shrink-0 rounded-md object-cover sm:block" />
               )}
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2 text-xs">
-                  <span className="rounded bg-zinc-800 px-2 py-0.5 text-zinc-300">{it.source}</span>
+                  <span className="rounded bg-zinc-100 dark:bg-zinc-800 px-2 py-0.5 text-zinc-700 dark:text-zinc-300">{it.source}</span>
                   <span className="text-zinc-500">{it.date}</span>
                   {it.kind === "excerpt" && (
-                    <span className="rounded bg-amber-900/70 px-2 py-0.5 text-amber-200">Excerpt only</span>
+                    <span className="rounded bg-amber-100 dark:bg-amber-900/70 px-2 py-0.5 text-amber-800 dark:text-amber-200">Excerpt only</span>
                   )}
                 </div>
-                <h2 className="mt-1 font-medium leading-snug text-zinc-100">{it.title}</h2>
-                {it.excerpt && <p className="mt-1 line-clamp-2 text-sm text-zinc-400">{it.excerpt}</p>}
+                <h2 className="mt-1 font-medium leading-snug text-zinc-900 dark:text-zinc-100">{it.title}</h2>
+                {it.excerpt && <p className="mt-1 line-clamp-2 text-sm text-zinc-600 dark:text-zinc-400">{it.excerpt}</p>}
               </div>
             </Link>
           </li>
         ))}
         {filtered.length === 0 && (
-          <li className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-6 text-center text-sm text-zinc-400">
+          <li className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-6 text-center text-sm text-zinc-600 dark:text-zinc-400">
             No articles match your filters.
           </li>
         )}

@@ -16,7 +16,7 @@ async function NewsList() {
   const items = await getAllNews();
   if (items.length === 0) {
     return (
-      <p className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-6 text-sm text-zinc-400">
+      <p className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 p-6 text-sm text-zinc-600 dark:text-zinc-400">
         News is temporarily unavailable. Please try again later.
       </p>
     );
@@ -29,8 +29,8 @@ export default async function NewsPage() {
   return (
     <div className="space-y-5">
       <div>
-        <h1 className="text-xl font-bold text-white">News</h1>
-        <p className="mt-1 text-sm text-zinc-400">
+        <h1 className="text-xl font-bold text-zinc-900 dark:text-white">News</h1>
+        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
           KCNA, Rodong Sinmun, Minju Joson, The Pyongyang Times, Naenara, Youth Sinmun, Ryugyong,
           Voice of Korea and Korean Architecture — read in full on this site where the full text can
           be fetched — together with KNS full text and KCNA Watch articles, which now open in full

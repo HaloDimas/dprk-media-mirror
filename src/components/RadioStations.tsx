@@ -168,8 +168,8 @@ export default function RadioStations() {
             return (
               <article
                 key={s.id}
-                className={`group overflow-hidden rounded-2xl border bg-zinc-900/60 shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl ${
-                  isActive ? "border-red-700 ring-1 ring-red-600/50" : "border-zinc-800 hover:border-zinc-700"
+                className={`group overflow-hidden rounded-2xl border bg-white/60 shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl dark:bg-zinc-900/60 ${
+                  isActive ? "border-red-700 ring-1 ring-red-600/50" : "border-zinc-200 hover:border-zinc-300 dark:border-zinc-800 dark:hover:border-zinc-700"
                 }`}
               >
                 <div className={`relative aspect-[16/10] bg-gradient-to-br ${art.gradient}`}>
@@ -209,13 +209,13 @@ export default function RadioStations() {
                   </button>
                 </div>
                 <div className="p-5">
-                  <h3 className="font-semibold text-zinc-100">{s.name}</h3>
+                  <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">{s.name}</h3>
                   <p className="text-sm text-zinc-500">{s.korean}</p>
-                  <p className="mt-2 text-sm text-zinc-400">{s.desc}</p>
+                  <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{s.desc}</p>
                   <p className="mt-3 text-xs text-zinc-500">
                     {isActive ? statusText(st, boost) : "Press play to listen live"}
                   </p>
-                  {err && <p className="mt-1 text-xs text-red-300">{err}</p>}
+                  {err && <p className="mt-1 text-xs text-red-700 dark:text-red-300">{err}</p>}
                 </div>
                 <AudioPlayer
                   ref={(el) => {
@@ -239,7 +239,7 @@ export default function RadioStations() {
       </section>
 
       {/* Sticky Now Playing bar — Apple Music mini player. */}
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-800 bg-zinc-950/85 backdrop-blur-md">
+      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-zinc-200 bg-white/85 backdrop-blur-md dark:border-zinc-800 dark:bg-zinc-950/85">
         <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
           <div
             className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br text-lg font-black text-white/90 ${STATION_ART[barStation.id].gradient}`}
@@ -249,17 +249,17 @@ export default function RadioStations() {
           </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <p className="truncate text-sm font-semibold text-zinc-100">{barStation.name}</p>
+              <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">{barStation.name}</p>
               {barLive && <LiveBadge />}
               <Equalizer playing={barLive} />
             </div>
-            <p className="truncate text-xs text-zinc-400">
+            <p className="truncate text-xs text-zinc-600 dark:text-zinc-400">
               {!playing && barStatus === "idle"
                 ? "Select a station to listen live"
                 : statusText(barStatus, boost)}
             </p>
             {playing && errors[playing.id] && (
-              <p className="truncate text-xs text-red-300">{errors[playing.id]}</p>
+              <p className="truncate text-xs text-red-700 dark:text-red-300">{errors[playing.id]}</p>
             )}
           </div>
           <div className="flex shrink-0 items-center gap-2">
@@ -267,7 +267,7 @@ export default function RadioStations() {
               type="button"
               onClick={() => setMuted((m) => !m)}
               aria-label={muted ? "Unmute" : "Mute"}
-              className="inline-flex items-center justify-center text-zinc-400 transition-colors hover:text-zinc-100"
+              className="inline-flex items-center justify-center text-zinc-600 transition-colors hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
             >
               {muted || volume === 0 ? (
                 <VolumeX className="h-4 w-4" aria-hidden="true" />
@@ -300,7 +300,7 @@ export default function RadioStations() {
             aria-pressed={boost}
             title={boost ? "Turn off volume boost" : "Boost volume ×2 for quiet stations"}
             className={`shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold uppercase tracking-wide transition-colors ${
-              boost ? "bg-red-600 text-white" : "bg-zinc-800 text-zinc-400 hover:bg-zinc-700 hover:text-zinc-100"
+              boost ? "bg-red-600 text-white" : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200 hover:text-zinc-900 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-100"
             }`}
           >
             Boost ×2

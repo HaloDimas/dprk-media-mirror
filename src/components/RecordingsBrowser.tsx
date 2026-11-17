@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Play } from "lucide-react";
 import type { RecordingItem } from "@/lib/types";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -25,18 +25,61 @@ const CAT_DESC_KEY: Record<string, string> = {
   society: "recordings.societyDesc",
 };
 
+/** Retry delay before the single second attempt at a thumbnail. On a
+ *  slow/flaky connection the first load can fail or time out once even
+ *  though the endpoint is healthy, so one retry gives it a second chance
+ *  before the Play-tile fallback stands. */
+const THUMB_RETRY_DELAY_MS = 1800;
+
 /** One Juche-style VOD card: 16:9 thumbnail on top, then title (max 2
  *  lines), date and a Watch button. Clicking the thumbnail plays the
  *  video too. A thumbnail that fails to load is replaced by a dark tile
  *  with a Play icon — never a broken-image icon. */
 function RecordingCard({ it, onPlay }: { it: RecordingItem; onPlay: (it: RecordingItem) => void }) {
   const [thumbError, setThumbError] = useState(false);
+  const [thumbSrc, setThumbSrc] = useState(it.thumb);
+  // "idle" = no failure yet, "pending" = retry scheduled, "done" = retry
+  // used up; a failure while "done" shows the fallback. A ref (not state)
+  // so the ref callback and onError always see the current value without
+  // re-creating handlers.
+  const retryStateRef = useRef<"idle" | "pending" | "done">("idle");
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clear a pending retry if the card unmounts (e.g. the filter changes).
+  useEffect(
+    () => () => {
+      if (retryTimerRef.current) clearTimeout(retryTimerRef.current);
+    },
+    []
+  );
+
+  // Exactly one retry, then the fallback stands. Shared by onError and
+  // the pre-hydration ref check below, so a failure before hydration
+  // also gets its one retry instead of an instant fallback.
+  const handleThumbFail = useCallback(() => {
+    if (retryStateRef.current === "pending") return;
+    if (retryStateRef.current === "done") {
+      setThumbError(true);
+      return;
+    }
+    retryStateRef.current = "pending";
+    retryTimerRef.current = setTimeout(() => {
+      retryStateRef.current = "done";
+      // Cache-buster: a failed URL can stay in the browser's error cache,
+      // so the retry must be a fresh fetch to have a real chance.
+      setThumbSrc((src) => (src.includes("retry=1") ? src : `${src}&retry=1`));
+    }, THUMB_RETRY_DELAY_MS);
+  }, []);
+
   // An image that fails before hydration never fires onError (no listener
   // is attached yet). The ref callback runs at commit time and catches
   // images that already finished loading with an error.
-  const imgRef = useCallback((el: HTMLImageElement | null) => {
-    if (el && el.complete && el.naturalWidth === 0) setThumbError(true);
-  }, []);
+  const imgRef = useCallback(
+    (el: HTMLImageElement | null) => {
+      if (el && el.complete && el.naturalWidth === 0) handleThumbFail();
+    },
+    [handleThumbFail]
+  );
   const showThumb = !thumbError && Boolean(it.thumb);
   return (
     <li className="overflow-hidden rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white/60 dark:bg-zinc-900/60 transition-colors hover:border-red-800">
@@ -49,10 +92,10 @@ function RecordingCard({ it, onPlay }: { it: RecordingItem; onPlay: (it: Recordi
         {showThumb ? (
           <img
             ref={imgRef}
-            src={it.thumb}
+            src={thumbSrc}
             alt={it.title}
             loading="lazy"
-            onError={() => setThumbError(true)}
+            onError={handleThumbFail}
             className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
           />
         ) : (

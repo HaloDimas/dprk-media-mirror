@@ -7,7 +7,8 @@ export const metadata = {
 
 export default function RadioPage() {
   return (
-    <div className="space-y-5">
+    // pb-28: room for the fixed Now Playing bar so it never covers the footer.
+    <div className="space-y-6 pb-28">
       <div>
         <h1 className="text-xl font-bold text-white">Radio</h1>
         <p className="mt-1 text-sm text-zinc-400">

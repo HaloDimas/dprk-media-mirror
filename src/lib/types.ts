@@ -66,9 +66,9 @@ export const CHANNELS: ChannelInfo[] = [
 ];
 
 export const RADIO_STATIONS = [
-  { id: "kcbs", name: "Korean Central Broadcasting Station", korean: "조선중앙방송", hls: "kcbs" },
-  { id: "kcbs2", name: "KCBS-2", korean: "조선중앙방송 제2방송", hls: "kcbs2" },
-  { id: "pyfm", name: "Pyongyang FM", korean: "평양방송", hls: "pyfm" },
+  { id: "kcbs", name: "Korean Central Broadcasting Station", korean: "조선중앙방송", hls: "kcbs", desc: "The main state broadcaster — news, announcements and music." },
+  { id: "kcbs2", name: "KCBS-2", korean: "조선중앙방송 제2방송", hls: "kcbs2", desc: "The second programme of Korean Central Broadcasting." },
+  { id: "pyfm", name: "Pyongyang FM", korean: "평양방송", hls: "pyfm", desc: "Music and entertainment station." },
 ] as const;
 
 export type NewsSource =

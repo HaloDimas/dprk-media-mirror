@@ -49,6 +49,29 @@ export function NavSearch() {
   );
 }
 
+/** Settings gear (desktop only): icon-only, ~38px — an 11th text link
+ *  would eat the nav strip's headroom and re-clip Status (see commit
+ *  969fb51). Same button styling as ThemeToggle so the controls read as
+ *  one group. Rendered in layout.tsx's controls row, right of the search
+ *  box. Mobile gets a text entry in the hamburger menu below instead. */
+export function SettingsGear() {
+  const pathname = usePathname();
+  const { t } = useLanguage();
+  const active = pathname === "/settings";
+  return (
+    <Link
+      href="/settings"
+      aria-label={t("nav.settings")}
+      title={t("nav.settings")}
+      className={`hidden shrink-0 items-center justify-center rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-800 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 xl:inline-flex ${
+        active ? "bg-zinc-100 dark:bg-zinc-800" : ""
+      }`}
+    >
+      <Settings className="h-4 w-4" aria-hidden="true" />
+    </Link>
+  );
+}
+
 export default function Nav() {
   const pathname = usePathname();
   const { t } = useLanguage();
@@ -86,22 +109,6 @@ export default function Nav() {
           </Link>
         ))}
       </nav>
-      {/* Settings gear (desktop only): icon-only, ~38px — an 11th text
-          link would eat the nav strip's headroom and re-clip Status
-          (see commit 969fb51). Same button styling as ThemeToggle so the
-          controls read as one group. The 32px freed by shrinking the
-          search box (w-44 → w-36) funds most of it. Mobile gets a text
-          entry in the hamburger menu below instead. */}
-      <Link
-        href="/settings"
-        aria-label={t("nav.settings")}
-        title={t("nav.settings")}
-        className={`hidden shrink-0 items-center justify-center rounded-md border border-zinc-300 bg-white px-2.5 py-1.5 text-sm text-zinc-800 transition-colors hover:bg-zinc-100 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200 dark:hover:bg-zinc-800 xl:inline-flex ${
-          active("/settings") ? "bg-zinc-100 dark:bg-zinc-800" : ""
-        }`}
-      >
-        <Settings className="h-4 w-4" aria-hidden="true" />
-      </Link>
       {open && (
         <nav className="flex w-full flex-col gap-1 border-t border-zinc-200 dark:border-zinc-800 pt-2 xl:hidden">
           {LINKS.map((l) => (

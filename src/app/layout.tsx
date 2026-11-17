@@ -4,7 +4,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
 import { Suspense } from "react";
-import Nav, { NavSearch } from "@/components/Nav";
+import Nav, { NavSearch, SettingsGear } from "@/components/Nav";
 import SettingsApplier from "@/components/SettingsApplier";
 import ThemeToggle from "@/components/ThemeToggle";
 import LanguageSelector from "@/components/LanguageSelector";
@@ -64,11 +64,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             __html: `(function(){try{var l=localStorage.getItem("dprk-language");if(l==="id"||l==="ko"||l==="en"){document.documentElement.lang=l}else{var n=(navigator.language||"").toLowerCase();document.documentElement.lang=n.indexOf("id")===0?"id":n.indexOf("ko")===0?"ko":"en"}}catch(e){}})();`,
           }}
         />
-        {/* No-flash nav-appearance script: apply the saved frosted header
-            before first paint so the header never flashes solid. */}
+        {/* No-flash nav-appearance script: Frosted is the default — only
+            an explicit saved "classic" choice skips the class, so the
+            header never flashes solid on first visit. */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{if(localStorage.getItem("dprk-nav-appearance")==="frosted"){document.documentElement.classList.add("nav-frosted")}}catch(e){}})();`,
+            __html: `(function(){try{if(localStorage.getItem("dprk-nav-appearance")!=="classic"){document.documentElement.classList.add("nav-frosted")}}catch(e){document.documentElement.classList.add("nav-frosted")}})();`,
           }}
         />
       </head>
@@ -99,6 +100,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <Nav />
               <div className="flex w-full shrink-0 items-center gap-2 sm:w-auto">
                 <NavSearch />
+                <SettingsGear />
                 <ThemeToggle />
                 <LanguageSelector />
               </div>
@@ -142,6 +144,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <p className="mt-2">
               <T k="footer.legal" />
             </p>
+            <p className="mt-2">© 2026 DPRK Media Mirror</p>
           </div>
         </footer>
         <Analytics />

@@ -6,7 +6,8 @@
  * - dprk-theme: "dark" | "light" (dark is the default; the no-flash
  *   script in layout.tsx applies it before first paint).
  * - dprk-language: "en" | "id" | "ko" (owned by LanguageProvider).
- * - dprk-nav-appearance: "classic" | "frosted".
+ * - dprk-nav-appearance: "classic" | "frosted" (default frosted —
+ *   only an explicit saved "classic" opts out).
  * - dprk-watch-time-enabled: "1" | "0" (default on).
  * - dprk-fullscreen-blur: "1" | "0" (default on).
  * - dprk-epg-lang: "auto" | "en" | "ko" (default "auto" = follow the
@@ -93,8 +94,10 @@ export function applyNavAppearance(): void {
   }
 }
 
+/** Frosted is the default: only an explicit saved "classic" opts out,
+ *  so first-time visitors (no stored value) get the frosted header. */
 export function getNavAppearance(): NavAppearance {
-  return read(NAV_APPEARANCE_KEY) === "frosted" ? "frosted" : "classic";
+  return read(NAV_APPEARANCE_KEY) === "classic" ? "classic" : "frosted";
 }
 
 export function setNavAppearance(value: NavAppearance): void {

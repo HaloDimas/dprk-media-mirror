@@ -139,7 +139,7 @@ export default function SettingsContent() {
   const [theme, setTheme] = useState<Theme>("dark");
   const [watchEnabled, setWatchEnabled] = useState(true);
   const [blur, setBlur] = useState(true);
-  const [nav, setNav] = useState<NavAppearance>("classic");
+  const [nav, setNav] = useState<NavAppearance>("frosted");
   const [stats, setStats] = useState<WatchTotals[]>([]);
   const [statsTick, setStatsTick] = useState(0);
 

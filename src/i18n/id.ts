@@ -42,6 +42,8 @@ export const id: Dictionary = {
     terms: "Syarat & Ketentuan",
     settings: "Pengaturan",
     eula: "EULA",
+    attributions: "Atribusi",
+    saved: "Tersimpan",
     about:
       "DPRK Media Mirror — TV langsung, radio, berita, rekaman, dan publikasi dari Koryo Front dan KCNA Watch. Waktu tayang menggunakan Waktu Pyongyang (UTC+9).",
     legal:
@@ -307,6 +309,11 @@ export const id: Dictionary = {
     errUnavailable: "Stasiun ini sedang tidak tersedia.",
     errBrowser: "Browser Anda tidak bisa memutar stream audio ini.",
     errStart: "Tidak bisa memulai stasiun ini. Coba lagi.",
+    station: {
+      backToAll: "Semua stasiun",
+      otherStations: "Stasiun lain",
+      openStation: "Halaman stasiun",
+    },
   },
   schedule: {
     title: "Panduan Acara Lengkap",
@@ -487,6 +494,9 @@ export const id: Dictionary = {
     countsLine: "{shown} dari {total} rekaman · Berita jam 8 {news} · Kegiatan Revolusioner {activities} · Masyarakat & Budaya {society}",
     videosCount: "{count} video",
     watchHere: "Tonton di sini",
+    download: "Unduh",
+    downloadNote:
+      "Membuka file video di tab baru — pemutar bawaan browser bisa menyimpannya dari sana.",
     noMatch: "Tidak ada rekaman yang cocok dengan filter Anda.",
   },
   publications: {
@@ -794,6 +804,34 @@ export const id: Dictionary = {
         ],
       },
     ],
+  },
+  attributions: {
+    title: "Atribusi Sumber",
+    intro:
+      "Mirror ini dibangun dari konten sumber-sumber berikut. Mirror ini independen dan non-komersial — semua konten tetap menjadi milik penerbit aslinya.",
+    streams: "TV langsung, radio & rekaman",
+    news: "Berita & publikasi",
+    visitSource: "Kunjungi sumber",
+  },
+  share: {
+    copyLink: "Salin tautan",
+    copied: "Tautan disalin",
+    copyFailed: "Tautan gagal disalin",
+  },
+  saved: {
+    title: "Tersimpan",
+    intro: "Artikel dan rekaman yang kamu bookmark — hanya tersimpan di browser ini.",
+    empty: "Belum ada yang disimpan.",
+    emptyHint: "Pakai tombol bookmark di artikel atau rekaman untuk menyimpannya di sini.",
+    articles: "Artikel",
+    recordings: "Rekaman",
+    clearAll: "Hapus semua",
+    remove: "Hapus",
+    save: "Simpan",
+    savedLabel: "Tersimpan",
+    saveAria: "Simpan {title}",
+    unsaveAria: "Hapus {title} dari simpanan",
+    count: "{n} item",
   },
   loading: {
     page: "Memuat halaman...",

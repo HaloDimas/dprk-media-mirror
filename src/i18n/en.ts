@@ -43,6 +43,8 @@ export const en = {
     terms: "Terms & Conditions",
     settings: "Settings",
     eula: "EULA",
+    attributions: "Attributions",
+    saved: "Saved",
     about:
       "DPRK Media Mirror — live TV, radio, news, recordings and publications from Koryo Front and KCNA Watch. Programme times are Pyongyang Time (UTC+9).",
     legal:
@@ -308,6 +310,11 @@ export const en = {
     errUnavailable: "This station is currently unavailable.",
     errBrowser: "Your browser cannot play this audio stream.",
     errStart: "Could not start this station. Try again.",
+    station: {
+      backToAll: "All stations",
+      otherStations: "Other stations",
+      openStation: "Station page",
+    },
   },
   schedule: {
     title: "Full Programme Guide",
@@ -488,6 +495,9 @@ export const en = {
     countsLine: "{shown} of {total} recordings · 8pm News {news} · Revolutionary Activities {activities} · Society & Culture {society}",
     videosCount: "{count} videos",
     watchHere: "Watch here",
+    download: "Download",
+    downloadNote:
+      "Opens the video file in a new tab — your browser's built-in player can save it from there.",
     noMatch: "No recordings match your filters.",
   },
   publications: {
@@ -795,6 +805,34 @@ export const en = {
         ],
       },
     ] as RichSection[],
+  },
+  attributions: {
+    title: "Source attributions",
+    intro:
+      "This mirror is built from the content of the sources below. The mirror is independent and non-commercial — all content stays owned by its original publishers.",
+    streams: "Live TV, radio & recordings",
+    news: "News & publications",
+    visitSource: "Visit source",
+  },
+  share: {
+    copyLink: "Copy link",
+    copied: "Link copied",
+    copyFailed: "Could not copy the link",
+  },
+  saved: {
+    title: "Saved",
+    intro: "Articles and recordings you bookmarked — saved in this browser only.",
+    empty: "Nothing saved yet.",
+    emptyHint: "Use the bookmark button on an article or a recording to save it here.",
+    articles: "Articles",
+    recordings: "Recordings",
+    clearAll: "Clear all",
+    remove: "Remove",
+    save: "Save",
+    savedLabel: "Saved",
+    saveAria: "Save {title}",
+    unsaveAria: "Remove {title} from saved",
+    count: "{n} items",
   },
   loading: {
     page: "Loading page...",

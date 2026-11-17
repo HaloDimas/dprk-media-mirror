@@ -4,6 +4,8 @@ import { Suspense } from "react";
 import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
 import { getAllNews, getArticle } from "@/lib/sources";
 import { T } from "@/i18n/T";
+import SaveButton from "@/components/SaveButton";
+import ShareButton from "@/components/ShareButton";
 
 // Articles NOT prerendered at build time — they render on demand instead
 // (dynamicParams below), because rendering one needs a live fetch from a
@@ -77,6 +79,12 @@ async function ArticleContent({ params }: { params: Promise<{ id: string }> }) {
         )}
       </div>
       <h1 className="mt-2 text-2xl font-bold leading-snug text-zinc-900 dark:text-white">{article.title}</h1>
+
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        {/* Share copies this article's page URL; Save bookmarks it to /saved. */}
+        <ShareButton />
+        <SaveButton item={{ id, type: "article", title: article.title, date: article.date, url: `/news/${article.id}` }} />
+      </div>
 
       {article.note && (
         <p className="mt-4 rounded-lg border border-amber-300 dark:border-amber-800/60 bg-amber-100 dark:bg-amber-950/40 px-4 py-3 text-sm text-amber-800 dark:text-amber-200">

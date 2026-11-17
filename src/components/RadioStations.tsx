@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
-import { Pause, Play, Radio, Volume1, Volume2, VolumeX } from "lucide-react";
+import Link from "next/link";
+import { ArrowUpRight, Pause, Play, Radio, Volume1, Volume2, VolumeX } from "lucide-react";
 import AudioPlayer, { type AudioPlayerHandle, type AudioStatus } from "@/components/AudioPlayer";
 import { RADIO_STATIONS } from "@/lib/types";
 import { useLanguage } from "@/i18n/LanguageContext";
@@ -9,8 +10,9 @@ import { T } from "@/i18n/T";
 
 /** Per-station artwork: distinct dark gradients + the big Korean letters
     shown on the artwork tile. Artwork is CSS only — the stations have no
-    usable official logos, so no external image is loaded. */
-const STATION_ART: Record<(typeof RADIO_STATIONS)[number]["id"], { gradient: string; short: string }> = {
+    usable official logos, so no external image is loaded. Shared with
+    the per-station pages (StationPlayer). */
+export const STATION_ART: Record<(typeof RADIO_STATIONS)[number]["id"], { gradient: string; short: string }> = {
   kcbs: { gradient: "from-red-600 via-red-800 to-zinc-950", short: "중앙" },
   kcbs2: { gradient: "from-indigo-600 via-violet-900 to-zinc-950", short: "제2" },
   pyfm: { gradient: "from-amber-500 via-orange-800 to-zinc-950", short: "평양" },
@@ -18,14 +20,15 @@ const STATION_ART: Record<(typeof RADIO_STATIONS)[number]["id"], { gradient: str
 
 /** Station descriptions live in the dictionaries (radio.descKcbs …),
     not in lib/types.ts — the English copy there is source data for
-    stations, but descriptions are UI chrome and get translated. */
-const STATION_DESC_KEY: Record<(typeof RADIO_STATIONS)[number]["id"], string> = {
+    stations, but descriptions are UI chrome and get translated.
+    Shared with the per-station pages (StationPlayer). */
+export const STATION_DESC_KEY: Record<(typeof RADIO_STATIONS)[number]["id"], string> = {
   kcbs: "radio.descKcbs",
   kcbs2: "radio.descKcbs2",
   pyfm: "radio.descPyfm",
 };
 
-function LiveBadge() {
+export function LiveBadge() {
   const { t } = useLanguage();
   return (
     <span className="flex items-center gap-1.5 rounded-full bg-black/60 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
@@ -40,7 +43,7 @@ function LiveBadge() {
 
 /** Apple Music-style animated equalizer: bars bounce only while the
     station is live; frozen low when paused (see .eq-bar in globals.css). */
-function Equalizer({ playing }: { playing: boolean }) {
+export function Equalizer({ playing }: { playing: boolean }) {
   return (
     <span className={`flex h-4 items-end gap-[3px] ${playing ? "" : "eq-paused"}`} aria-hidden="true">
       {[0, 1, 2, 3].map((i) => (
@@ -54,7 +57,7 @@ function Equalizer({ playing }: { playing: boolean }) {
   );
 }
 
-function Spinner({ className }: { className?: string }) {
+export function Spinner({ className }: { className?: string }) {
   return (
     <span
       className={`animate-spin rounded-full border-2 ${
@@ -171,6 +174,13 @@ export default function RadioStations() {
                 <T k="radio.listenLive" />
               </span>
             </div>
+            <Link
+              href={`/radio/${featured.id}`}
+              className="mt-1 inline-flex items-center gap-1 text-sm text-red-400 hover:underline"
+            >
+              <T k="radio.station.openStation" />
+              <ArrowUpRight className="h-3.5 w-3.5" aria-hidden="true" />
+            </Link>
           </div>
         </div>
       </section>
@@ -233,6 +243,13 @@ export default function RadioStations() {
                   <h3 className="font-semibold text-zinc-900 dark:text-zinc-100">{s.name}</h3>
                   <p className="text-sm text-zinc-500">{s.korean}</p>
                   <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">{t(STATION_DESC_KEY[s.id])}</p>
+                  <Link
+                    href={`/radio/${s.id}`}
+                    className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-red-600 hover:underline dark:text-red-400"
+                  >
+                    <T k="radio.station.openStation" />
+                    <ArrowUpRight className="h-3 w-3" aria-hidden="true" />
+                  </Link>
                   <p className="mt-3 text-xs text-zinc-500">
                     {isActive ? statusText(st, boost) : t("radio.statusIdle")}
                   </p>

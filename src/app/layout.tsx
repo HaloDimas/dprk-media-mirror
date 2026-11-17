@@ -129,6 +129,12 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               <Link href="/eula" className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white">
                 <T k="footer.eula" />
               </Link>
+              <Link href="/attributions" className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white">
+                <T k="footer.attributions" />
+              </Link>
+              <Link href="/saved" className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-white">
+                <T k="footer.saved" />
+              </Link>
             </nav>
             <p>
               <T k="footer.about" />

@@ -44,6 +44,8 @@ export const ko: Dictionary = {
     terms: "이용약관",
     settings: "설정",
     eula: "EULA",
+    attributions: "출처",
+    saved: "저장됨",
     about:
       "DPRK Media Mirror — 고려프론트와 KCNA Watch에서 가져온 라이브 TV, 라디오, 뉴스, 녹화 및 출판물. 방송 시간은 평양 시간(UTC+9) 기준입니다.",
     legal:
@@ -309,6 +311,11 @@ export const ko: Dictionary = {
     errUnavailable: "이 방송국을 현재 사용할 수 없습니다.",
     errBrowser: "이 브라우저에서는 이 오디오 스트림을 재생할 수 없습니다.",
     errStart: "이 방송국을 시작할 수 없습니다. 다시 시도해 주세요.",
+    station: {
+      backToAll: "모든 방송국",
+      otherStations: "다른 방송국",
+      openStation: "방송국 페이지",
+    },
   },
   schedule: {
     title: "전체 편성표",
@@ -487,6 +494,9 @@ export const ko: Dictionary = {
     countsLine: "전체 {total}건 중 {shown}건 · 저녁 8시 뉴스 {news}건 · 혁명 활동 {activities}건 · 사회·문화 {society}건",
     videosCount: "동영상 {count}개",
     watchHere: "여기서 시청",
+    download: "다운로드",
+    downloadNote:
+      "비디오 파일을 새 탭에서 엽니다. 브라우저 내장 플레이어에서 저장할 수 있습니다.",
     noMatch: "필터와 일치하는 녹화가 없습니다.",
   },
   publications: {
@@ -794,6 +804,34 @@ export const ko: Dictionary = {
         ],
       },
     ],
+  },
+  attributions: {
+    title: "출처",
+    intro:
+      "이 미러는 아래 출처들의 콘텐츠로 만들어졌습니다. 미러는 독립적이며 비상업적입니다. 모든 콘텐츠의 저작권은 원래 게시자에게 있습니다.",
+    streams: "실시간 TV, 라디오 및 녹화",
+    news: "뉴스 및 출판물",
+    visitSource: "출처 방문",
+  },
+  share: {
+    copyLink: "링크 복사",
+    copied: "링크가 복사되었습니다",
+    copyFailed: "링크를 복사할 수 없습니다",
+  },
+  saved: {
+    title: "저장됨",
+    intro: "북마크한 기사와 녹화 — 이 브라우저에만 저장됩니다.",
+    empty: "저장된 항목이 없습니다.",
+    emptyHint: "기사나 녹화의 북마크 버튼을 눌러 여기에 저장하세요.",
+    articles: "기사",
+    recordings: "녹화",
+    clearAll: "모두 지우기",
+    remove: "삭제",
+    save: "저장",
+    savedLabel: "저장됨",
+    saveAria: "{title} 저장",
+    unsaveAria: "저장된 항목에서 {title} 삭제",
+    count: "{n}개 항목",
   },
   loading: {
     page: "페이지 로딩 중...",

@@ -1,10 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Play } from "lucide-react";
+import { Download, Play } from "lucide-react";
 import type { RecordingItem } from "@/lib/types";
 import { useLanguage } from "@/i18n/LanguageContext";
 import { T } from "@/i18n/T";
+import SaveButton from "@/components/SaveButton";
+import ShareButton from "@/components/ShareButton";
 
 const CATS = [
   { id: "all", key: "recordings.allRecordings" },
@@ -36,6 +38,7 @@ const THUMB_RETRY_DELAY_MS = 1800;
  *  video too. A thumbnail that fails to load is replaced by a dark tile
  *  with a Play icon — never a broken-image icon. */
 function RecordingCard({ it, onPlay }: { it: RecordingItem; onPlay: (it: RecordingItem) => void }) {
+  const { t } = useLanguage();
   const [thumbError, setThumbError] = useState(false);
   const [thumbSrc, setThumbSrc] = useState(it.thumb);
   // "idle" = no failure yet, "pending" = retry scheduled, "done" = retry
@@ -125,6 +128,24 @@ function RecordingCard({ it, onPlay }: { it: RecordingItem; onPlay: (it: Recordi
         >
           <Play className="h-4 w-4" fill="currentColor" aria-hidden="true" /> <T k="recordings.watchHere" />
         </button>
+        <div className="mt-2 flex gap-2">
+          {/* Download opens the raw file in a new tab — the browser's
+              built-in player can save it from there (see downloadNote).
+              No forced download is claimed: browsers decide. */}
+          <a
+            href={it.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={t("recordings.downloadNote")}
+            className="inline-flex flex-1 items-center justify-center gap-1.5 rounded-md border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 px-3 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 transition-colors hover:border-red-600 hover:text-red-600 dark:hover:border-red-500 dark:hover:text-red-400"
+          >
+            <Download className="h-4 w-4" aria-hidden="true" /> <T k="recordings.download" />
+          </a>
+          {/* Share copies the recording's file URL (the direct link to
+              this video); the page URL alone would not identify it. */}
+          <ShareButton url={it.url} />
+          <SaveButton item={{ id: it.slug, type: "recording", title: it.title, date: it.date, url: "/recordings" }} />
+        </div>
       </div>
     </li>
   );

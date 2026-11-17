@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { ArrowRight } from "lucide-react";
 import { connection } from "next/server";
 import HlsPlayer from "@/components/HlsPlayer";
 import LatestNewsClient from "@/components/LatestNewsClient";
@@ -21,8 +22,8 @@ async function LatestNews() {
     <section>
       <div className="mb-3 flex items-baseline justify-between">
         <h2 className="text-lg font-bold text-white">Latest News</h2>
-        <Link href="/news" className="text-sm text-red-400 hover:underline">
-          All news →
+        <Link href="/news" className="inline-flex items-center gap-1 text-sm text-red-400 hover:underline">
+          All news <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
         </Link>
       </div>
       <LatestNewsClient items={news} />
@@ -60,8 +61,9 @@ export default async function Home() {
       <section>
         <div className="mb-3 flex flex-wrap items-baseline gap-3">
           <h1 className="text-2xl font-bold text-white">DPRK Media Mirror</h1>
-          <span className="rounded bg-red-600 px-2 py-0.5 text-[11px] font-bold uppercase text-white">
-            ● Live
+          <span className="inline-flex items-center gap-1.5 rounded bg-red-600 px-2 py-0.5 text-[11px] font-bold uppercase text-white">
+            <span className="h-1.5 w-1.5 rounded-full bg-white" aria-hidden="true" />
+            Live
           </span>
           <span className="text-xs text-zinc-500">
             KCTV, radio, news, recordings and publications — all on this site · Pyongyang time {nowTime}
@@ -96,8 +98,8 @@ export default async function Home() {
                 </p>
               )}
               <p className="mt-2">
-                <Link href="/schedule" className="text-red-400 hover:underline">
-                  Full programme guide →
+                <Link href="/schedule" className="inline-flex items-center gap-1 text-red-400 hover:underline">
+                  Full programme guide <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                 </Link>
               </p>
             </div>
@@ -127,8 +129,8 @@ export default async function Home() {
             </ul>
             <p className="mt-3 border-t border-zinc-800 pt-3 text-xs text-zinc-500">
               News mirrored from 11 sources —{" "}
-              <Link href="/sources" className="text-red-400 hover:underline">
-                see all sources →
+              <Link href="/sources" className="inline-flex items-center gap-1 text-red-400 hover:underline">
+                see all sources <ArrowRight className="h-3 w-3" aria-hidden="true" />
               </Link>
             </p>
           </div>
@@ -140,8 +142,8 @@ export default async function Home() {
           <section>
             <div className="mb-3 flex items-baseline justify-between">
               <h2 className="text-lg font-bold text-white">Latest News</h2>
-              <Link href="/news" className="text-sm text-red-400 hover:underline">
-                All news →
+              <Link href="/news" className="inline-flex items-center gap-1 text-sm text-red-400 hover:underline">
+                All news <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
               </Link>
             </div>
             <SkeletonRow />

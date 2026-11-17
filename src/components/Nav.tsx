@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Menu, X } from "lucide-react";
 
 const LINKS = [
   { href: "/", label: "Home" },
@@ -62,9 +63,10 @@ export default function Nav() {
         aria-label="Toggle menu"
         aria-expanded={open}
         onClick={() => setOpen((v) => !v)}
-        className="ml-auto rounded-md border border-zinc-700 px-3 py-1.5 text-sm font-medium text-zinc-200 hover:bg-zinc-800 xl:hidden"
+        className="ml-auto inline-flex items-center gap-1.5 rounded-md border border-zinc-700 px-3 py-1.5 text-sm font-medium text-zinc-200 hover:bg-zinc-800 xl:hidden"
       >
-        {open ? "✕ Menu" : "☰ Menu"}
+        {open ? <X className="h-4 w-4" aria-hidden="true" /> : <Menu className="h-4 w-4" aria-hidden="true" />}
+        Menu
       </button>
       <nav className="hidden min-w-0 flex-1 items-center gap-1 overflow-x-auto [scrollbar-width:none] xl:flex [&::-webkit-scrollbar]:hidden">
         {LINKS.map((l) => (

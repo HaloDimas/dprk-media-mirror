@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
+import { ArrowLeft, ArrowRight, ArrowUpRight } from "lucide-react";
 import { getAllNews, getArticle } from "@/lib/sources";
 
 // Articles NOT prerendered at build time — they render on demand instead
@@ -88,7 +89,7 @@ async function ArticleContent({ params }: { params: Promise<{ id: string }> }) {
           className="mt-4 inline-flex items-center gap-2 rounded-lg border border-red-800 bg-red-950/40 px-4 py-2.5 text-sm font-medium text-red-200 transition-colors hover:bg-red-900/50"
         >
           Read the full article on the original site
-          <span aria-hidden="true">↗</span>
+          <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
         </a>
       )}
 
@@ -130,7 +131,9 @@ async function ArticleContent({ params }: { params: Promise<{ id: string }> }) {
             href={`/news/${older.id}`}
             className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 transition-colors hover:border-red-800"
           >
-            <span className="text-xs uppercase tracking-wide text-zinc-500">← Older</span>
+            <span className="inline-flex items-center gap-1 text-xs uppercase tracking-wide text-zinc-500">
+              <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" /> Older
+            </span>
             <span className="mt-1 block text-sm font-medium leading-snug text-zinc-100">{older.title}</span>
           </Link>
         ) : (
@@ -141,7 +144,9 @@ async function ArticleContent({ params }: { params: Promise<{ id: string }> }) {
             href={`/news/${newer.id}`}
             className="rounded-xl border border-zinc-800 bg-zinc-900/60 p-4 text-right transition-colors hover:border-red-800"
           >
-            <span className="text-xs uppercase tracking-wide text-zinc-500">Newer →</span>
+            <span className="inline-flex items-center justify-end gap-1 text-xs uppercase tracking-wide text-zinc-500">
+              Newer <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+            </span>
             <span className="mt-1 block text-sm font-medium leading-snug text-zinc-100">{newer.title}</span>
           </Link>
         ) : (
@@ -180,8 +185,8 @@ async function ArticleContent({ params }: { params: Promise<{ id: string }> }) {
 export default function ArticlePage({ params }: { params: Promise<{ id: string }> }) {
   return (
     <article className="mx-auto max-w-3xl">
-      <Link href="/news" className="text-sm text-red-400 hover:underline">
-        ← All news
+      <Link href="/news" className="inline-flex items-center gap-1 text-sm text-red-400 hover:underline">
+        <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" /> All news
       </Link>
       <Suspense
         fallback={<p className="mt-6 text-sm text-zinc-400">Loading article…</p>}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
 import HlsPlayer from "@/components/HlsPlayer";
 import { CHANNELS, findNowNext, nowPyt, todayPyt, type ChannelId, type EpgData, type Program } from "@/lib/types";
 
@@ -204,7 +205,8 @@ export default function LivePage() {
                 rel="noopener noreferrer"
                 className="mt-4 inline-flex items-center gap-2 rounded-lg bg-red-700 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-red-600"
               >
-                Watch {info.name} on Koryo TV ↗
+                Watch {info.name} on Koryo TV
+                <ArrowUpRight className="h-4 w-4" aria-hidden="true" />
               </a>
             </div>
           )}
@@ -271,8 +273,8 @@ export default function LivePage() {
                   {info.name} · {info.korean} · Today
                 </p>
               </div>
-              <a href="/schedule" className="shrink-0 text-sm text-red-400 hover:underline">
-                Full schedule →
+              <a href="/schedule" className="inline-flex shrink-0 items-center gap-1 text-sm text-red-400 hover:underline">
+                Full schedule <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
               </a>
             </div>
             <div className="mt-3 overflow-hidden rounded-xl border border-zinc-800">

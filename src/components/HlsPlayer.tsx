@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Camera, PictureInPicture2, X } from "lucide-react";
 import Hls from "hls.js";
 
 /**
@@ -562,9 +563,9 @@ export default function HlsPlayer({
               type="button"
               onClick={() => setSlowDetected(false)}
               aria-label="Dismiss slow connection warning"
-              className="rounded px-1.5 py-0.5 text-amber-300 hover:bg-amber-900"
+              className="inline-flex items-center justify-center rounded px-1.5 py-0.5 text-amber-300 hover:bg-amber-900"
             >
-              ✕
+              <X className="h-3.5 w-3.5" aria-hidden="true" />
             </button>
           </div>
         )}
@@ -639,22 +640,22 @@ export default function HlsPlayer({
             onClick={takeScreenshot}
             aria-label="Save the current frame as a PNG"
             title="Save the current frame as a PNG"
-            className="rounded border border-zinc-700 bg-zinc-800 px-2.5 py-1 text-xs font-medium text-zinc-200 transition-colors hover:bg-zinc-700"
+            className="inline-flex items-center gap-1.5 rounded border border-zinc-700 bg-zinc-800 px-2.5 py-1 text-xs font-medium text-zinc-200 transition-colors hover:bg-zinc-700"
           >
-            <span aria-hidden="true">📷 </span>Screenshot
+            <Camera className="h-3.5 w-3.5" aria-hidden="true" /> Screenshot
           </button>
           <button
             type="button"
             onClick={togglePip}
             aria-pressed={pipActive}
             title={pipActive ? "Exit picture-in-picture" : "Picture-in-picture"}
-            className={`rounded border px-2.5 py-1 text-xs font-medium ${
+            className={`inline-flex items-center gap-1.5 rounded border px-2.5 py-1 text-xs font-medium ${
               pipActive
                 ? "border-red-700 bg-red-700 text-white"
                 : "border-zinc-700 bg-zinc-800 text-zinc-200 hover:bg-zinc-700"
             }`}
           >
-            PiP
+            <PictureInPicture2 className="h-3.5 w-3.5" aria-hidden="true" /> PiP
           </button>
           <button
             type="button"
@@ -687,7 +688,7 @@ export default function HlsPlayer({
         </div>
       )}
       <p className="mt-1.5 text-[11px] text-zinc-500">
-        Shortcuts (when the video is focused): Space play/pause · F fullscreen · M mute · ←/→ seek · ↑/↓ volume.
+        Shortcuts (when the video is focused): Space play/pause · F fullscreen · M mute · Left/Right seek · Up/Down volume.
       </p>
     </div>
   );

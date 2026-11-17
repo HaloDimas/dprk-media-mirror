@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { ArrowUpRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Contact — DPRK Media Mirror",
@@ -51,7 +52,8 @@ export default function ContactPage() {
           rel="noopener noreferrer"
           className="text-sm font-medium text-red-400 underline hover:text-red-300"
         >
-          github.com/HaloDimas/dprk-media-mirror — Issues ↗
+          github.com/HaloDimas/dprk-media-mirror — Issues
+          <ArrowUpRight className="ml-1 inline h-4 w-4 align-[-2px]" aria-hidden="true" />
         </a>
       </p>
       <p className="mt-3 text-sm leading-relaxed text-zinc-300">

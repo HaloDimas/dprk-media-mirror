@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import ArchiveBrowser from "@/components/ArchiveBrowser";
 
 export const metadata = {
@@ -11,8 +12,8 @@ export default function ArchivePage() {
   return (
     <div className="space-y-5">
       <div>
-        <Link href="/news" className="text-sm text-red-400 hover:underline">
-          ← All news
+        <Link href="/news" className="inline-flex items-center gap-1 text-sm text-red-400 hover:underline">
+          <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" /> All news
         </Link>
         <h1 className="mt-2 text-xl font-bold text-white">KCNA Watch Archive</h1>
         <p className="mt-1 max-w-3xl text-sm text-zinc-400">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Pause, Play, Volume1, Volume2, VolumeX } from "lucide-react";
 import Hls from "hls.js";
 
 type Status = "idle" | "connecting" | "live" | "paused" | "error";
@@ -191,9 +192,9 @@ export default function AudioPlayer({
           {isBusy ? (
             <span className="h-5 w-5 animate-spin rounded-full border-2 border-zinc-600 border-t-white" aria-hidden="true" />
           ) : active ? (
-            <span aria-hidden="true">❚❚</span>
+            <Pause className="h-5 w-5" fill="currentColor" aria-hidden="true" />
           ) : (
-            <span aria-hidden="true">▶</span>
+            <Play className="h-5 w-5" fill="currentColor" aria-hidden="true" />
           )}
         </button>
         <div className="min-w-0 flex-1">
@@ -220,9 +221,15 @@ export default function AudioPlayer({
               type="button"
               onClick={() => setMuted((m) => !m)}
               aria-label={muted ? "Unmute" : "Mute"}
-              className="text-sm text-zinc-400 transition-colors hover:text-zinc-100"
+              className="inline-flex items-center justify-center text-zinc-400 transition-colors hover:text-zinc-100"
             >
-              {muted || volume === 0 ? "🔇" : volume < 0.5 ? "🔈" : "🔊"}
+              {muted || volume === 0 ? (
+                <VolumeX className="h-4 w-4" aria-hidden="true" />
+              ) : volume < 0.5 ? (
+                <Volume1 className="h-4 w-4" aria-hidden="true" />
+              ) : (
+                <Volume2 className="h-4 w-4" aria-hidden="true" />
+              )}
             </button>
             <input
               type="range"

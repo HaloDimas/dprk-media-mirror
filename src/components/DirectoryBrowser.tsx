@@ -1,31 +1,40 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Mail, X } from "lucide-react";
 import type { DirectoryCategory, DirectoryStatus } from "@/data/directory";
 
 export function StatusBadge({ status }: { status: DirectoryStatus }) {
   if (status === "live")
     return (
-      <span className="rounded bg-emerald-900/70 px-2 py-0.5 text-[11px] font-semibold text-emerald-200">
-        ● Live (verified 15 Nov 2026)
+      <span className="inline-flex items-center gap-1.5 rounded bg-emerald-900/70 px-2 py-0.5 text-[11px] font-semibold text-emerald-200">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" aria-hidden="true" />
+        Live (verified 15 Nov 2026)
       </span>
     );
   if (status === "active")
     return (
-      <span className="rounded bg-emerald-900/70 px-2 py-0.5 text-[11px] font-semibold text-emerald-200">
-        ● Active (July 2026 list)
+      <span className="inline-flex items-center gap-1.5 rounded bg-emerald-900/70 px-2 py-0.5 text-[11px] font-semibold text-emerald-200">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-300" aria-hidden="true" />
+        Active (July 2026 list)
       </span>
     );
   if (status === "flaky")
     return (
-      <span className="rounded bg-amber-900/70 px-2 py-0.5 text-[11px] font-semibold text-amber-200">
-        ◐ Active domain, unreachable here
+      <span className="inline-flex items-center gap-1.5 rounded bg-amber-900/70 px-2 py-0.5 text-[11px] font-semibold text-amber-200">
+        <span
+          className="h-1.5 w-1.5 rounded-full border border-amber-200"
+          style={{ background: "linear-gradient(90deg, #fcd34d 50%, transparent 50%)" }}
+          aria-hidden="true"
+        />
+        Active domain, unreachable here
       </span>
     );
   if (status === "dead")
     return (
-      <span className="rounded bg-red-900/70 px-2 py-0.5 text-[11px] font-semibold text-red-200">
-        ✕ Dead
+      <span className="inline-flex items-center gap-1.5 rounded bg-red-900/70 px-2 py-0.5 text-[11px] font-semibold text-red-200">
+        <X className="h-3 w-3" aria-hidden="true" />
+        Dead
       </span>
     );
   if (status === "not-a-website")
@@ -35,8 +44,9 @@ export function StatusBadge({ status }: { status: DirectoryStatus }) {
       </span>
     );
   return (
-    <span className="rounded bg-zinc-800 px-2 py-0.5 text-[11px] font-semibold text-zinc-300">
-      ✉ Mail server only
+    <span className="inline-flex items-center gap-1.5 rounded bg-zinc-800 px-2 py-0.5 text-[11px] font-semibold text-zinc-300">
+      <Mail className="h-3 w-3" aria-hidden="true" />
+      Mail server only
     </span>
   );
 }

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { ArrowRight } from "lucide-react";
 import { connection } from "next/server";
 import NewsSearch from "@/components/NewsSearch";
 import { SkeletonRow } from "@/components/LoadingScreen";
@@ -40,7 +41,8 @@ export default async function NewsPage() {
             href="/news/archive"
             className="inline-block rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-white hover:bg-red-600"
           >
-            Browse the full archive — search 1.37M KCNA Watch articles →
+            Browse the full archive — search 1.37M KCNA Watch articles
+            <ArrowRight className="ml-1 inline h-4 w-4 align-[-2px]" aria-hidden="true" />
           </Link>
         </p>
       </div>

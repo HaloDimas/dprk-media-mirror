@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import type { ChannelId, EpgData, Program } from "@/lib/types";
 import { findNowNext, nowPyt, todayPyt } from "@/lib/types";
 
@@ -233,10 +234,10 @@ export default function ScheduleGuide({
         <div className="ml-auto flex items-center gap-1.5">
           <button
             onClick={() => setDate(shiftDate(date, -1))}
-            className="rounded-md bg-zinc-800 px-2.5 py-1.5 text-sm text-zinc-300 hover:bg-zinc-700"
+            className="inline-flex items-center gap-1 rounded-md bg-zinc-800 px-2.5 py-1.5 text-sm text-zinc-300 hover:bg-zinc-700"
             aria-label="Previous day"
           >
-            ← Prev day
+            <ChevronLeft className="h-4 w-4" aria-hidden="true" /> Prev day
           </button>
           <label className="flex min-w-0 items-center gap-2 text-sm text-zinc-300">
             <input
@@ -249,10 +250,10 @@ export default function ScheduleGuide({
           </label>
           <button
             onClick={() => setDate(shiftDate(date, 1))}
-            className="rounded-md bg-zinc-800 px-2.5 py-1.5 text-sm text-zinc-300 hover:bg-zinc-700"
+            className="inline-flex items-center gap-1 rounded-md bg-zinc-800 px-2.5 py-1.5 text-sm text-zinc-300 hover:bg-zinc-700"
             aria-label="Next day"
           >
-            Next day →
+            Next day <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </button>
         </div>
       </div>

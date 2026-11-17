@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Play } from "lucide-react";
 import type { RecordingItem } from "@/lib/types";
 
 const CATS = [
@@ -150,9 +151,9 @@ export default function RecordingsBrowser({ items }: { items: RecordingItem[] })
             <p className="mt-1 text-xs text-zinc-500">{it.date}</p>
             <button
               onClick={() => setPlaying(it)}
-              className="mt-3 w-full rounded-md bg-red-700 px-3 py-2 text-sm font-medium text-white hover:bg-red-600"
+              className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-red-700 px-3 py-2 text-sm font-medium text-white hover:bg-red-600"
             >
-              ▶ Watch here
+              <Play className="h-4 w-4" fill="currentColor" aria-hidden="true" /> Watch here
             </button>
           </li>
         ))}

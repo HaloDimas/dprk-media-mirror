@@ -1,36 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# DPRK Media Mirror
 
-## Getting Started
+[![CI](https://github.com/HaloDimas/dprk-media-mirror/actions/workflows/ci.yml/badge.svg)](https://github.com/HaloDimas/dprk-media-mirror/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/HaloDimas/dprk-media-mirror/actions/workflows/codeql.yml/badge.svg)](https://github.com/HaloDimas/dprk-media-mirror/actions/workflows/codeql.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-First, run the development server:
+A multi-page mirror of North Korean state media — live TV, programme
+schedule, news, radio, recordings, publications and a directory of `.kp`
+sites — in one place.
+
+**Live site:** https://dprkmedia.vercel.app
+
+## Features
+
+- **Live TV** — KCTV, Sports TV and Ryongnamsan TV (HLS), with Mansudae TV
+  listed as coming soon.
+- **Schedule** — programme guide in Pyongyang Time (UTC+9), with English and
+  Korean programme titles.
+- **News** — KCNA, Rodong Sinmun and other DPRK publications, with archive
+  search and full-text article pages.
+- **Radio** — KCBS, KCBS-2 and Pyongyang FM, with per-station pages.
+- **Recordings** — recorded KCTV programmes with thumbnails.
+- **Publications & Directory** — DPRK publications and a directory of
+  `.kp` sites, plus a Sources page listing where everything comes from.
+- **Search** — site-wide search across news, recordings and publications.
+- **Saved** — bookmark articles and recordings locally in your browser.
+- **Settings** — appearance, playback and programme-guide preferences.
+- **Interface** — English, Indonesian and Korean UI; dark and light themes.
+
+## Local setup
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm install
+npm run dev        # http://localhost:3000
+npx tsc --noEmit   # type check
+npm run build      # production build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+No secrets or environment variables are needed to build or run the site
+locally.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Tech stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Next.js 16 (App Router, TypeScript), React 19, Tailwind CSS 4, HLS.js for
+live playback. Deployed on Vercel; live streams are proxied through a
+Cloudflare Worker.
 
-## Learn More
+## Contributing
 
-To learn more about Next.js, take a look at the following resources:
+Contributions are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) for the
+setup, pull request checklist and project rules. Please read
+[SECURITY.md](SECURITY.md) before reporting a vulnerability, and never
+include credentials, tokens, session cookies or webhook URLs in issues,
+pull requests or code.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Legal
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+DPRK Media Mirror content is hosted here for educational access purposes only | All materials copyright of the Korea D.P.R. government.
